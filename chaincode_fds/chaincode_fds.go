@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	//"fmt"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -142,7 +142,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	case "removewithuuid":
 		return t.RemoveWithUUID(stub, args)
 	}
-	return nil, errors.New("Invalid invoke function name. Expecting \"register\" \"lookupwith~\"")
+	return nil, errors.New("Invalid invoke function name. Expecting \"register\" \"removewith~\"")
 }
 
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
@@ -154,15 +154,16 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	case "lookupwithuuid":
 		return t.LookupWithUUID(stub, args)
 	}
-	return nil, errors.New("Invalid query function name. Expecting \"removewith~\"")
+	return nil, errors.New("Invalid query function name. Expecting \"lookupwith~\"")
 }
 
 func main() {
-	// t := SimpleChaincode{1}
-	// err := shim.Start(t)
-	// if err != nil {
-	// 	fmt.Printf("Error starting Simple chaincode: %s", err)
-	// }
+	t := new(SimpleChaincode)
+	t.nextEID = 1
+	err := shim.Start(t)
+	if err != nil {
+		fmt.Printf("Error starting Simple chaincode: %s", err)
+	}
 }
 
 // ===========================================================
