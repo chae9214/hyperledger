@@ -33,41 +33,41 @@ const PREFIX_CID = "cid_"
 const PREFIX_MAC = "mac_"
 const PREFIX_UUID = "uuid_"
 
-const SEP = "$"
-const ContractIDSeparator = "|"
+const SEP = "|"
 
+/*
 // ===========================================================
 //  Initialization 함수
 // ===========================================================
 
-// func CreateStub() ChaincodeStubInterface {
-// 	var stub ChaincodeStubInterface
-// 	stub.kvs = make(map[string][]byte)
-// 	return stub
-// }
+func CreateStub() ChaincodeStubInterface {
+	var stub ChaincodeStubInterface
+	stub.kvs = make(map[string][]byte)
+	return stub
+}
 
-// func CreateFDSChaincodeStub() FDSChaincodeStub {
-// 	kvs := make(map[string][]byte)
-// 	nextEID := 1
-// 	stub := FDSChaincodeStub{ChaincodeStubInterface{kvs}, nextEID}
-// 	return stub
-// }
+func CreateFDSChaincodeStub() FDSChaincodeStub {
+	kvs := make(map[string][]byte)
+	nextEID := 1
+	stub := FDSChaincodeStub{ChaincodeStubInterface{kvs}, nextEID}
+	return stub
+}
 
-// func CreateSLAChaincodeStub() SLAChaincodeStub {
-// 	kvs := make(map[string][]byte)
-// 	stub := SLAChaincodeStub{ChaincodeStubInterface{kvs}}
-// 	return stub
-// }
+func CreateSLAChaincodeStub() SLAChaincodeStub {
+	kvs := make(map[string][]byte)
+	stub := SLAChaincodeStub{ChaincodeStubInterface{kvs}}
+	return stub
+}
 
-// func (stub *ChaincodeStubInterface) String() string {
-// 	var s string
+func (stub *ChaincodeStubInterface) String() string {
+	var s string
 
-// 	s += "<KVS>\n"
-// 	for k, v := range stub.kvs {
-// 		s += "\t" + k + ": " + string(v) + "\n"
-// 	}
-// 	return s
-// }
+	s += "<KVS>\n"
+	for k, v := range stub.kvs {
+		s += "\t" + k + ": " + string(v) + "\n"
+	}
+	return s
+}
 
 // ===========================================================
 //  Serialize / Deserialize 함수
@@ -102,32 +102,69 @@ func appendToEIDList(b []byte, eid string) []byte {
 //  ChaincodeStubInterface 함수
 // ===========================================================
 
-// func (stub *ChaincodeStubInterface) PutState(key string, value []byte) error {
-// 	if value == nil {
-// 		return errors.New("entry cannot be empty")
-// 	} else {
-// 		stub.kvs[key] = value
-// 		return nil
-// 	}
-// }
+func (stub *ChaincodeStubInterface) PutState(key string, value []byte) error {
+	if value == nil {
+		return errors.New("entry cannot be empty")
+	} else {
+		stub.kvs[key] = value
+		return nil
+	}
+}
 
-// func (stub *ChaincodeStubInterface) GetState(key string) ([]byte, error) {
-// 	value := stub.kvs[key]
-// 	return value, nil
-// }
+func (stub *ChaincodeStubInterface) GetState(key string) ([]byte, error) {
+	value := stub.kvs[key]
+	return value, nil
+}
 
-// func (stub *ChaincodeStubInterface) DelState(key string) error {
-// 	delete(stub.kvs, key)
-// 	return nil
-// }
+func (stub *ChaincodeStubInterface) DelState(key string) error {
+	delete(stub.kvs, key)
+	return nil
+}
 
 func (stub *ChaincodeStubInterface) GetKVSLength() int {
 	return len(stub.kvs)
 }
+*/
 
 // ===========================================================
-//  ChaincodeStubInterface 함수
+//  SimpleChaincode 함수
 // ===========================================================
+
+func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	var A, B string    // Entities
+	var Aval, Bval int // Asset holdings
+	var err error
+
+	if len(args) != 4 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 4")
+	}
+
+	// Initialize the chaincode
+	A = args[0]
+	Aval, err = strconv.Atoi(args[1])
+	if err != nil {
+		return nil, errors.New("Expecting integer value for asset holding")
+	}
+	B = args[2]
+	Bval, err = strconv.Atoi(args[3])
+	if err != nil {
+		return nil, errors.New("Expecting integer value for asset holding")
+	}
+	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+
+	// Write the state to the ledger
+	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	if err != nil {
+		return nil, err
+	}
+
+	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
 
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("ex02 Invoke")
@@ -146,8 +183,38 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
 }
 
+func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	if function != "query" {
+		return nil, errors.New("Invalid query function name. Expecting \"query\"")
+	}
+	var A string // Entities
+	var err error
+
+	if len(args) != 1 {
+		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
+	}
+
+	A = args[0]
+
+	// Get the state from the ledger
+	Avalbytes, err := stub.GetState(A)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+	if Avalbytes == nil {
+		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
+	fmt.Printf("Query Response:%s\n", jsonResp)
+	return Avalbytes, nil
+}
+
 // ===========================================================
-//  FDSChaincodeStub 등록/수정 함수
+//  FDS 등록/수정 함수
 // ===========================================================
 
 func (stub *FDSChaincodeStub) RegisterFraudEntry(fields []string) bool {
@@ -186,7 +253,7 @@ func (stub *FDSChaincodeStub) RegisterFraudEntry(fields []string) bool {
 }
 
 // ===========================================================
-//  FDSChaincodeStub 삭제 함수
+//  FDS 삭제 함수
 // ===========================================================
 
 func (stub *FDSChaincodeStub) RemoveWithCID(cid string) bool {
@@ -241,7 +308,7 @@ func (stub *FDSChaincodeStub) RemoveWithUUID(uuid string) bool {
 }
 
 // ===========================================================
-//  FDSChaincodeStub 조회 함수
+//  FDS 조회 함수
 // ===========================================================
 
 func (stub *FDSChaincodeStub) LookupWithCID(cid string) (entries [][]string, result bool) {
@@ -296,125 +363,4 @@ func (stub *FDSChaincodeStub) LookupWithUUID(uuid string) (entries [][]string, r
 		return entries, false
 	}
 	return entries, true
-}
-
-// ===========================================================
-//  SLAChaincodeStub 등록 함수
-// ===========================================================
-
-func (t *SimpleChaincode) registerContract(stub ChaincodeStubInterface, args []string) {
-
-	contractID := args[0]
-	contractName := strings.Split(args[1], ",")[1]
-	contractClient := strings.Split(args[1], ",")[4]
-
-	//1. 계약ID 등록
-	stub.PutState(contractID, []byte(args[1]))
-
-	{ //2. 계약명 등록
-		//계약명으로 기존내역조회
-		contractIDsInBytes, _ := stub.GetState(contractName) // 리턴값 ([]byte, error)
-		contractIDsInString := string(contractIDsInBytes)
-
-		//기존내역이 없을경우 "계약명"-"계약ID목록" 등록
-		if contractIDsInString == "" {
-			stub.PutState(contractName, []byte(contractID))
-		} else {
-			stub.PutState(contractName, []byte(contractIDsInString+ContractIDSeparator+contractID))
-		}
-	}
-
-	{ //3. 고객사명 등록
-		//계약명으로 기존내역조회
-		contractIDsInBytes, _ := stub.GetState(contractClient) // 리턴값 ([]byte, error)
-		contractIDsInString := string(contractIDsInBytes)
-
-		//기존내역이 없을경우 "고객사명"-"계약ID목록" 등록
-		if contractIDsInString == "" {
-			stub.PutState(contractClient, []byte(contractID))
-		} else {
-			stub.PutState(contractClient, []byte(contractIDsInString+ContractIDSeparator+contractID))
-		}
-	}
-}
-
-// ===========================================================
-//  SLAChaincodeStub 검색 함수
-// ===========================================================
-
-// SLA ID 검색
-func (t *SimpleChaincode) searchContractByID(stub ChaincodeStubInterface, args []string) string {
-	value, _ := stub.GetState(args[0])
-	return string(value)
-}
-
-// SLA 계약명 검색
-func (t *SimpleChaincode) searchContractListByName(stub ChaincodeStubInterface, args []string) []string {
-	contractName := args[0]
-
-	// 계약명으로 계약ID목록 조회
-	contractIDsInBytes, _ := stub.GetState(contractName)
-	contractIDsInString := string(contractIDsInBytes)
-
-	// 계약ID목록의 형태를 스트링에서 배열로 전환
-	contractIDs := strings.Split(contractIDsInString, ContractIDSeparator)
-
-	// 리턴값 초기화
-	contractList := make([]string, len(contractIDs))
-
-	// 계약ID목록으로 계약내용을 추출하여 계약목록 작성
-	for i, _ := range contractIDs {
-		contractInBytes, _ := stub.GetState(contractIDs[i])
-		contractList[i] = string(contractInBytes)
-	}
-
-	return contractList
-}
-
-// SLA 고객사명 검색
-func (t *SimpleChaincode) searchContractListByClient(stub ChaincodeStubInterface, args []string) []string {
-	contractClient := args[0]
-
-	// 고객사명으로 계약ID목록 조회
-	contractIDsInBytes, _ := stub.GetState(contractClient)
-	contractIDsInString := string(contractIDsInBytes)
-
-	// 계약ID목록의 형태를 스트링에서 배열로 전환
-	contractIDs := strings.Split(contractIDsInString, ContractIDSeparator)
-
-	// 리턴값 초기화
-	contractList := make([]string, len(contractIDs))
-
-	// 계약ID목록으로 계약내용을 추출하여 계약목록 작성
-	for i, _ := range contractIDs {
-		contractInBytes, _ := stub.GetState(contractIDs[i])
-		contractList[i] = string(contractInBytes)
-	}
-	return contractList
-}
-
-// ===========================================================
-//  SLAChaincodeStub 업데이트 함수
-// ===========================================================
-
-func (t *SimpleChaincode) updateContractId(stub ChaincodeStubInterface, args []string) string {
-
-	contractID := args[0]
-
-	// 기존내용 조회
-	contractIDsInBytes, _ := stub.GetState(contractID) // 리턴값 ([]byte, error)
-	contractIDsInString := string(contractIDsInBytes)
-
-	// 기존내역이 없을경우 확인 여부
-	if contractIDsInString == "" {
-		fmt.Printf("No date :%v\n", contractIDsInString)
-	}
-
-	// UPDATDE 처리
-	stub.PutState(contractID, []byte(args[1]))
-
-	// 변경내용 조회
-	update_value, _ := stub.GetState(contractID)
-
-	return string(update_value)
 }
