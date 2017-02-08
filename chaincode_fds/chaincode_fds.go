@@ -1,4 +1,4 @@
-package chaincode
+package main
 
 import (
 	"encoding/json"
@@ -13,31 +13,6 @@ import (
 // ===========================================================
 
 type SimpleChaincode struct {
-}
-
-type ChaincodeStubInterface struct {
-	kvs map[string][]byte
-}
-
-type FDSChaincodeStub struct {
-	ChaincodeStubInterface
-	nextEID int
-}
-
-type SLAChaincodeStub struct {
-	ChaincodeStubInterface
-}
-
-// 사용하지 않는 struct (대신 string array 사용)
-type FDSValues struct {
-	Cid             string
-	Mac             string
-	Uuid            string
-	FinalDate       string
-	FinalTime       string
-	FDSProducedBy   string
-	FDSRegisteredBy string
-	FDSReason       string
 }
 
 // fraud entry 의 필드갯수와 각 필드별 인덱스
@@ -65,63 +40,34 @@ const ContractIDSeparator = "|"
 //  Initialization 함수
 // ===========================================================
 
-func CreateStub() ChaincodeStubInterface {
-	var stub ChaincodeStubInterface
-	stub.kvs = make(map[string][]byte)
-	return stub
-}
+// func CreateStub() ChaincodeStubInterface {
+// 	var stub ChaincodeStubInterface
+// 	stub.kvs = make(map[string][]byte)
+// 	return stub
+// }
 
-func CreateFDSChaincodeStub() FDSChaincodeStub {
-	kvs := make(map[string][]byte)
-	nextEID := 1
-	stub := FDSChaincodeStub{ChaincodeStubInterface{kvs}, nextEID}
-	return stub
-}
+// func CreateFDSChaincodeStub() FDSChaincodeStub {
+// 	kvs := make(map[string][]byte)
+// 	nextEID := 1
+// 	stub := FDSChaincodeStub{ChaincodeStubInterface{kvs}, nextEID}
+// 	return stub
+// }
 
-func CreateSLAChaincodeStub() SLAChaincodeStub {
-	kvs := make(map[string][]byte)
-	stub := SLAChaincodeStub{ChaincodeStubInterface{kvs}}
-	return stub
-}
+// func CreateSLAChaincodeStub() SLAChaincodeStub {
+// 	kvs := make(map[string][]byte)
+// 	stub := SLAChaincodeStub{ChaincodeStubInterface{kvs}}
+// 	return stub
+// }
 
-func (stub *ChaincodeStubInterface) String() string {
-	var s string
+// func (stub *ChaincodeStubInterface) String() string {
+// 	var s string
 
-	s += "<KVS>\n"
-	for k, v := range stub.kvs {
-		s += "\t" + k + ": " + string(v) + "\n"
-	}
-	return s
-}
-
-// ===========================================================
-//  FDSValues 함수 ***사용하지 않음!!!***
-// ===========================================================
-
-func FDSValuesToByteArray(v FDSValues) ([]byte, error) {
-	b, err := json.Marshal(v)
-	return b, err
-}
-
-func ByteArrayToFDSValues(b []byte) (FDSValues, error) {
-	var v FDSValues
-	err := json.Unmarshal(b, &v)
-	return v, err
-}
-
-func (stub *FDSChaincodeStub) RegisterFraudEntryUsingFDSValues(fields []string) bool {
-	if len(fields) != 8 {
-		return false
-	}
-
-	v := FDSValues{fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7]}
-	b, err := FDSValuesToByteArray(v)
-	if err == nil {
-		stub.kvs[fields[0]] = b
-		return true
-	}
-	return false
-}
+// 	s += "<KVS>\n"
+// 	for k, v := range stub.kvs {
+// 		s += "\t" + k + ": " + string(v) + "\n"
+// 	}
+// 	return s
+// }
 
 // ===========================================================
 //  Serialize / Deserialize 함수
@@ -156,27 +102,48 @@ func appendToEIDList(b []byte, eid string) []byte {
 //  ChaincodeStubInterface 함수
 // ===========================================================
 
-func (stub *ChaincodeStubInterface) PutState(key string, value []byte) error {
-	if value == nil {
-		return errors.New("entry cannot be empty")
-	} else {
-		stub.kvs[key] = value
-		return nil
-	}
-}
+// func (stub *ChaincodeStubInterface) PutState(key string, value []byte) error {
+// 	if value == nil {
+// 		return errors.New("entry cannot be empty")
+// 	} else {
+// 		stub.kvs[key] = value
+// 		return nil
+// 	}
+// }
 
-func (stub *ChaincodeStubInterface) GetState(key string) ([]byte, error) {
-	value := stub.kvs[key]
-	return value, nil
-}
+// func (stub *ChaincodeStubInterface) GetState(key string) ([]byte, error) {
+// 	value := stub.kvs[key]
+// 	return value, nil
+// }
 
-func (stub *ChaincodeStubInterface) DelState(key string) error {
-	delete(stub.kvs, key)
-	return nil
-}
+// func (stub *ChaincodeStubInterface) DelState(key string) error {
+// 	delete(stub.kvs, key)
+// 	return nil
+// }
 
 func (stub *ChaincodeStubInterface) GetKVSLength() int {
 	return len(stub.kvs)
+}
+
+// ===========================================================
+//  ChaincodeStubInterface 함수
+// ===========================================================
+
+func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+	fmt.Println("ex02 Invoke")
+	function, args := stub.GetFunctionAndParameters()
+	if function == "invoke" {
+		// Make payment of X units from A to B
+		return t.invoke(stub, args)
+	} else if function == "delete" {
+		// Deletes an entity from its state
+		return t.delete(stub, args)
+	} else if function == "query" {
+		// the old "Query" is now implemtned in invoke
+		return t.query(stub, args)
+	}
+
+	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
 }
 
 // ===========================================================
