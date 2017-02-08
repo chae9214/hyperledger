@@ -1,11 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
+	//"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
 // ===========================================================
@@ -13,6 +14,7 @@ import (
 // ===========================================================
 
 type SimpleChaincode struct {
+	nextEID int
 }
 
 // fraud entry 의 필드갯수와 각 필드별 인덱스
@@ -33,7 +35,8 @@ const PREFIX_CID = "cid_"
 const PREFIX_MAC = "mac_"
 const PREFIX_UUID = "uuid_"
 
-const SEP = "|"
+const FIELDSEP = "|"
+const ENTRYSEP = "$"
 
 /*
 // ===========================================================
@@ -68,28 +71,21 @@ func (stub *ChaincodeStubInterface) String() string {
 	}
 	return s
 }
+*/
 
 // ===========================================================
 //  Serialize / Deserialize 함수
 // ===========================================================
 
-func stringToByteArray(s string) []byte {
-	return []byte(s)
-}
-
-func byteArrayToString(b []byte) string {
-	return string(b)
-}
-
 func stringArrayToByteArray(slist []string) []byte {
-	return stringToByteArray(strings.Join(slist, SEP))
+	return []byte(strings.Join(slist, FIELDSEP))
 }
 
 func byteArrayToStringArray(b []byte) []string {
-	if byteArrayToString(b) == "" {
+	if string(b) == "" {
 		return []string{}
 	} else {
-		return strings.Split(byteArrayToString(b), SEP)
+		return strings.Split(string(b), FIELDSEP)
 	}
 }
 
@@ -98,6 +94,7 @@ func appendToEIDList(b []byte, eid string) []byte {
 	return stringArrayToByteArray(append(eidKeys, eid))
 }
 
+/*
 // ===========================================================
 //  ChaincodeStubInterface 함수
 // ===========================================================
@@ -131,236 +128,274 @@ func (stub *ChaincodeStubInterface) GetKVSLength() int {
 // ===========================================================
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
-	var err error
-
-	if len(args) != 4 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 4")
-	}
-
-	// Initialize the chaincode
-	A = args[0]
-	Aval, err = strconv.Atoi(args[1])
-	if err != nil {
-		return nil, errors.New("Expecting integer value for asset holding")
-	}
-	B = args[2]
-	Bval, err = strconv.Atoi(args[3])
-	if err != nil {
-		return nil, errors.New("Expecting integer value for asset holding")
-	}
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
-
-	// Write the state to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return nil, err
-	}
-
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
-	if err != nil {
-		return nil, err
-	}
-
 	return nil, nil
 }
 
-func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("ex02 Invoke")
-	function, args := stub.GetFunctionAndParameters()
-	if function == "invoke" {
-		// Make payment of X units from A to B
-		return t.invoke(stub, args)
-	} else if function == "delete" {
-		// Deletes an entity from its state
-		return t.delete(stub, args)
-	} else if function == "query" {
-		// the old "Query" is now implemtned in invoke
-		return t.query(stub, args)
+func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	switch function {
+	case "register":
+		return t.RegisterFraudEntry(stub, args)
+	case "removewithcid":
+		return t.RemoveWithCID(stub, args)
+	case "removewithmac":
+		return t.RemoveWithMAC(stub, args)
+	case "removewithuuid":
+		return t.RemoveWithUUID(stub, args)
 	}
-
-	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
+	return nil, errors.New("Invalid invoke function name. Expecting \"register\" \"lookupwith~\"")
 }
 
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	if function != "query" {
-		return nil, errors.New("Invalid query function name. Expecting \"query\"")
+	switch function {
+	case "lookupwithcid":
+		return t.LookupWithCID(stub, args)
+	case "lookupwithmac":
+		return t.LookupWithMAC(stub, args)
+	case "lookupwithuuid":
+		return t.LookupWithUUID(stub, args)
 	}
-	var A string // Entities
-	var err error
+	return nil, errors.New("Invalid query function name. Expecting \"removewith~\"")
+}
 
-	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
-	}
-
-	A = args[0]
-
-	// Get the state from the ledger
-	Avalbytes, err := stub.GetState(A)
-	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
-		return nil, errors.New(jsonResp)
-	}
-
-	if Avalbytes == nil {
-		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
-		return nil, errors.New(jsonResp)
-	}
-
-	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
-	fmt.Printf("Query Response:%s\n", jsonResp)
-	return Avalbytes, nil
+func main() {
+	// t := SimpleChaincode{1}
+	// err := shim.Start(t)
+	// if err != nil {
+	// 	fmt.Printf("Error starting Simple chaincode: %s", err)
+	// }
 }
 
 // ===========================================================
 //  FDS 등록/수정 함수
 // ===========================================================
 
-func (stub *FDSChaincodeStub) RegisterFraudEntry(fields []string) bool {
-	if len(fields) != NUM_FIELDS {
-		return false
+func (t *SimpleChaincode) RegisterFraudEntry(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var eidsInBytes []byte
+	var err error
+
+	if len(args) != NUM_FIELDS {
+		return nil, errors.New("Register requires" + strconv.Itoa(NUM_FIELDS) + "arguements but given" + strconv.Itoa(len(args)))
 	}
 
-	eidKey := PREFIX_EID + strconv.Itoa(stub.nextEID)
-	cidKey := PREFIX_CID + fields[IND_CID]
-	macKey := PREFIX_MAC + fields[IND_MAC]
-	uuidKey := PREFIX_UUID + fields[IND_UUID]
+	eidKey := PREFIX_EID + strconv.Itoa(t.nextEID)
+	cidKey := PREFIX_CID + args[IND_CID]
+	macKey := PREFIX_MAC + args[IND_MAC]
+	uuidKey := PREFIX_UUID + args[IND_UUID]
 
-	stub.PutState(eidKey, stringArrayToByteArray(fields))
-
-	b, err := stub.GetState(cidKey)
-	if err == nil {
-		stub.PutState(cidKey, appendToEIDList(b, eidKey))
-	} else {
-		return false
-	}
-	b, err = stub.GetState(macKey)
-	if err == nil {
-		stub.PutState(macKey, appendToEIDList(b, eidKey))
-	} else {
-		return false
-	}
-	b, err = stub.GetState(uuidKey)
-	if err == nil {
-		stub.PutState(uuidKey, appendToEIDList(b, eidKey))
-	} else {
-		return false
+	err = stub.PutState(eidKey, stringArrayToByteArray(args))
+	if err != nil {
+		return nil, err
 	}
 
-	stub.nextEID++
-	return true
+	eidsInBytes, err = stub.GetState(cidKey)
+	if err != nil {
+		return nil, errors.New("Failed to get state with" + cidKey)
+	}
+	err = stub.PutState(cidKey, appendToEIDList(eidsInBytes, eidKey))
+	if err != nil {
+		return nil, err
+	}
+
+	eidsInBytes, err = stub.GetState(macKey)
+	if err != nil {
+		return nil, errors.New("Failed to get state with" + macKey)
+	}
+	err = stub.PutState(macKey, appendToEIDList(eidsInBytes, eidKey))
+	if err != nil {
+		return nil, err
+	}
+
+	eidsInBytes, err = stub.GetState(uuidKey)
+	if err != nil {
+		return nil, errors.New("Failed to get state with" + uuidKey)
+	}
+	err = stub.PutState(uuidKey, appendToEIDList(eidsInBytes, eidKey))
+	if err != nil {
+		return nil, err
+	}
+
+	t.nextEID++
+	return nil, nil
 }
 
 // ===========================================================
 //  FDS 삭제 함수
 // ===========================================================
 
-func (stub *FDSChaincodeStub) RemoveWithCID(cid string) bool {
-	cidKey := PREFIX_CID + cid
+func (t *SimpleChaincode) RemoveWithCID(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var eidsInBytes []byte
+	var err error
 
-	b, err := stub.GetState(cidKey)
-	if err == nil {
-		eidKeys := byteArrayToStringArray(b)
-
-		for _, eidKey := range eidKeys {
-			stub.DelState(eidKey)
-		}
-		stub.DelState(cidKey)
-	} else {
-		return false
+	if len(args) != 1 {
+		return nil, errors.New("Removing with CID requires 1 argument but given" + strconv.Itoa(len(args)))
 	}
-	return true
+
+	cidKey := PREFIX_CID + args[0]
+
+	eidsInBytes, err = stub.GetState(cidKey)
+	if err != nil {
+		return nil, errors.New("Failed to get state with" + cidKey)
+	}
+
+	eidKeys := byteArrayToStringArray(eidsInBytes)
+	for _, eidKey := range eidKeys {
+		err = stub.DelState(eidKey)
+		if err != nil {
+			return nil, errors.New("Failed to delete state with" + eidKey)
+		}
+	}
+	err = stub.DelState(cidKey)
+	if err != nil {
+		return nil, errors.New("Failed to delete state with" + cidKey)
+	}
+	return nil, nil
 }
 
-func (stub *FDSChaincodeStub) RemoveWithMAC(mac string) bool {
-	macKey := PREFIX_MAC + mac
+func (t *SimpleChaincode) RemoveWithMAC(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var eidsInBytes []byte
+	var err error
 
-	b, err := stub.GetState(macKey)
-	if err == nil {
-		eidKeys := byteArrayToStringArray(b)
-
-		for _, eidKey := range eidKeys {
-			stub.DelState(eidKey)
-		}
-		stub.DelState(macKey)
-	} else {
-		return false
+	if len(args) != 1 {
+		return nil, errors.New("Removing with MAC requires 1 argument but given" + strconv.Itoa(len(args)))
 	}
-	return true
+
+	macKey := PREFIX_MAC + args[0]
+
+	eidsInBytes, err = stub.GetState(macKey)
+	if err != nil {
+		return nil, errors.New("Failed to get state with" + macKey)
+	}
+
+	eidKeys := byteArrayToStringArray(eidsInBytes)
+	for _, eidKey := range eidKeys {
+		err = stub.DelState(eidKey)
+		if err != nil {
+			return nil, errors.New("Failed to delete state with" + eidKey)
+		}
+	}
+	err = stub.DelState(macKey)
+	if err != nil {
+		return nil, errors.New("Failed to delete state with" + macKey)
+	}
+	return nil, nil
 }
 
-func (stub *FDSChaincodeStub) RemoveWithUUID(uuid string) bool {
-	uuidKey := PREFIX_UUID + uuid
+func (t *SimpleChaincode) RemoveWithUUID(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var eidsInBytes []byte
+	var err error
 
-	b, err := stub.GetState(uuidKey)
-	if err == nil {
-		eidKeys := byteArrayToStringArray(b)
-
-		for _, eidKey := range eidKeys {
-			stub.DelState(eidKey)
-		}
-		stub.DelState(uuidKey)
-	} else {
-		return false
+	if len(args) != 1 {
+		return nil, errors.New("Removing with UUID requires 1 argument but given" + strconv.Itoa(len(args)))
 	}
-	return true
+
+	uuidKey := PREFIX_UUID + args[0]
+
+	eidsInBytes, err = stub.GetState(uuidKey)
+	if err != nil {
+		return nil, errors.New("Failed to get state with" + uuidKey)
+	}
+
+	eidKeys := byteArrayToStringArray(eidsInBytes)
+	for _, eidKey := range eidKeys {
+		err = stub.DelState(eidKey)
+		if err != nil {
+			return nil, errors.New("Failed to delete state with" + eidKey)
+		}
+	}
+	err = stub.DelState(uuidKey)
+	if err != nil {
+		return nil, errors.New("Failed to delete state with" + uuidKey)
+	}
+	return nil, nil
 }
 
 // ===========================================================
 //  FDS 조회 함수
 // ===========================================================
 
-func (stub *FDSChaincodeStub) LookupWithCID(cid string) (entries [][]string, result bool) {
-	cidKey := PREFIX_CID + cid
+//func (t *SimpleChaincode) LookupWithCID(cid string) (entries [][]string, result bool) {
+func (t *SimpleChaincode) LookupWithCID(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var eidsInBytes []byte
+	var entryInBytes []byte
+	var err error
 
-	b, err := stub.GetState(cidKey)
-	if err == nil {
-		eidKeys := byteArrayToStringArray(b)
-
-		entries = make([][]string, len(eidKeys))
-		for i, eidKey := range eidKeys {
-			b, _ = stub.GetState(eidKey)
-			entries[i] = byteArrayToStringArray(b)
-		}
-	} else {
-		return entries, false
+	if len(args) != 1 {
+		return nil, errors.New("Looking up with CID requires 1 argument but given" + strconv.Itoa(len(args)))
 	}
-	return entries, true
+
+	cidKey := PREFIX_CID + args[0]
+
+	eidsInBytes, err = stub.GetState(cidKey)
+	if err != nil {
+		return nil, errors.New("Failed to get state with" + cidKey)
+	}
+
+	eidKeys := byteArrayToStringArray(eidsInBytes)
+	entries := make([]string, len(eidKeys))
+	for i, eidKey := range eidKeys {
+		entryInBytes, err = stub.GetState(eidKey)
+		if err != nil {
+			return nil, errors.New("Failed to delete state with" + eidKey)
+		}
+		entries[i] = string(entryInBytes)
+	}
+	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }
 
-func (stub *FDSChaincodeStub) LookupWithMAC(mac string) (entries [][]string, result bool) {
-	macKey := PREFIX_MAC + mac
+//func (t *SimpleChaincode) LookupWithMAC(mac string) (entries [][]string, result bool) {
+func (t *SimpleChaincode) LookupWithMAC(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var eidsInBytes []byte
+	var entryInBytes []byte
+	var err error
 
-	b, err := stub.GetState(macKey)
-	if err == nil {
-		eidKeys := byteArrayToStringArray(b)
-
-		entries = make([][]string, len(eidKeys))
-		for i, eidKey := range eidKeys {
-			b, _ = stub.GetState(eidKey)
-			entries[i] = byteArrayToStringArray(b)
-		}
-	} else {
-		return entries, false
+	if len(args) != 1 {
+		return nil, errors.New("Looking up with MAC requires 1 argument but given" + strconv.Itoa(len(args)))
 	}
-	return entries, true
+
+	macKey := PREFIX_MAC + args[0]
+
+	eidsInBytes, err = stub.GetState(macKey)
+	if err != nil {
+		return nil, errors.New("Failed to get state with" + macKey)
+	}
+
+	eidKeys := byteArrayToStringArray(eidsInBytes)
+	entries := make([]string, len(eidKeys))
+	for i, eidKey := range eidKeys {
+		entryInBytes, err = stub.GetState(eidKey)
+		if err != nil {
+			return nil, errors.New("Failed to delete state with" + eidKey)
+		}
+		entries[i] = string(entryInBytes)
+	}
+	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }
 
-func (stub *FDSChaincodeStub) LookupWithUUID(uuid string) (entries [][]string, result bool) {
-	uuidKey := PREFIX_UUID + uuid
+//func (t *SimpleChaincode) LookupWithUUID(uuid string) (entries [][]string, result bool) {
+func (t *SimpleChaincode) LookupWithUUID(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var eidsInBytes []byte
+	var entryInBytes []byte
+	var err error
 
-	b, err := stub.GetState(uuidKey)
-	if err == nil {
-		eidKeys := byteArrayToStringArray(b)
-
-		entries = make([][]string, len(eidKeys))
-		for i, eidKey := range eidKeys {
-			b, _ = stub.GetState(eidKey)
-			entries[i] = byteArrayToStringArray(b)
-		}
-	} else {
-		return entries, false
+	if len(args) != 1 {
+		return nil, errors.New("Looking up with UUID requires 1 argument but given" + strconv.Itoa(len(args)))
 	}
-	return entries, true
+
+	uuidKey := PREFIX_UUID + args[0]
+
+	eidsInBytes, err = stub.GetState(uuidKey)
+	if err != nil {
+		return nil, errors.New("Failed to get state with" + uuidKey)
+	}
+
+	eidKeys := byteArrayToStringArray(eidsInBytes)
+	entries := make([]string, len(eidKeys))
+	for i, eidKey := range eidKeys {
+		entryInBytes, err = stub.GetState(eidKey)
+		if err != nil {
+			return nil, errors.New("Failed to delete state with" + eidKey)
+		}
+		entries[i] = string(entryInBytes)
+	}
+	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }
