@@ -1,0 +1,2 @@
+class SlaContract < ApplicationRecord
+end

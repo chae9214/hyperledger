@@ -1,0 +1,163 @@
+<script>
+
+$(document).ready(function() {
+		var tempArray = [];
+		console.log("tempArray");
+		<% @sla_contracts.each do |sla_contract| %>
+			var appendStr = "";
+ 				//appendStr += "<tr>";
+				//appendStr += "<td><div class='list_td_content'><label>"+<%= sla_contract.SlaContractRegId%>+"</label></div></td>";
+				//appendStr += "<td><div class='list_td_content'><label>"+JSON.stringify(<%= sla_contract.SlaContractRegId%>)+"</label></div></td>";
+				//appendStr += "<td><div class='list_td_content'><label>"+JSON.stringify(<%= sla_contract.SlaContractName%>)+"</label></div></td>";
+				//appendStr += "<td><div class='list_td_content'><label>"+JSON.stringify(<%= sla_contract.SlaContractKind%>)+"</label></div></td>";
+				//appendStr += "<td><div class='list_td_content'><label>"+JSON.stringify(<%= sla_contract.SlaContractStaDate%>)+" ~ " +<%= sla_contract.SlaContractEndDate%>+"</label></div></td>";
+				//appendStr += "<td><div class='list_td_content'><label>"+JSON.stringify(<%= sla_contract.SlaContractClient%>)+"</label></div></td>";
+				//appendStr += "</tr>";
+			//$("#list_tbody").append(appendStr);
+		<% end %>
+	
+    $('.list_middle_main_appr').on('click',function(event){
+    	window.open("?page_seq="+$(this).attr("id"), '_self');
+    });
+
+   $('#reg_button').on('click',function(event){
+    	window.open("/sla_contracts/new",'_self');
+    });
+
+    // if(getParameterByName('page_seq')!=null){
+    //  $(".list_middle_main_appr").removeClass("list_middle_main_appr_selected");
+	//	$("#"+getParameterByName('page_seq')).addClass("list_middle_main_appr_selected");
+    // }
+    
+    $('.clicked_contract_key').on('click',function(event){
+    	window.open("/sla_contracts/"+$(this).children().text(), '_self');
+    });
+    
+    $('.clicked_contract_no').on('click',function(event){
+    	window.open("/sla_contracts/"+$(this).attr("id"), '_self');
+    });
+
+});
+</script>
+
+
+<body>
+		<header></header>
+			<div id = "all_wrapper">
+				<div id="list_middle_header">
+					<table width="100%" height="100%">
+						<tr>
+							<td id="list_middle_header_1"><h1>신한 통합 SLA 관리 플랫폼2</h1></td>
+							<td id="list_middle_header_2">
+<!-- 								<table width="100%"> -->
+<!-- 									<tr><td></td></tr> -->
+<!-- 									<tr><td></td></tr> -->
+<!-- 								</table> -->
+
+							<td id="list_middle_header_3">
+
+							</td>
+							<td id="list_middle_header_4">
+							</td>
+
+						</tr>
+					</table>
+
+				</div>
+				<div id="list_middle_main">
+
+					<div id = "list_middle_main_appr_wrapper" style="display: none">
+							<table id="list_middle_main_appr_table">
+								<tr>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_1"></div></td>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_2"></div></td>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_3"></div></td>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_4"></div></td>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_5"></div></td>
+								</tr>
+								<tr>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_6"></div></td>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_7"></div></td>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_8"></div></td>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_9"></div></td>
+									<td><div class="list_middle_main_appr" id="list_middle_main_appr_10"></div></td>
+								</tr>
+							</table>
+					</div>
+
+
+					<div id = "list_middle_main_title">
+						<h2>
+
+						</h2>
+
+					</div>
+					<div id = "list_middle_main_search">
+						<div id = "list_middle_main_search_filter">
+							<label class="search_label">계약번호</label>
+							<input type="text"/>
+							<label class="search_label">고객사</label>
+							<input type="text"/>
+							<label class="search_label">계약명</label>
+							<input type="text"/>
+
+						</div>
+						<div id = "list_middle_main_search_button">
+							<button class="button">조회</button>
+							<button class="button" id="reg_button">신규등록</button>
+
+						</div>
+					</div>
+					<table id="list_middle_main_table">
+						<thead>
+							<tr>
+								<td class="list_td_main_title" width="30px">ID</td>
+								<td class="list_td_main_title" width="30px">순번</td>
+								<td class="list_td_main_title">계약번호</td>
+								<td class="list_td_main_title">계약명</td>
+								<td class="list_td_main_title">계약종류</td>
+								<td class="list_td_main_title">계약기간</td>
+								<td class="list_td_main_title">고객사</td>
+							</tr>
+						</thead>
+						<tbody id="list_tbody">
+							<!--컨텐츠-->
+								<% @sla_contracts.each do |sla_contract| %>
+									<tr>
+										<td><div class='list_td_content clicked_contract_key'><label><%= sla_contract.id%></label></div></td>
+										<td><div class='list_td_content'><label><%= sla_contract.SlaContractRegId%></label></div></td>
+										<td><div class='list_td_content clicked_contract_no' id="<%= sla_contract.id%>"><label><%= sla_contract.SlaContractRegId%></label></div></td>
+										<td><div class='list_td_content'><label><%= sla_contract.SlaContractName%></label></div></td>
+										<td><div class='list_td_content'><label><%= sla_contract.SlaContractKind%></label></div></td>
+										<td><div class='list_td_content'><label><%= sla_contract.SlaContractStaDate%> ~ <%= sla_contract.SlaContractEndDate%></label></div></td>
+										<td><div class='list_td_content'><label><%= sla_contract.SlaContractClient%></label></div></td>
+									</tr>
+								<% end %>
+						</tbody>
+
+					</table>
+				</div>
+				<div id="list_middle_footer">
+					<table id = "list_middle_footer_table">
+						<tr>
+							<td>
+								<div style="width: 100%; height: 100%; position: relative;">
+									<div class="page_button_wrapper">
+										<label class="page_arrow" ><</label>
+										<label class="page_button selected_page_button" >1</label>
+										<label class="page_button" >2</label>
+										<label class="page_button" >3</label>
+										<label class="page_button" >4</label>
+										<label class="page_arrow" >></label>
+									</div>
+								</div>
+							</td>
+
+						</tr>
+
+					</table>
+				</div>
+
+			</div>
+		<footer></footer>
+		</body>

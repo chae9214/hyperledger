@@ -1,0 +1,2 @@
+json.extract! sla_contract, :id, :SlaContractRegId, :SlaContractName, :SlaContractKind, :SlaContractStaDate, :SlaContractEndDate, :SlaContractClient, :SlaContractClientPerson, :SlaContractClientPersonTel, :SlaContractAssessDate, :SlaContractAssessYn, :created_at, :updated_at
+json.url sla_contract_url(sla_contract, format: :json)

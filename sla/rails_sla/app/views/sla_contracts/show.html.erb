@@ -1,0 +1,230 @@
+<body>
+
+		<header></header>
+			<div id = "all_wrapper">
+				<div id="middle_header">
+					<table width="100%" height="100%">
+						<tr>
+							<td id="middle_header_1"><h1>신한 통합 SLA 관리 플랫폼</h1></td>
+							<td id="middle_header_2">
+<!-- 								<table width="100%"> -->
+<!-- 									<tr><td></td></tr> -->
+<!-- 									<tr><td></td></tr> -->
+<!-- 								</table> -->
+
+							<td id="middle_header_3">
+
+							</td>
+							<td id="middle_header_4">
+							</td>
+
+						</tr>
+					</table>
+
+				</div>
+				<div id="middle_main">
+					<div id = "middle_main_appr_wrapper" >
+							<table id="middle_main_appr_table">
+								<tr>
+									<td><div class="middle_main_appr middle_main_appr_completed" id="middle_main_appr_1" >
+									</div>
+									<div class="middle_main_appr_arrow"><div></div></div></td>
+									<td><div class="middle_main_appr middle_main_appr_selected" id="middle_main_appr_2"></div>
+									<div class="middle_main_appr_arrow"><div></div></div ></td>
+									<td><div class="middle_main_appr" id="middle_main_appr_3"></div>
+									<div class="middle_main_appr_arrow"><div></div></div ></td>
+									<td><div class="middle_main_appr" id="middle_main_appr_4"></div>
+									<div class="middle_main_appr_arrow"><div></div></div ></td>
+									<td><div class="middle_main_appr  middle_main_appr_last_complete" ></div></td>
+								</tr>
+
+							</table>
+					</div>
+
+
+					<div id = "middle_main_title">
+						<h2>
+
+						</h2>
+
+					</div>
+					<div id="middle_main_table_wrapper">
+						<%= form_for(@sla_contract) do |f| %>
+							<table id="middle_main_table">
+	
+								<tbody>
+									<tr>
+										<td><div class="td_title"><label>계약번호</label></div></td>
+										<td><div class="td_content"> <%= f.text_field :SlaContractRegId %></div></td>
+	
+									</tr>
+									<tr>
+										<td><div class="td_title"><label>계약명</label></div></td>
+										<td><div class="td_content"><%= f.text_field :SlaContractName %></div></td>
+	
+									</tr>
+									<tr>
+										<td><div class="td_title"><label>계약종류</label></div></td>
+										<td><div class="td_content"><%= f.text_field :SlaContractKind %></div></td>
+	
+									</tr>
+									<tr>
+										<td><div class="td_title"><label>계약기간</label></div></td>
+										<td><div class="td_content"><%= f.text_field :SlaContractStaDate %> ~ <%= f.text_field :SlaContractEndDate %></div></td>
+	
+									</tr>
+									<tr>
+										<td><div class="td_title"><label>고객사</label></div></td>
+										<td><div class="td_content"><%= f.text_field :SlaContractClient %></div></td>
+	
+									</tr>
+									<tr>
+										<td><div class="td_title"><label>고객담당자</label></div></td>
+										<td><div class="td_content"><%= f.text_field :SlaContractClientPerson %></div></td>
+	
+									</tr>
+									<tr>
+										<td><div class="td_title"><label>전화번호</label></div></td>
+										<td><div class="td_content"><%= f.text_field :SlaContractClientPersonTel %></div></td>
+	
+									</tr>
+									<tr>
+										<td><div class="td_title"><label>평가예정일</label></div></td>
+										<td><div class="td_content"><%= f.text_field :SlaContractAssessDate %></div></td>
+	
+									</tr>
+									<tr>
+										<td><div class="td_title"><label>SLA평가대상여부</label></div></td>
+										<td><div class="td_content"><%= f.select :SlaContractAssessYn, options_for_select([["예", "Y"], ["아니오", "N"]]) %></div></td>
+									</tr>
+	
+								</tbody>
+	
+							</table>
+						
+					</div>
+					<table id="middle_detail_table">
+						<thead>
+							<tr>
+								<td class="td_detail_title" width="70px">서비스항목</td>
+								<td class="td_detail_title" width="170px">평가항목</td>
+								<td class="td_detail_title" width="250px">측정기준/산출식</td>
+								<td class="td_detail_title" width="170px">설명</td>
+								<td class="td_detail_title" width="50px">점수배분</td>
+								<td width="" style="border:none"></td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content">테스트</div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><input type='text' class="input_score"/></div></td>
+								<td style="border:none"><div class="td_content"><label class="delete_row">삭제</label></div></td>
+							</tr>
+							<tr>
+								<td><div class="td_content"><label>2</label></div></td>
+								<td><div class="td_content">테스트</div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><input type='text' class="input_score"/></div></td>
+								<td style="border:none"><div class="td_content"><label class="delete_row">삭제</label></div></td>
+							</tr>
+							<tr>
+								<td><div class="td_content"><label>3</label></div></td>
+								<td><div class="td_content">테스트</div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><input type='text' class="input_score"/></div></td>
+								<td style="border:none"><div class="td_content"><label class="delete_row">삭제</label></div></td>
+							</tr>
+							<tr>
+								<td><div class="td_content"><label>4</label></div></td>
+								<td><div class="td_content">테스트</div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><input type='text' class="input_score"/></div></td>
+								<td style="border:none"><div class="td_content"><label class="delete_row">삭제</label></div></td>
+							</tr>
+							<tr>
+								<td><div class="td_content"><label>5</label></div></td>
+								<td><div class="td_content">테스트</div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><input type='text' class="input_score"/></div></td>
+								<td style="border:none"><div class="td_content"><label class="delete_row">삭제</label></div></td>
+							</tr>
+							<tr>
+								<td><div class="td_content"><label>6</label></div></td>
+								<td><div class="td_content">테스트</div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><input type='text' class="input_score"/></div></td>
+								<td style="border:none"><div class="td_content"><label class="delete_row">삭제</label></div></td>
+							</tr>
+							<tr>
+								<td><div class="td_content"><label>7</label></div></td>
+								<td><div class="td_content">테스트</div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><input type='text' class="input_score"/></div></td>
+								<td style="border:none"><div class="td_content"><label class="delete_row">삭제</label></div></td>
+							</tr>
+							<tr>
+								<td><div class="td_content"><label>8</label></div></td>
+								<td><div class="td_content">테스트</div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><label></label></div></td>
+								<td><div class="td_content"><input type='text' class="input_score"/></div></td>
+								<td style="border:none"><div class="td_content"><label class="delete_row">삭제</label></div></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<table id="middle_button_table">
+						<tbody>
+							<tr>
+								<td>
+									<div id="middle_button_div_1" style="width:100%; height:30px;">
+										<label>서비스항목추가</label>
+
+									</div>
+
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<div id="middle_button_div_2" style="width:100%; height:30px;">
+										<button class="button" onclick='<%= f.submit %>'>등록요청</button>
+										<button class="button"><%= link_to '돌아가기', sla_contracts_path %></button>
+									</div>
+
+
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<% end %>
+				</div>
+				<div id="middle_footer">
+					<table id = "middle_footer_table">
+						<tr>
+							<td>
+								<div style="width: 100%; height: 100%; position: relative;">
+									<div class="page_button_wrapper">
+
+									</div>
+
+								</div>
+							</td>
+
+						</tr>
+
+					</table>
+				</div>
+
+			</div>
+		<footer></footer>
+
+</body>

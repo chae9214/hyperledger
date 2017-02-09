@@ -1,0 +1,1 @@
+json.partial! "sla_contracts/sla_contract", sla_contract: @sla_contract

@@ -1,0 +1,1 @@
+json.array! @sla_contracts, partial: 'sla_contracts/sla_contract', as: :sla_contract

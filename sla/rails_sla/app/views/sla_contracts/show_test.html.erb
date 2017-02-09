@@ -1,0 +1,45 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Sla Contracts</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Slacontractregid</th>
+      <th>Slacontractname</th>
+      <th>Slacontractkind</th>
+      <th>Slacontractstadate</th>
+      <th>Slacontractenddate</th>
+      <th>Slacontractclient</th>
+      <th>Slacontractclientperson</th>
+      <th>Slacontractclientpersontel</th>
+      <th>Slacontractassessdate</th>
+      <th>Slacontractassessyn</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @sla_contracts.each do |sla_contract| %>
+      <tr>
+        <td><%= sla_contract.SlaContractRegId %></td>
+        <td><%= sla_contract.SlaContractName %></td>
+        <td><%= sla_contract.SlaContractKind %></td>
+        <td><%= sla_contract.SlaContractStaDate %></td>
+        <td><%= sla_contract.SlaContractEndDate %></td>
+        <td><%= sla_contract.SlaContractClient %></td>
+        <td><%= sla_contract.SlaContractClientPerson %></td>
+        <td><%= sla_contract.SlaContractClientPersonTel %></td>
+        <td><%= sla_contract.SlaContractAssessDate %></td>
+        <td><%= sla_contract.SlaContractAssessYn %></td>
+        <td><%= link_to 'Show', sla_contract %></td>
+        <td><%= link_to 'Edit', edit_sla_contract_path(sla_contract) %></td>
+        <td><%= link_to 'Destroy', sla_contract, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Sla Contract', new_sla_contract_path %>

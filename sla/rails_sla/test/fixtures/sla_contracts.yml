@@ -1,0 +1,25 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  SlaContractRegId: MyString
+  SlaContractName: MyString
+  SlaContractKind: MyString
+  SlaContractStaDate: MyString
+  SlaContractEndDate: MyString
+  SlaContractClient: MyString
+  SlaContractClientPerson: MyString
+  SlaContractClientPersonTel: MyString
+  SlaContractAssessDate: MyString
+  SlaContractAssessYn: MyString
+
+two:
+  SlaContractRegId: MyString
+  SlaContractName: MyString
+  SlaContractKind: MyString
+  SlaContractStaDate: MyString
+  SlaContractEndDate: MyString
+  SlaContractClient: MyString
+  SlaContractClientPerson: MyString
+  SlaContractClientPersonTel: MyString
+  SlaContractAssessDate: MyString
+  SlaContractAssessYn: MyString
