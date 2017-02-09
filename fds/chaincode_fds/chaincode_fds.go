@@ -117,7 +117,7 @@ func entryStringsToJsonString(entries []string) string {
 	fieldnames[IND_FDSREGISTEREDBY] = "registeredBy"
 	fieldnames[IND_FDSREASON] = "reason"
 
-	jsonStr := "["
+	jsonStr := "[\n"
 	for i, entry := range entries {
 		jsonStr += "{"
 		fields := strings.Split(entry, FIELDSEP)
@@ -127,12 +127,12 @@ func entryStringsToJsonString(entries []string) string {
 				jsonStr += ","
 			}
 		}
-		jsonStr += "}"
+		jsonStr += "}\n"
 		if i < len(entries)-1 {
 			jsonStr += ","
 		}
 	}
-	jsonStr += "]"
+	jsonStr += "\n]"
 
 	return jsonStr
 }
