@@ -1,0 +1,82 @@
+<p id="notice"><%= notice %></p>
+
+<div>
+<div id="header">
+  <%= image_tag "shinhan_logo.png" %><span>이상거래 관리 시스템</span>
+</div>
+<!-- 
+<div id="black_list_title">거래 내역</div>
+
+<table id="black_list_th">
+  <thead >
+    <tr>
+      <th>CID</th>
+      <th>MAC</th>
+      <th>UUID</th>
+      <th>거래시간</th>
+      <th>등록기관</th>
+      <th class="textCenter">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @black_lists.each do |black_list| %>
+      <tr>
+        <td><%= black_list.cid %></td>
+        <td><%= black_list.mac %></td>
+        <td><%= black_list.uuid %></td>
+        <td><%= black_list.transcationtime %></td>
+        <td><%= black_list.registeredby %></td>
+        <td id="actionTable">
+          <button class="button1"><%= link_to '상세', black_list %></button>
+          <button class="button1"><%= link_to '수정', edit_black_list_path(black_list) %></button>
+          <button class="button1"><%= link_to '삭제', black_list, method: :delete, data: { confirm: '이상 거래를 삭제하시겠습니까?' } %></button>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<button class="button2"><%= link_to '거래내역 등록', new_black_list_path %></button>
+</div>
+ -->
+
+<div style="margint-top: 30px">
+<div id="black_list_title">BlackList</div>
+
+<table id="black_list_th">
+  <thead >
+    <tr>
+      <th>CID</th>
+      <th>MAC</th>
+      <th>UUID</th>
+      <th>거래시간</th>
+      <th>등록기관</th>
+      <th class="textCenter">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @black_lists.each do |black_list| %>
+      <tr>
+        <td><%= black_list.cid %></td>
+        <td><%= black_list.mac %></td>
+        <td><%= black_list.uuid %></td>
+        <td><%= black_list.transcationtime %></td>
+        <td><%= black_list.registeredby %></td>
+        <td id="actionTable">
+          <button class="button1"><%= link_to '상세', black_list %></button>
+          <button class="button1"><%= link_to '수정', edit_black_list_path(black_list) %></button>
+          <button class="button1"><%= link_to '삭제', black_list, method: :delete, data: { confirm: '이상 거래를 삭제하시겠습니까?' } %></button>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<button class="button2"><%= link_to '이상 거래 등록', new_black_list_path %></button>
+</div>

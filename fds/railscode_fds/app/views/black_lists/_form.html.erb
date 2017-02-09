@@ -1,0 +1,42 @@
+<%= form_for(black_list) do |f| %>
+  <% if black_list.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(black_list.errors.count, "error") %> prohibited this black_list from being saved:</h2>
+
+      <ul>
+      <% black_list.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :cid %>
+    <%= f.text_field :cid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :mac %>
+    <%= f.text_field :mac %>
+  </div>
+
+  <div class="field">
+    <%= f.label :uuid %>
+    <%= f.text_field :uuid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :transcationtime %>
+    <%= f.date_select :transcationtime %>
+  </div>
+
+  <div class="field">
+    <%= f.label :registeredby %>
+    <%= f.text_field :registeredby %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

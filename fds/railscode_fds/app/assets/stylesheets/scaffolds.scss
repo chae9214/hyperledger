@@ -1,0 +1,149 @@
+body {
+  background-color: #fff;
+  color: #333;
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  margin: 33px;
+}
+
+p, ol, ul, td {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  margin: 33px;
+}
+
+pre {
+  background-color: #eee;
+  padding: 10px;
+  font-size: 11px;
+}
+
+a {
+  color: #fff;
+  text-decoration: none !important;
+  &:visited {
+    color: #fff;
+  }
+
+  &:hover {
+    color: #666;
+    background-color: #000;
+  }
+}
+
+th {
+  padding-bottom: 5px;
+}
+
+td {
+  padding-bottom: 7px;
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align:justify;
+}
+
+div {
+  &.field, &.actions {
+    margin-bottom: 10px;
+  }
+}
+
+#notice {
+  color: green;
+}
+
+.field_with_errors {
+  padding: 2px;
+  background-color: red;
+  display: table;
+}
+
+#error_explanation {
+  width: 450px;
+  border: 2px solid red;
+  padding: 7px;
+  padding-bottom: 0;
+  margin-bottom: 20px;
+  background-color: #f0f0f0;
+
+  h2 {
+    text-align: left;
+    font-weight: bold;
+    padding: 5px 5px 5px 15px;
+    font-size: 12px;
+    margin: -7px;
+    margin-bottom: 0;
+    background-color: #c00;
+    color: #fff;
+  }
+
+  ul li {
+    font-size: 12px;
+    list-style: square;
+  }
+}
+
+label {
+  display: block;
+}
+
+
+/*Black List Custom CSS*/
+h1 { margin-bottom: 50px;}
+
+#header{ 
+  background-color: black;
+  color: white;
+  font-size: 15px;
+  vertical-align: middle;
+  height: 34px;
+  padding: 10px;
+  border-radius: 7px;
+}
+
+#header span{
+  position: relative;
+  top: -6px;
+  left: 11px;
+}
+
+#black_list_title{
+  width: 75px;
+  padding: 0px;
+  margin: 10px 0px 5px 0px;
+  border-radius: 10px;
+  background-color: #30c191;
+  text-align: center;
+  color: white;
+}
+
+#black_list_th {
+  border: solid 0.1em lightgray;
+  border-spacing: 0px !important;
+  width: 100%;
+}
+
+#black_list_th thead {
+  padding: 10px 5px 5px 10px;
+  background-color: lightgray;
+}
+
+#black_list_th tbody td{
+  padding: 5px;
+  border-bottom: solid 0.1em lightgray;
+  text-align: center;
+}
+
+.button1 {
+    background-color: #30c191; 
+    border: 2px solid #30c191;
+    border-radius: 3px;
+}
+
+.button2 {
+    background-color: #d6820b;
+    border: 2px solid #bf7125;
+    border-radius: 3px;
+}

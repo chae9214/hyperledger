@@ -1,0 +1,34 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Seq:</strong>
+  <%= @transaction.seq %>
+</p>
+
+<p>
+  <strong>Stats:</strong>
+  <%= @transaction.stats %>
+</p>
+
+<p>
+  <strong>Cid:</strong>
+  <%= @transaction.cid %>
+</p>
+
+<p>
+  <strong>Mac:</strong>
+  <%= @transaction.mac %>
+</p>
+
+<p>
+  <strong>Accountnum:</strong>
+  <%= @transaction.accountnum %>
+</p>
+
+<p>
+  <strong>Txtime:</strong>
+  <%= @transaction.txtime %>
+</p>
+
+<%= link_to 'Edit', edit_transaction_path(@transaction) %> |
+<%= link_to 'Back', transactions_path %>

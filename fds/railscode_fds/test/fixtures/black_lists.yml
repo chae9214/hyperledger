@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  cid: MyString
+  mac: MyString
+  uuid: MyString
+  transcationtime: 2017-02-06
+  registeredby: MyString
+
+two:
+  cid: MyString
+  mac: MyString
+  uuid: MyString
+  transcationtime: 2017-02-06
+  registeredby: MyString
