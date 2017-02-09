@@ -17,9 +17,10 @@ type SimpleChaincode struct {
 	nextEID int
 }
 
-// fraud entry 의 필드갯수와 각 필드별 인덱스
+// fraud entry 의 필드갯수
 const NUM_FIELDS = 8
 
+// fraud entry 의 각 필드별 인덱스
 const IND_CID = 0
 const IND_MAC = 1
 const IND_UUID = 2
@@ -28,6 +29,17 @@ const IND_FINALTIME = 4
 const IND_FDSPRODUCEDBY = 5
 const IND_FDSREGISTEREDBY = 6
 const IND_FDSREASON = 7
+
+// fraud entry 의 각 필드별 json 명칭
+// var fieldnames = make([]string, NUM_FIELDS)
+// fieldnames[IND_CID] = "cid"
+// fieldnames[IND_MAC] = "mac"
+// fieldnames[IND_UUID] = "uuid"
+// fieldnames[IND_FINALDATE] = "finalDate"
+// fieldnames[IND_FINALTIME] = "finalTime"
+// fieldnames[IND_FDSPRODUCEDBY] = "producedBy"
+// fieldnames[IND_FDSREGISTEREDBY] = "registeredBy"
+// fieldnames[IND_FDSREASON] = "reason"
 
 // key-value store 의 키 구분자
 const PREFIX_EID = "eid_"
@@ -92,6 +104,37 @@ func byteArrayToStringArray(b []byte) []string {
 func appendToEIDList(b []byte, eid string) []byte {
 	eidKeys := byteArrayToStringArray(b)
 	return stringArrayToByteArray(append(eidKeys, eid))
+}
+
+func entryStringsToJsonString(entries []string) string {
+	var fieldnames = make([]string, NUM_FIELDS)
+	fieldnames[IND_CID] = "cid"
+	fieldnames[IND_MAC] = "mac"
+	fieldnames[IND_UUID] = "uuid"
+	fieldnames[IND_FINALDATE] = "finalDate"
+	fieldnames[IND_FINALTIME] = "finalTime"
+	fieldnames[IND_FDSPRODUCEDBY] = "producedBy"
+	fieldnames[IND_FDSREGISTEREDBY] = "registeredBy"
+	fieldnames[IND_FDSREASON] = "reason"
+
+	jsonStr := "["
+	for i, entry := range entries {
+		jsonStr += "{"
+		fields := strings.Split(entry, FIELDSEP)
+		for j, fieldname := range fieldnames {
+			jsonStr += "\"" + fieldname + "\":\"" + fields[j] + "\""
+			if j < len(fields)-1 {
+				jsonStr += ","
+			}
+		}
+		jsonStr += "}"
+		if i < len(entries)-1 {
+			jsonStr += ","
+		}
+	}
+	jsonStr += "]"
+
+	return jsonStr
 }
 
 /*
@@ -190,7 +233,7 @@ func (t *SimpleChaincode) RegisterFraudEntry(stub shim.ChaincodeStubInterface, a
 
 	eidsInBytes, err = stub.GetState(cidKey)
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + cidKey)
+		return nil, errors.New("Failed to get state for" + cidKey)
 	}
 	err = stub.PutState(cidKey, appendToEIDList(eidsInBytes, eidKey))
 	if err != nil {
@@ -199,7 +242,7 @@ func (t *SimpleChaincode) RegisterFraudEntry(stub shim.ChaincodeStubInterface, a
 
 	eidsInBytes, err = stub.GetState(macKey)
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + macKey)
+		return nil, errors.New("Failed to get state for" + macKey)
 	}
 	err = stub.PutState(macKey, appendToEIDList(eidsInBytes, eidKey))
 	if err != nil {
@@ -208,7 +251,7 @@ func (t *SimpleChaincode) RegisterFraudEntry(stub shim.ChaincodeStubInterface, a
 
 	eidsInBytes, err = stub.GetState(uuidKey)
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + uuidKey)
+		return nil, errors.New("Failed to get state for" + uuidKey)
 	}
 	err = stub.PutState(uuidKey, appendToEIDList(eidsInBytes, eidKey))
 	if err != nil {
@@ -235,19 +278,19 @@ func (t *SimpleChaincode) RemoveWithCID(stub shim.ChaincodeStubInterface, args [
 
 	eidsInBytes, err = stub.GetState(cidKey)
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + cidKey)
+		return nil, errors.New("Failed to get state for" + cidKey)
 	}
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
 	for _, eidKey := range eidKeys {
 		err = stub.DelState(eidKey)
 		if err != nil {
-			return nil, errors.New("Failed to delete state with" + eidKey)
+			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
 	}
 	err = stub.DelState(cidKey)
 	if err != nil {
-		return nil, errors.New("Failed to delete state with" + cidKey)
+		return nil, errors.New("Failed to delete state for" + cidKey)
 	}
 	return nil, nil
 }
@@ -264,19 +307,19 @@ func (t *SimpleChaincode) RemoveWithMAC(stub shim.ChaincodeStubInterface, args [
 
 	eidsInBytes, err = stub.GetState(macKey)
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + macKey)
+		return nil, errors.New("Failed to get state for" + macKey)
 	}
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
 	for _, eidKey := range eidKeys {
 		err = stub.DelState(eidKey)
 		if err != nil {
-			return nil, errors.New("Failed to delete state with" + eidKey)
+			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
 	}
 	err = stub.DelState(macKey)
 	if err != nil {
-		return nil, errors.New("Failed to delete state with" + macKey)
+		return nil, errors.New("Failed to delete state for" + macKey)
 	}
 	return nil, nil
 }
@@ -293,19 +336,19 @@ func (t *SimpleChaincode) RemoveWithUUID(stub shim.ChaincodeStubInterface, args 
 
 	eidsInBytes, err = stub.GetState(uuidKey)
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + uuidKey)
+		return nil, errors.New("Failed to get state for" + uuidKey)
 	}
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
 	for _, eidKey := range eidKeys {
 		err = stub.DelState(eidKey)
 		if err != nil {
-			return nil, errors.New("Failed to delete state with" + eidKey)
+			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
 	}
 	err = stub.DelState(uuidKey)
 	if err != nil {
-		return nil, errors.New("Failed to delete state with" + uuidKey)
+		return nil, errors.New("Failed to delete state for" + uuidKey)
 	}
 	return nil, nil
 }
@@ -328,7 +371,8 @@ func (t *SimpleChaincode) LookupWithCID(stub shim.ChaincodeStubInterface, args [
 
 	eidsInBytes, err = stub.GetState(cidKey)
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + cidKey)
+		jsonResp := "{\"Error\":\"Failed to get state for " + cidKey + "\"}"
+		return nil, errors.New(jsonResp)
 	}
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
@@ -336,10 +380,13 @@ func (t *SimpleChaincode) LookupWithCID(stub shim.ChaincodeStubInterface, args [
 	for i, eidKey := range eidKeys {
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
-			return nil, errors.New("Failed to delete state with" + eidKey)
+			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
 		entries[i] = string(entryInBytes)
 	}
+
+	jsonResp := entryStringsToJsonString(entries)
+	fmt.Println("Query response:%s\n", jsonResp)
 	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }
 
@@ -357,7 +404,8 @@ func (t *SimpleChaincode) LookupWithMAC(stub shim.ChaincodeStubInterface, args [
 
 	eidsInBytes, err = stub.GetState(macKey)
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + macKey)
+		jsonResp := "{\"Error\":\"Failed to get state for " + macKey + "\"}"
+		return nil, errors.New(jsonResp)
 	}
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
@@ -365,10 +413,13 @@ func (t *SimpleChaincode) LookupWithMAC(stub shim.ChaincodeStubInterface, args [
 	for i, eidKey := range eidKeys {
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
-			return nil, errors.New("Failed to delete state with" + eidKey)
+			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
 		entries[i] = string(entryInBytes)
 	}
+
+	jsonResp := entryStringsToJsonString(entries)
+	fmt.Println("Query response:%s\n", jsonResp)
 	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }
 
@@ -386,7 +437,8 @@ func (t *SimpleChaincode) LookupWithUUID(stub shim.ChaincodeStubInterface, args 
 
 	eidsInBytes, err = stub.GetState(uuidKey)
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + uuidKey)
+		jsonResp := "{\"Error\":\"Failed to get state for " + uuidKey + "\"}"
+		return nil, errors.New(jsonResp)
 	}
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
@@ -394,9 +446,12 @@ func (t *SimpleChaincode) LookupWithUUID(stub shim.ChaincodeStubInterface, args 
 	for i, eidKey := range eidKeys {
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
-			return nil, errors.New("Failed to delete state with" + eidKey)
+			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
 		entries[i] = string(entryInBytes)
 	}
+
+	jsonResp := entryStringsToJsonString(entries)
+	fmt.Println("Query response:%s\n", jsonResp)
 	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }
