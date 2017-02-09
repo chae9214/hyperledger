@@ -171,6 +171,9 @@ func (stub *ChaincodeStubInterface) GetKVSLength() int {
 // ===========================================================
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	if len(args) != 0 {
+		return nil, errors.New("Initializing requires 0 argument but given" + strconv.Itoa(len(args)))
+	}
 	return nil, nil
 }
 
@@ -190,6 +193,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	switch function {
+	case "lookupall":
+		return t.LookupAll(stub, args)
 	case "lookupwithcid":
 		return t.LookupWithCID(stub, args)
 	case "lookupwithmac":
@@ -447,6 +452,30 @@ func (t *SimpleChaincode) LookupWithUUID(stub shim.ChaincodeStubInterface, args 
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
 			return nil, errors.New("Failed to delete state for" + eidKey)
+		}
+		entries[i] = string(entryInBytes)
+	}
+
+	jsonResp := entryStringsToJsonString(entries)
+	fmt.Println("Query response:%s\n", jsonResp)
+	return []byte(strings.Join(entries, ENTRYSEP)), nil
+}
+
+func (t *SimpleChaincode) LookupAll(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var entryInBytes []byte
+	var err error
+
+	if len(args) != 0 {
+		return nil, errors.New("Looking up all entries requires 0 argument but given" + strconv.Itoa(len(args)))
+	}
+
+	entries := make([]string, t.nextEID-1)
+	for i := 1; i < t.nextEID; i++ {
+		eidKey := PREFIX_EID + strconv.Itoa(t.nextEID)
+
+		entryInBytes, err = stub.GetState(eidKey)
+		if err != nil {
+			continue
 		}
 		entries[i] = string(entryInBytes)
 	}

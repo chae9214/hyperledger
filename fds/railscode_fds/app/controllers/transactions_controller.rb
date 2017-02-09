@@ -149,7 +149,7 @@ class TransactionsController < ApplicationController
 =end
 
     def query_from_hyperledger
-      uri = URI('http://192.168.150.129:7050/chaincode')
+      uri = URI('http://192.168.99.101:7050/chaincode')
       req = Net::HTTP::Post.new(uri)
 
       json = Hash.new()
@@ -163,9 +163,9 @@ class TransactionsController < ApplicationController
       json['params']['chaincodeID']['name'] = "mycc3"
 
       json['params']['ctorMsg'] = Hash.new()
-      json['params']['ctorMsg']['args'] = [ "lookupwithcid" , "1234567890"]
-      json['params']['secureContext'] = "bob"
-      json['id'] = 1
+      json['params']['ctorMsg']['args'] = [ "lookupwithcid" , "cid1"]
+      json['params']['secureContext'] = "admin"
+      json['id'] = 3
 
       req.body = json.to_json
 
@@ -181,7 +181,7 @@ class TransactionsController < ApplicationController
 
 
     def invoke_to_hyperledger
-        uri = URI('http://192.168.150.129:7050/chaincode')
+        uri = URI('http://192.168.99.101:7050/chaincode')
       req = Net::HTTP::Post.new(uri)
 
       json = Hash.new()
