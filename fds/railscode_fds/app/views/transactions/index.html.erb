@@ -21,9 +21,9 @@
   </thead>
 
   <tbody>
-    <% @transactions.each do |transaction| %>
+    <% @transactions.each_with_index do |transaction,index| %>
       <tr>
-        <td><%= transaction.seq %></td>
+        <td><%= index + 1 %></td>
         <td><%= transaction.stats %></td>
         <td><%= transaction.cid %></td>
         <td><%= transaction.mac %></td>
@@ -51,6 +51,7 @@
 <table id="black_list_th">
   <thead >
     <tr>
+      <th>No.</th>
       <th>CID</th>
       <th>MAC</th>
       <th>UUID</th>
@@ -60,13 +61,16 @@
   </thead>
 
   <tbody>
-      <tr>
-        <td><%= @hyperledger_result_list[0] %></td>
-        <td><%= @hyperledger_result_list[1] %></td>
-        <td><%= @hyperledger_result_list[2] %></td>
-        <td><%= @hyperledger_result_list[3] %></td>
-        <td><%= @hyperledger_result_list[4] %></td>
-      </tr>
+      <% @hyperledger_row_array.each_with_index do |row, index| %>
+        <tr>
+          <td><%= index + 1%></td>
+          <td><%= row[0] %></td>
+          <td><%= row[1] %></td>
+          <td><%= row[2] %></td>
+          <td><%= row[3] %></td>
+          <td><%= row[4] %></td>
+        </tr>
+      <% end %>
    </tbody>
 </table>
 

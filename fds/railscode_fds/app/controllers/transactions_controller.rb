@@ -7,13 +7,27 @@ class TransactionsController < ApplicationController
     @transactions = Transaction.all
     #초기 화면에서 hyperledger 데이터 호출
     @hyperledger_response = JSON.parse(query_from_hyperledger)
-    @hyperledger_result_list = @hyperledger_response["result"]["message"].split("|")
-    logger.debug "hyperledger_result_list $$$$$$$$$$$$  : #{@hyperledger_result_list}"
-    logger.debug "hyperledger_result_list.cid $$$$$$$$$$$$$$$$$ : #{@hyperledger_result_list[0]}"
-    logger.debug "hyperledger_result_list.mac $$$$$$$$$$$$$$$$$ : #{@hyperledger_result_list[1]}"
-    logger.debug "hyperledger_result_list.uuid $$$$$$$$$$$$$$$$$ : #{@hyperledger_result_list[2]}"
-    logger.debug "hyperledger_result_list.transactiontime $$$$$$$$$$$$$$$$$ : #{@hyperledger_result_list[3]}"
-    logger.debug "hyperledger_result_list.registeredby $$$$$$$$$$$$$$$$$ : #{@hyperledger_result_list[4]}"
+    @hyperledger_result_list = @hyperledger_response["result"]["message"]
+    @hyperledger_response_array = @hyperledger_result_list.split("$")
+   
+    #테스트 데이터
+    #@dummy_data = "123456|AA-BB-CC-DD|3fdd6dfg98ac|2017-07-07|신한은행$234567|AA-BB-CC-DD|3fdd6dfg98ac|2017-07-07|신한카드"
+    
+    #Entry별로 배열 생성
+    @cnt = 0
+    @hyperledger_row_array = [@hyperledger_response_array.length]
+    begin
+      @hyperledger_row_array[@cnt] = @hyperledger_response_array[@cnt].split("|")
+      @cnt +=1
+    end while @cnt < @hyperledger_response_array.length
+
+    logger.debug "hyperledger row data $$$$$$$$$$$$$ #{@hyperledger_row_array}" 
+        
+    respond_to do |format|
+      format.html { render :index }
+      format.json { render json: @hyperledger_row_array}
+    end
+
   end
 
   # GET /transactions/1
