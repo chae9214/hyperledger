@@ -119,17 +119,17 @@ func entryStringsToJsonString(entries []string) string {
 
 	jsonStr := "[\n"
 	for i, entry := range entries {
-		jsonStr += "{"
+		jsonStr += "\t{"
 		fields := strings.Split(entry, FIELDSEP)
 		for j, fieldname := range fieldnames {
-			jsonStr += "\"" + fieldname + "\":\"" + fields[j] + "\""
+			jsonStr += "\"" + fieldname + "\" : \"" + fields[j] + "\""
 			if j < len(fields)-1 {
-				jsonStr += ","
+				jsonStr += ", "
 			}
 		}
-		jsonStr += "}\n"
+		jsonStr += "}"
 		if i < len(entries)-1 {
-			jsonStr += ","
+			jsonStr += ",\n"
 		}
 	}
 	jsonStr += "\n]"
@@ -470,8 +470,8 @@ func (t *SimpleChaincode) LookupAll(stub shim.ChaincodeStubInterface, args []str
 	}
 
 	entries := make([]string, t.nextEID-1)
-	for i := 1; i < t.nextEID; i++ {
-		eidKey := PREFIX_EID + strconv.Itoa(t.nextEID)
+	for i := 0; i < t.nextEID-1; i++ {
+		eidKey := PREFIX_EID + strconv.Itoa(i+1)
 
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
@@ -481,6 +481,6 @@ func (t *SimpleChaincode) LookupAll(stub shim.ChaincodeStubInterface, args []str
 	}
 
 	jsonResp := entryStringsToJsonString(entries)
-	fmt.Println("Query response:%s\n", jsonResp)
+	fmt.Println("Query response:\n", jsonResp)
 	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }

@@ -160,7 +160,7 @@ class TransactionsController < ApplicationController
       json['params']['type'] = 1
 
       json['params']['chaincodeID'] = Hash.new()
-      json['params']['chaincodeID']['name'] = "mycc3"
+      json['params']['chaincodeID']['name'] = "mycc"
 
       json['params']['ctorMsg'] = Hash.new()
       json['params']['ctorMsg']['args'] = [ "lookupwithcid" , "cid1"]
