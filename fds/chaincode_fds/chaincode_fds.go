@@ -119,15 +119,17 @@ func entryStringsToJsonString(entries []string) string {
 
 	jsonStr := "[\n"
 	for i, entry := range entries {
-		jsonStr += "\t{"
-		fields := strings.Split(entry, FIELDSEP)
-		for j, fieldname := range fieldnames {
-			jsonStr += "\"" + fieldname + "\" : \"" + fields[j] + "\""
-			if j < len(fields)-1 {
-				jsonStr += ", "
+		jsonStr += "\t{ "
+		if entry != "" {
+			fields := strings.Split(entry, FIELDSEP)
+			for j, fieldname := range fieldnames {
+				jsonStr += "\"" + fieldname + "\" : \"" + fields[j] + "\""
+				if j < len(fields)-1 {
+					jsonStr += ", "
+				}
 			}
 		}
-		jsonStr += "}"
+		jsonStr += " }"
 		if i < len(entries)-1 {
 			jsonStr += ",\n"
 		}
@@ -201,6 +203,8 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.LookupWithMAC(stub, args)
 	case "lookupwithuuid":
 		return t.LookupWithUUID(stub, args)
+	case "getnexteid":
+		return []byte(strconv.Itoa(t.nextEID)), nil
 	}
 	return nil, errors.New("Invalid query function name. Expecting \"lookupwith~\"")
 }
@@ -391,7 +395,7 @@ func (t *SimpleChaincode) LookupWithCID(stub shim.ChaincodeStubInterface, args [
 	}
 
 	jsonResp := entryStringsToJsonString(entries)
-	fmt.Println("Query response:%s\n", jsonResp)
+	fmt.Println("Query response:\n", jsonResp)
 	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }
 
@@ -424,7 +428,7 @@ func (t *SimpleChaincode) LookupWithMAC(stub shim.ChaincodeStubInterface, args [
 	}
 
 	jsonResp := entryStringsToJsonString(entries)
-	fmt.Println("Query response:%s\n", jsonResp)
+	fmt.Println("Query response:\n", jsonResp)
 	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }
 
@@ -457,7 +461,7 @@ func (t *SimpleChaincode) LookupWithUUID(stub shim.ChaincodeStubInterface, args 
 	}
 
 	jsonResp := entryStringsToJsonString(entries)
-	fmt.Println("Query response:%s\n", jsonResp)
+	fmt.Println("Query response:\n", jsonResp)
 	return []byte(strings.Join(entries, ENTRYSEP)), nil
 }
 
@@ -474,6 +478,7 @@ func (t *SimpleChaincode) LookupAll(stub shim.ChaincodeStubInterface, args []str
 		eidKey := PREFIX_EID + strconv.Itoa(i+1)
 
 		entryInBytes, err = stub.GetState(eidKey)
+		fmt.Println("ENTRY looked up with", eidKey, ":", string(entryInBytes))
 		if err != nil {
 			return nil, err
 		}
