@@ -5,23 +5,8 @@ class TransactionsController < ApplicationController
   # GET /transactions.json
   def index
     @transactions = Transaction.all
-    #초기 화면에서 hyperledger 데이터 호출
-    @hyperledger_response = JSON.parse(query_from_hyperledger)
-    @hyperledger_result_list = @hyperledger_response["result"]["message"]
-    @hyperledger_response_array = @hyperledger_result_list.split("$")
-   
-    #테스트 데이터
-    #@dummy_data = "123456|AA-BB-CC-DD|3fdd6dfg98ac|2017-07-07|신한은행$234567|AA-BB-CC-DD|3fdd6dfg98ac|2017-07-07|신한카드"
-    
-    #Entry별로 배열 생성
-    @cnt = 0
-    @hyperledger_row_array = [@hyperledger_response_array.length]
-    begin
-      @hyperledger_row_array[@cnt] = @hyperledger_response_array[@cnt].split("|")
-      @cnt +=1
-    end while @cnt < @hyperledger_response_array.length
-
-    logger.debug "hyperledger row data $$$$$$$$$$$$$ #{@hyperledger_row_array}" 
+    #초기 화면에서 hyperledger 모든 데이터 호출(params : lookupall)
+    return_parsed_hyperleder_data("lookupwithcid","12345678")
         
     respond_to do |format|
       format.html { render :index }
@@ -147,9 +132,14 @@ class TransactionsController < ApplicationController
       return res.body
     end
 =end
+    def reload_currentPage 
+      respond_to do |format|
+        format.js {render inline: "location.reload();" }
+      end
+    end
 
-    def query_from_hyperledger
-      uri = URI('http://192.168.99.101:7050/chaincode')
+    def query_from_hyperledger(key,value)
+      uri = URI('http://192.168.150.129:7050/chaincode')
       req = Net::HTTP::Post.new(uri)
 
       json = Hash.new()
@@ -163,9 +153,9 @@ class TransactionsController < ApplicationController
       json['params']['chaincodeID']['name'] = "mycc"
 
       json['params']['ctorMsg'] = Hash.new()
-      json['params']['ctorMsg']['args'] = [ "lookupwithcid" , "cid1"]
-      json['params']['secureContext'] = "admin"
-      json['id'] = 3
+      json['params']['ctorMsg']['args'] = [key, value]
+      json['params']['secureContext'] = "bob"
+      json['id'] = 1    
 
       req.body = json.to_json
 
@@ -175,7 +165,6 @@ class TransactionsController < ApplicationController
         puts req.body
         http.request(req)
       end
-
       return res.body
     end
 
@@ -209,5 +198,28 @@ class TransactionsController < ApplicationController
       end
 
       return res.body
+    end
+
+    def search(key,value)
+      return_parsed_hyperleder_data(key,value)
+    end 
+
+    def return_parsed_hyperleder_data key,value
+      @hyperledger_response = JSON.parse(query_from_hyperledger(key,value))
+      @hyperledger_result_list = @hyperledger_response["result"]["message"]
+      @hyperledger_response_array = @hyperledger_result_list.split("$")
+     
+      #테스트 데이터
+      #@dummy_data = "123456|AA-BB-CC-DD|3fdd6dfg98ac|2017-07-07|신한은행$234567|AA-BB-CC-DD|3fdd6dfg98ac|2017-07-07|신한카드"
+      
+      #Entry별로 배열 생성
+      @cnt = 0
+      @hyperledger_row_array = [@hyperledger_response_array.length]
+      begin
+        @hyperledger_row_array[@cnt] = @hyperledger_response_array[@cnt].split("|")
+        @cnt +=1
+      end while @cnt < @hyperledger_response_array.length
+
+      logger.debug "hyperledger row data $$$$$$$$$$$$$ #{@hyperledger_row_array}" 
     end
 end

@@ -4,9 +4,9 @@
   <%= image_tag "shinhan_logo.png" %><span>이상거래 관리 시스템</span>
 </div>
 
-<div style="margint-top: 30px">
-<div id="black_list_title">거래내역</div>
-
+<div>
+<p class="black_list_title">거래내역</p>
+</div>
 <table id="black_list_th">
   <thead >
     <tr>
@@ -40,13 +40,22 @@
 </table>
 
 <br>
-
 <button class="button2"><%= link_to '거래내역 등록', new_transaction_path %></button>
 </div>
+<br>
 
+<div>
+<p class="black_list_title">BlackList</p>
+<select id="searchBox">
+  <option value="lookupwithcid" selected="selected">CID</option>
+  <option value="lookupwithmac">MAC</option>
+  <option value="lookupwithuuid">UUID</option>
+</select>
+<input type="text" name="transaction[accountnum]" id="search_value">
+<%= link_to "검색", @search, class: "button button2" %>
 
-<div style="margint-top: 30px">
-<div id="black_list_title">BlackList</div>
+</div>
+<br>
 
 <table id="black_list_th">
   <thead >
@@ -75,5 +84,5 @@
 </table>
 
 <br>
-
+<%= link_to "새로고침", @reload_currentPage, class: "button button2" %>
 </div>
