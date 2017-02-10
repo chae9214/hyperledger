@@ -140,6 +140,15 @@ func entryStringsToJsonString(entries []string) string {
 	return jsonStr
 }
 
+func printFraudEntries(entries []FraudEntry) {
+	fmt.Println("[\n")
+	for _, entry := range entries {
+		//fmt.Printf("\t[%v%v] = %v\n", PREFIX_EID, i+1, entry)
+		fmt.Printf("\t%v", entry)
+	}
+	fmt.Println("\n]")
+}
+
 /*
 // ===========================================================
 //  ChaincodeStubInterface 함수
@@ -415,8 +424,8 @@ func (t *SimpleChaincode) LookupWithCID(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return nil, err
 	}
-	jsonResp := string(entriesInBytes)
-	fmt.Println("Query response:\n", jsonResp)
+	fmt.Println("Query response:")
+	printFraudEntries(entries)
 	return entriesInBytes, nil
 }
 
@@ -461,8 +470,8 @@ func (t *SimpleChaincode) LookupWithMAC(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return nil, err
 	}
-	jsonResp := string(entriesInBytes)
-	fmt.Println("Query response:\n", jsonResp)
+	fmt.Println("Query response:")
+	printFraudEntries(entries)
 	return entriesInBytes, nil
 }
 
@@ -507,8 +516,8 @@ func (t *SimpleChaincode) LookupWithUUID(stub shim.ChaincodeStubInterface, args 
 	if err != nil {
 		return nil, err
 	}
-	jsonResp := string(entriesInBytes)
-	fmt.Println("Query response:\n", jsonResp)
+	fmt.Println("Query response:")
+	printFraudEntries(entries)
 	return entriesInBytes, nil
 }
 
@@ -546,7 +555,7 @@ func (t *SimpleChaincode) LookupAll(stub shim.ChaincodeStubInterface, args []str
 	if err != nil {
 		return nil, err
 	}
-	jsonResp := string(entriesInBytes)
-	fmt.Println("Query response:\n", jsonResp)
+	fmt.Println("Query response:")
+	printFraudEntries(entries)
 	return entriesInBytes, nil
 }
