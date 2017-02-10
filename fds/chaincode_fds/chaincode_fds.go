@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -17,6 +18,17 @@ type SimpleChaincode struct {
 	nextEID int
 }
 
+type FraudEntry struct {
+	CID          string `json:"cid"`
+	MAC          string `json:"mac"`
+	UUID         string `json:"uuid"`
+	FinalDate    string `json:"finalDate"`
+	FinalTime    string `json:"finalTime"`
+	ProducedBy   string `json:"producedBy"`
+	RegisteredBy string `json:"registeredBy"`
+	Reason       string `json:"reason"`
+}
+
 // fraud entry 의 필드갯수
 const NUM_FIELDS = 8
 
@@ -26,20 +38,9 @@ const IND_MAC = 1
 const IND_UUID = 2
 const IND_FINALDATE = 3
 const IND_FINALTIME = 4
-const IND_FDSPRODUCEDBY = 5
-const IND_FDSREGISTEREDBY = 6
-const IND_FDSREASON = 7
-
-// fraud entry 의 각 필드별 json 명칭
-// var fieldnames = make([]string, NUM_FIELDS)
-// fieldnames[IND_CID] = "cid"
-// fieldnames[IND_MAC] = "mac"
-// fieldnames[IND_UUID] = "uuid"
-// fieldnames[IND_FINALDATE] = "finalDate"
-// fieldnames[IND_FINALTIME] = "finalTime"
-// fieldnames[IND_FDSPRODUCEDBY] = "producedBy"
-// fieldnames[IND_FDSREGISTEREDBY] = "registeredBy"
-// fieldnames[IND_FDSREASON] = "reason"
+const IND_PRODUCEDBY = 5
+const IND_REGISTEREDBY = 6
+const IND_REASON = 7
 
 // key-value store 의 키 구분자
 const PREFIX_EID = "eid_"
@@ -113,9 +114,9 @@ func entryStringsToJsonString(entries []string) string {
 	fieldnames[IND_UUID] = "uuid"
 	fieldnames[IND_FINALDATE] = "finalDate"
 	fieldnames[IND_FINALTIME] = "finalTime"
-	fieldnames[IND_FDSPRODUCEDBY] = "producedBy"
-	fieldnames[IND_FDSREGISTEREDBY] = "registeredBy"
-	fieldnames[IND_FDSREASON] = "reason"
+	fieldnames[IND_PRODUCEDBY] = "producedBy"
+	fieldnames[IND_REGISTEREDBY] = "registeredBy"
+	fieldnames[IND_REASON] = "reason"
 
 	jsonStr := "[\n"
 	for i, entry := range entries {
@@ -219,6 +220,7 @@ func main() {
 // ===========================================================
 
 func (t *SimpleChaincode) RegisterFraudEntry(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var entryInBytes []byte
 	var eidsInBytes []byte
 	var err error
 
@@ -231,7 +233,13 @@ func (t *SimpleChaincode) RegisterFraudEntry(stub shim.ChaincodeStubInterface, a
 	macKey := PREFIX_MAC + args[IND_MAC]
 	uuidKey := PREFIX_UUID + args[IND_UUID]
 
-	err = stub.PutState(eidKey, stringArrayToByteArray(args))
+	entry := FraudEntry{args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]}
+	entryInBytes, err = json.Marshal(entry)
+	if err != nil {
+		return nil, err
+	}
+
+	err = stub.PutState(eidKey, entryInBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -359,13 +367,14 @@ func (t *SimpleChaincode) RemoveWithUUID(stub shim.ChaincodeStubInterface, args 
 }
 
 // ===========================================================
-//  FDS 조회 함수
+//   조회 함수
 // ===========================================================
 
 //func (t *SimpleChaincode) LookupWithCID(cid string) (entries [][]string, result bool) {
 func (t *SimpleChaincode) LookupWithCID(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var entryInBytes []byte
+	var entriesInBytes []byte
 	var err error
 
 	if len(args) != 1 {
@@ -379,26 +388,39 @@ func (t *SimpleChaincode) LookupWithCID(stub shim.ChaincodeStubInterface, args [
 		jsonResp := "{\"Error\":\"Failed to get state for " + cidKey + "\"}"
 		return nil, errors.New(jsonResp)
 	}
+	//fmt.Println("EIDS looked up with", cidKey, ":", string(eidsInBytes))
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
-	entries := make([]string, len(eidKeys))
+	entries := make([]FraudEntry, len(eidKeys))
 	for i, eidKey := range eidKeys {
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
 			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
-		entries[i] = string(entryInBytes)
+		//fmt.Println("ENTRY looked up with", eidKey, ":", string(entryInBytes))
+
+		var entry FraudEntry
+		err = json.Unmarshal(entryInBytes, &entry)
+		if err != nil {
+			return nil, err
+		}
+		entries[i] = entry
 	}
 
-	jsonResp := entryStringsToJsonString(entries)
-	fmt.Println("Query response:%s\n", jsonResp)
-	return []byte(strings.Join(entries, ENTRYSEP)), nil
+	entriesInBytes, err = json.Marshal(entries)
+	if err != nil {
+		return nil, err
+	}
+	jsonResp := string(entriesInBytes)
+	fmt.Println("Query response:\n", jsonResp)
+	return entriesInBytes, nil
 }
 
 //func (t *SimpleChaincode) LookupWithMAC(mac string) (entries [][]string, result bool) {
 func (t *SimpleChaincode) LookupWithMAC(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var entryInBytes []byte
+	var entriesInBytes []byte
 	var err error
 
 	if len(args) != 1 {
@@ -412,26 +434,39 @@ func (t *SimpleChaincode) LookupWithMAC(stub shim.ChaincodeStubInterface, args [
 		jsonResp := "{\"Error\":\"Failed to get state for " + macKey + "\"}"
 		return nil, errors.New(jsonResp)
 	}
+	//fmt.Println("EIDS looked up with", macKey, ":", string(eidsInBytes))
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
-	entries := make([]string, len(eidKeys))
+	entries := make([]FraudEntry, len(eidKeys))
 	for i, eidKey := range eidKeys {
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
 			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
-		entries[i] = string(entryInBytes)
+		//fmt.Println("ENTRY looked up with", eidKey, ":", string(entryInBytes))
+
+		var entry FraudEntry
+		err = json.Unmarshal(entryInBytes, &entry)
+		if err != nil {
+			return nil, err
+		}
+		entries[i] = entry
 	}
 
-	jsonResp := entryStringsToJsonString(entries)
-	fmt.Println("Query response:%s\n", jsonResp)
-	return []byte(strings.Join(entries, ENTRYSEP)), nil
+	entriesInBytes, err = json.Marshal(entries)
+	if err != nil {
+		return nil, err
+	}
+	jsonResp := string(entriesInBytes)
+	fmt.Println("Query response:\n", jsonResp)
+	return entriesInBytes, nil
 }
 
 //func (t *SimpleChaincode) LookupWithUUID(uuid string) (entries [][]string, result bool) {
 func (t *SimpleChaincode) LookupWithUUID(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var entryInBytes []byte
+	var entriesInBytes []byte
 	var err error
 
 	if len(args) != 1 {
@@ -445,31 +480,44 @@ func (t *SimpleChaincode) LookupWithUUID(stub shim.ChaincodeStubInterface, args 
 		jsonResp := "{\"Error\":\"Failed to get state for " + uuidKey + "\"}"
 		return nil, errors.New(jsonResp)
 	}
+	//fmt.Println("EIDS looked up with", uuidKey, ":", string(eidsInBytes))
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
-	entries := make([]string, len(eidKeys))
+	entries := make([]FraudEntry, len(eidKeys))
 	for i, eidKey := range eidKeys {
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
 			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
-		entries[i] = string(entryInBytes)
+		//fmt.Println("ENTRY looked up with", eidKey, ":", string(entryInBytes))
+
+		var entry FraudEntry
+		err = json.Unmarshal(entryInBytes, &entry)
+		if err != nil {
+			return nil, err
+		}
+		entries[i] = entry
 	}
 
-	jsonResp := entryStringsToJsonString(entries)
-	fmt.Println("Query response:%s\n", jsonResp)
-	return []byte(strings.Join(entries, ENTRYSEP)), nil
+	entriesInBytes, err = json.Marshal(entries)
+	if err != nil {
+		return nil, err
+	}
+	jsonResp := string(entriesInBytes)
+	fmt.Println("Query response:\n", jsonResp)
+	return entriesInBytes, nil
 }
 
 func (t *SimpleChaincode) LookupAll(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var entryInBytes []byte
+	var entriesInBytes []byte
 	var err error
 
 	if len(args) != 0 {
 		return nil, errors.New("Looking up all entries requires 0 argument but given" + strconv.Itoa(len(args)))
 	}
 
-	entries := make([]string, t.nextEID-1)
+	entries := make([]FraudEntry, t.nextEID-1)
 	for i := 0; i < t.nextEID-1; i++ {
 		eidKey := PREFIX_EID + strconv.Itoa(i+1)
 
@@ -477,10 +525,20 @@ func (t *SimpleChaincode) LookupAll(stub shim.ChaincodeStubInterface, args []str
 		if err != nil {
 			continue
 		}
-		entries[i] = string(entryInBytes)
+
+		var entry FraudEntry
+		err = json.Unmarshal(entryInBytes, &entry)
+		if err != nil {
+			return nil, err
+		}
+		entries[i] = entry
 	}
 
-	jsonResp := entryStringsToJsonString(entries)
+	entriesInBytes, err = json.Marshal(entries)
+	if err != nil {
+		return nil, err
+	}
+	jsonResp := string(entriesInBytes)
 	fmt.Println("Query response:\n", jsonResp)
-	return []byte(strings.Join(entries, ENTRYSEP)), nil
+	return entriesInBytes, nil
 }
