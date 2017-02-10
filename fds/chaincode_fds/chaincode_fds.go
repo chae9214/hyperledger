@@ -475,6 +475,9 @@ func (t *SimpleChaincode) LookupAll(stub shim.ChaincodeStubInterface, args []str
 
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
+			return nil, err
+		}
+		if entryInBytes == nil {
 			continue
 		}
 		entries[i] = string(entryInBytes)
