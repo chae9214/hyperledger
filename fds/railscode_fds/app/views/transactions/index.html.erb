@@ -23,7 +23,7 @@
   <tbody>
     <% @transactions.each_with_index do |transaction,index| %>
       <tr>
-        <td><%= index + 1 %></td>
+        <td><%= index + 1 %></td>   
         <td><%= transaction.stats %></td>
         <td><%= transaction.cid %></td>
         <td><%= transaction.mac %></td>

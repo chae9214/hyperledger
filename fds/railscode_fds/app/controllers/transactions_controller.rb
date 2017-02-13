@@ -6,7 +6,7 @@ class TransactionsController < ApplicationController
   def index
     @transactions = Transaction.all
     #초기 화면에서 hyperledger 모든 데이터 호출(params : lookupall)
-    return_parsed_hyperleder_data("lookupwithcid","12345678")
+    return_parsed_hyperleder_data("lookupall",nil)
         
     respond_to do |format|
       format.html { render :index }
@@ -153,8 +153,14 @@ class TransactionsController < ApplicationController
       json['params']['chaincodeID']['name'] = "mycc"
 
       json['params']['ctorMsg'] = Hash.new()
-      json['params']['ctorMsg']['args'] = [key, value]
-      json['params']['secureContext'] = "bob"
+
+      if value == nil 
+       json['params']['ctorMsg']['args'] = [key]  
+      else 
+        json['params']['ctorMsg']['args'] = [key, value]
+      end
+
+      json['params']['secureContext'] = "admin"
       json['id'] = 1    
 
       req.body = json.to_json
@@ -170,7 +176,7 @@ class TransactionsController < ApplicationController
 
 
     def invoke_to_hyperledger
-        uri = URI('http://192.168.99.101:7050/chaincode')
+        uri = URI('http://192.168.150.129:7050/chaincode')
       req = Net::HTTP::Post.new(uri)
 
       json = Hash.new()
@@ -185,7 +191,7 @@ class TransactionsController < ApplicationController
 
       json['params']['ctorMsg'] = Hash.new()
       json['params']['ctorMsg']['args'] = [ "register","cidValue","macValue","uuidValue","2017-01-01","e","f","g","h"]
-      json['params']['secureContext'] = "bob"
+      json['params']['secureContext'] = "admin"
       json['id'] = 1
 
       req.body = json.to_json
@@ -204,7 +210,7 @@ class TransactionsController < ApplicationController
       return_parsed_hyperleder_data(key,value)
     end 
 
-    def return_parsed_hyperleder_data key,value
+    def return_parsed_hyperleder_data(key,value)
       @hyperledger_response = JSON.parse(query_from_hyperledger(key,value))
       @hyperledger_result_list = @hyperledger_response["result"]["message"]
       @hyperledger_response_array = @hyperledger_result_list.split("$")
