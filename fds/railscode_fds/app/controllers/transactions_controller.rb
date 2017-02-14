@@ -6,7 +6,7 @@ class TransactionsController < ApplicationController
   def index
     @transactions = Transaction.all
     #초기 화면에서 hyperledger 데이터 호출
-    @hyperledger_response = JSON.parse(query_from_hyperledger("lookupall",nil))
+    @hyperledger_response = JSON.parse(query_from_hyperledger("fdsGetAll",nil))
     logger.debug "hyperledger_response$$$$$$$$$$$$$ #{@hyperledger_response}"
     @hyperledger_result_list = @hyperledger_response["result"]["message"]
     logger.debug "hyperledger_response_message$$$$$$$$$$$$$ #{@hyperledger_result_list}"
