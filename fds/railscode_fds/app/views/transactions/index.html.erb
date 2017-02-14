@@ -1,12 +1,41 @@
+<!-- 
+<script>
+$(document).ready(function() {
+  $('#search_from_hyperledger').click(function(event){
+ 
+     var searchCondition = $("#searchBox").val();
+     var searchValue = $("#searchValue").val();
+     var sendInfo = {"jsonrpc": "2.0","method": "query","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[searchCondition,searchValue]},"secureContext":"admin"},"id":1};
+
+     $.ajax({
+         type: "POST",
+         url: "http://192.168.150.129:7050/chaincode",
+         data: JSON.stringify(sendInfo),
+         contentType: "application/json; charset=utf-8",
+         success: function (msg) {
+             if (msg) {
+                console.log(msg.result.message)
+             } else {
+                 alert("Cannot load Hyperledger Data!");
+             }
+         }
+     });
+
+    event.preventDefault(); // Prevent link from following its href
+  });
+});
+</script>
+ -->
+
 <p id="notice"><%= notice %></p>
 <div>
 <div id="header">
   <%= image_tag "shinhan_logo.png" %><span>이상거래 관리 시스템</span>
 </div>
-
 <div>
 <p class="black_list_title">거래내역</p>
 </div>
+
 <table id="black_list_th">
   <thead >
     <tr>
@@ -14,7 +43,8 @@
       <th>State</th>
       <th>CID</th>
       <th>MAC</th>
-      <th>계좌번호</th>
+      <th>UUID</th>
+      <th>카드번호</th>
       <th>거래시간</th>
       <th class="textCenter">비고</th>
     </tr>
@@ -23,16 +53,17 @@
   <tbody>
     <% @transactions.each_with_index do |transaction,index| %>
       <tr>
-        <td><%= index + 1 %></td>   
+        <td><%= index + 1 %></td>
         <td><%= transaction.stats %></td>
         <td><%= transaction.cid %></td>
         <td><%= transaction.mac %></td>
-        <td><%= transaction.accountnum %></td>
+        <td><%= transaction.uuid %></td>
+        <td><%= transaction.cardnum %></td>
         <td><%= transaction.txtime %></td>
         <td>
-          <button class="button1"><%= link_to '상세', transaction %></button>
-          <button class="button1"><%= link_to '수정', edit_transaction_path(transaction) %></button>
-          <button class="button1"><%= link_to '삭제', transaction, method: :delete, data: { confirm: '이상 거래를 삭제하시겠습니까?' } %></button>
+          <%= link_to "상세", transaction, class: "button button1" %>
+          <%= link_to "수정", edit_transaction_path(transaction), class: "button button1" %>
+          <%= link_to "삭제", transaction, method: :delete, data: { confirm: '이상 거래를 삭제하시겠습니까?' } , class: "button button1" %>
         </td>
       </tr>
     <% end %>
@@ -40,9 +71,10 @@
 </table>
 
 <br>
+
 <button class="button2"><%= link_to '거래내역 등록', new_transaction_path %></button>
 </div>
-<br>
+
 
 <div>
 <p class="black_list_title">BlackList</p>
@@ -53,10 +85,8 @@
 </select>
 <input type="text" name="transaction[accountnum]" id="search_value">
 <%= link_to "검색", @search, class: "button button2" %>
-
 </div>
 <br>
-
 <table id="black_list_th">
   <thead >
     <tr>
@@ -70,14 +100,14 @@
   </thead>
 
   <tbody>
-      <% @hyperledger_row_array.each_with_index do |row, index| %>
+      <% @parsed_hyperledger_result_list.each_with_index do |row, index| %>
         <tr>
           <td><%= index + 1%></td>
-          <td><%= row[0] %></td>
-          <td><%= row[1] %></td>
-          <td><%= row[2] %></td>
-          <td><%= row[3] %></td>
-          <td><%= row[4] %></td>
+          <td><%= row["cid"] %></td>
+          <td><%= row["mac"] %></td>
+          <td><%= row["uuid"] %></td>
+          <td><%= row["finalDate"] %></td>
+          <td><%= row["finalTime"] %></td>
         </tr>
       <% end %>
    </tbody>
@@ -85,4 +115,4 @@
 
 <br>
 <%= link_to "새로고침", @reload_currentPage, class: "button button2" %>
-</div>
+  </div>

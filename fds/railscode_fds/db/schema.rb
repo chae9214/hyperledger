@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170209035812) do
+ActiveRecord::Schema.define(version: 20170214043649) do
 
   create_table "black_lists", force: :cascade do |t|
     t.string   "cid"
@@ -20,17 +20,22 @@ ActiveRecord::Schema.define(version: 20170209035812) do
     t.string   "registeredby"
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
+    t.string   "test"
   end
 
   create_table "transactions", force: :cascade do |t|
-    t.integer  "seq"
     t.string   "stats"
     t.string   "cid"
     t.string   "mac"
     t.string   "accountnum"
     t.datetime "txtime"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.string   "uuid"
+    t.string   "cardnum"
+    t.string   "ordernum"
+    t.string   "correspondentid"
+    t.string   "posid"
   end
 
 end

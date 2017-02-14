@@ -11,40 +11,54 @@
     </div>
   <% end %>
 
-<div id="inputWithForm" >
-<input placeholder="CID" type="text" name="transaction[cid]" id="transaction_cid" required>
-<input placeholder="MAC" type="text" name="transaction[mac]" id="transaction_mac" required>
-<input placeholder="계좌번호" type="text" name="transaction[accountnum]" id="transaction_accountnum" required>
-</div>
-<!-- 
+<!--   
   <div class="field">
-    <%= f.label "상태" %>
+    <%= f.label :STATE %>
     <%= f.text_field :stats %>
   </div>
-
+ -->
+  <%= select(:transaction, :stats, [['정상거래', '정상'], ['이상거래', '이상']]) %>
+ 
   <div class="field">
-    <%= f.label "CID" %>
+    <%= f.label :CID %>
     <%= f.text_field :cid %>
   </div>
 
   <div class="field">
-    <%= f.label "MAC" %>
+    <%= f.label :MAC %>
     <%= f.text_field :mac %>
   </div>
 
   <div class="field">
-    <%= f.label "계좌번호" %>
-    <%= f.text_field :accountnum %>
+    <%= f.label :단말기ID %>
+    <%= f.text_field :posid %>
   </div>
- -->
+
   <div class="field">
-    <%= f.label "거래시간" %>
+    <%= f.label :거래처ID %>
+    <%= f.text_field :correspondentid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :카드번호 %>
+    <%= f.text_field :cardnum %>
+  </div>
+
+  <div class="field">
+    <%= f.label :주문번호 %>
+    <%= f.text_field :ordernum %>
+  </div>
+
+  <div class="field">
+    <%= f.label :거래시간 %>
     <%= f.datetime_select :txtime %>
   </div>
 
+  <div class="field" hidden> 
+    <%= f.text_field :uuid, :value => 'hardcodeduuid' %>
+  </div>
+  
   <div class="actions">
     <%= f.submit %>
   </div>
 <% end %>
-
-
