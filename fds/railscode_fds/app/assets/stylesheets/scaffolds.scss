@@ -29,7 +29,7 @@ a {
 
   &:hover {
     color: #666;
-    background-color: #000;
+    background-color: #fff;
   }
 }
 
@@ -148,6 +148,7 @@ h1 {
     background-color: #30c191; 
     border: 2px solid #30c191;
     border-radius: 3px;
+    padding: 2px;
     color: white;
 }
 
@@ -202,4 +203,10 @@ input:focus::-webkit-input-placeholder, input:valid::-webkit-input-placeholder {
  -webkit-transform: translateY(-20px);
  transform: translateY(-20px);
  visibility: visible !important;
+}
+
+select {
+  padding: 2px;
+  border-radius: 5px;
+  margin-bottom: 7px;
 }

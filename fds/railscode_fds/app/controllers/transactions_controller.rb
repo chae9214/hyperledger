@@ -41,7 +41,7 @@ class TransactionsController < ApplicationController
 
     respond_to do |format|
       if @transaction.save
-        format.html { redirect_to @transaction, notice: 'Transaction was successfully created.' }
+        format.html { redirect_to @transaction, notice: '거래 내역이 정상 등록 되었습니다.' }
         format.json { render :show, status: :created, location: @transaction }
       else
         format.html { render :new }
@@ -55,7 +55,7 @@ class TransactionsController < ApplicationController
   def update
     respond_to do |format|
       if @transaction.update(transaction_params)
-        format.html { redirect_to @transaction, notice: 'Transaction was successfully updated.' }
+        format.html { redirect_to @transaction, notice: '거래 내역이 수정 되었습니다.' }
         format.json { render :show, status: :ok, location: @transaction }
       else
         format.html { render :edit }
@@ -69,7 +69,7 @@ class TransactionsController < ApplicationController
   def destroy
     @transaction.destroy
     respond_to do |format|
-      format.html { redirect_to transactions_url, notice: 'Transaction was successfully destroyed.' }
+      format.html { redirect_to transactions_url, notice: '거래 내역이 삭제 되었습니다.' }
       format.json { head :no_content }
     end
   end

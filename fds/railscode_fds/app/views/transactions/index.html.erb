@@ -71,11 +71,10 @@ $(document).ready(function() {
 </table>
 
 <br>
-
-<button class="button2"><%= link_to '거래내역 등록', new_transaction_path %></button>
+<%= link_to "거래내역 등록", new_transaction_path, class: "button button2" %>
 </div>
 
-
+<br>
 <div>
 <p class="black_list_title">BlackList</p>
 <select id="searchBox">
