@@ -85,7 +85,13 @@ class TransactionsController < ApplicationController
       params.require(:transaction).permit(:seq, :stats, :cid, :mac, :accountnum, :txtime)
     end
 
-    def query_from_hyperledger
+    def reload_currentPage 
+      respond_to do |format|
+        format.js {render inline: "location.reload();" }
+      end
+    end
+
+    def query_from_hyperledger(key, value)
       uri = URI('http://192.168.150.129:7050/chaincode')
       req = Net::HTTP::Post.new(uri)
 
@@ -100,7 +106,7 @@ class TransactionsController < ApplicationController
       json['params']['chaincodeID']['name'] = "mycc"
 
       json['params']['ctorMsg'] = Hash.new()
-      json['params']['ctorMsg']['args'] = ["lookupall"]
+      json['params']['ctorMsg']['args'] = [key,value]
       json['params']['secureContext'] = "admin"
       json['id'] = 3
 
