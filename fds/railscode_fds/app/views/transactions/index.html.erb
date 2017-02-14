@@ -1,3 +1,33 @@
+<!-- 
+<script>
+$(document).ready(function() {
+  $('#search_from_hyperledger').click(function(event){
+ 
+     var searchCondition = $("#searchBox").val();
+     var searchValue = $("#searchValue").val();
+     var sendInfo = {"jsonrpc": "2.0","method": "query","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[searchCondition,searchValue]},"secureContext":"admin"},"id":1};
+
+     $.ajax({
+         type: "POST",
+         url: "http://192.168.150.129:7050/chaincode",
+         data: JSON.stringify(sendInfo),
+         contentType: "application/json; charset=utf-8",
+         success: function (msg) {
+             if (msg) {
+                console.log(msg.result.message)
+             } else {
+                 alert("Cannot load Hyperledger Data!");
+             }
+         }
+     });
+
+    event.preventDefault(); // Prevent link from following its href
+  });
+});
+</script>
+ -->
+
+
 <p id="notice"><%= notice %></p>
 <div>
 <div id="header">

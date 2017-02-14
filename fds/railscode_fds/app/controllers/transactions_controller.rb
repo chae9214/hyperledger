@@ -6,7 +6,7 @@ class TransactionsController < ApplicationController
   def index
     @transactions = Transaction.all
     #초기 화면에서 hyperledger 데이터 호출
-    @hyperledger_response = JSON.parse(query_from_hyperledger)
+    @hyperledger_response = JSON.parse(query_from_hyperledger("lookupall",nil))
     logger.debug "hyperledger_response$$$$$$$$$$$$$ #{@hyperledger_response}"
     @hyperledger_result_list = @hyperledger_response["result"]["message"]
     logger.debug "hyperledger_response_message$$$$$$$$$$$$$ #{@hyperledger_result_list}"
@@ -91,7 +91,7 @@ class TransactionsController < ApplicationController
       end
     end
 
-    def query_from_hyperledger(key, value)
+    def query_from_hyperledger(key,value)
       uri = URI('http://192.168.150.129:7050/chaincode')
       req = Net::HTTP::Post.new(uri)
 
@@ -106,9 +106,15 @@ class TransactionsController < ApplicationController
       json['params']['chaincodeID']['name'] = "mycc"
 
       json['params']['ctorMsg'] = Hash.new()
-      json['params']['ctorMsg']['args'] = [key,value]
+
+      if value == nil 
+       json['params']['ctorMsg']['args'] = [key]  
+      else 
+        json['params']['ctorMsg']['args'] = [key, value]
+      end
+
       json['params']['secureContext'] = "admin"
-      json['id'] = 3
+      json['id'] = 1    
 
       req.body = json.to_json
 
@@ -118,7 +124,6 @@ class TransactionsController < ApplicationController
         puts req.body
         http.request(req)
       end
-
       return res.body
     end
 
