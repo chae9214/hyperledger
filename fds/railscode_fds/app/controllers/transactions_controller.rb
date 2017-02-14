@@ -12,7 +12,7 @@ class TransactionsController < ApplicationController
     logger.debug "hyperledger_response_message$$$$$$$$$$$$$ #{@hyperledger_result_list}"
     @parsed_hyperledger_result_list = JSON.parse(@hyperledger_result_list.tr("\\", ""))
     logger.debug "parsed_hyperledger_response_message$$$$$$$$$$$$$ #{@parsed_hyperledger_result_list}"
-        
+
     respond_to do |format|
       format.html { render :index }
       format.json { render json: @parsed_hyperledger_result_list}
@@ -82,7 +82,7 @@ class TransactionsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def transaction_params
-      params.require(:transaction).permit(:seq, :stats, :cid, :mac, :accountnum, :txtime)
+      params.require(:transaction).permit(:uuid, :stats, :cid, :mac, :accountnum, :txtime, :cardnum, :ordernum, :posid, :correspondentid)
     end
 
     def reload_currentPage 
@@ -126,8 +126,9 @@ class TransactionsController < ApplicationController
       end
       return res.body
     end
+    helper_method :query_from_hyperledger
 
-
+=begin
     def invoke_to_hyperledger
         uri = URI('http://192.168.150.129:7050/chaincode')
       req = Net::HTTP::Post.new(uri)
@@ -158,4 +159,6 @@ class TransactionsController < ApplicationController
 
       return res.body
     end
+=end
+
 end

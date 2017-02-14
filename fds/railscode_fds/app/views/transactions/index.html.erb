@@ -27,7 +27,6 @@ $(document).ready(function() {
 </script>
  -->
 
-
 <p id="notice"><%= notice %></p>
 <div>
 <div id="header">
@@ -44,7 +43,8 @@ $(document).ready(function() {
       <th>State</th>
       <th>CID</th>
       <th>MAC</th>
-      <th>계좌번호</th>
+      <th>UUID</th>
+      <th>카드번호</th>
       <th>거래시간</th>
       <th class="textCenter">비고</th>
     </tr>
@@ -57,7 +57,8 @@ $(document).ready(function() {
         <td><%= transaction.stats %></td>
         <td><%= transaction.cid %></td>
         <td><%= transaction.mac %></td>
-        <td><%= transaction.accountnum %></td>
+        <td><%= transaction.uuid %></td>
+        <td><%= transaction.cardnum %></td>
         <td><%= transaction.txtime %></td>
         <td>
           <%= link_to "상세", transaction, class: "button button1" %>
