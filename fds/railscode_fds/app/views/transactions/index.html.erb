@@ -1,32 +1,3 @@
-<!-- 
-<script>
-$(document).ready(function() {
-  $('#search_from_hyperledger').click(function(event){
- 
-     var searchCondition = $("#searchBox").val();
-     var searchValue = $("#searchValue").val();
-     var sendInfo = {"jsonrpc": "2.0","method": "query","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[searchCondition,searchValue]},"secureContext":"admin"},"id":1};
-
-     $.ajax({
-         type: "POST",
-         url: "http://192.168.150.129:7050/chaincode",
-         data: JSON.stringify(sendInfo),
-         contentType: "application/json; charset=utf-8",
-         success: function (msg) {
-             if (msg) {
-                console.log(msg.result.message)
-             } else {
-                 alert("Cannot load Hyperledger Data!");
-             }
-         }
-     });
-
-    event.preventDefault(); // Prevent link from following its href
-  });
-});
-</script>
- -->
-
 <p id="notice"><%= notice %></p>
 <div>
 <div id="header">
@@ -46,7 +17,7 @@ $(document).ready(function() {
       <th>UUID</th>
       <th>카드번호</th>
       <th>거래시간</th>
-      <th class="textCenter">비고</th>
+      <th class="textCenter">Action</th>
     </tr>
   </thead>
 
@@ -95,18 +66,23 @@ $(document).ready(function() {
       <th>UUID</th>
       <th>거래시간</th>
       <th>등록기관</th>
+      <th>Action</th>
     </tr>
   </thead>
 
   <tbody>
+
       <% @parsed_hyperledger_result_list.each_with_index do |row, index| %>
         <tr>
-          <td><%= index + 1%></td>
-          <td><%= row["cid"] %></td>
-          <td><%= row["mac"] %></td>
-          <td><%= row["uuid"] %></td>
-          <td><%= row["finalDate"] %></td>
-          <td><%= row["finalTime"] %></td>
+          <% if !row["cid"].empty? %>
+            <td><%= index + 1%></td>
+            <td class="view_cid"><%= row["cid"] %></td>
+            <td><%= row["mac"] %></td>
+            <td><%= row["uuid"] %></td>
+            <td><%= row["finalDate"] %></td>
+            <td><%= row["finalTime"] %></td>
+            <td><button class="button button1 get_cid">삭제</button></td>
+          <% end %>
         </tr>
       <% end %>
    </tbody>
@@ -114,4 +90,58 @@ $(document).ready(function() {
 
 <br>
 <%= link_to "새로고침", @reload_currentPage, class: "button button2" %>
-  </div>
+</div>
+
+<!--HyperLedger FraudEntry-->
+<!-- <script>
+$(document).ready(function() {
+  $('#btnDel').click(function(event){
+ 
+     var cidfordelete = $("#hyperledger_cid").text();
+     var sendInfo = {"jsonrpc": "2.0","method": "query","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":["fdsDeleteWithCid",cidfordelete]},"secureContext":"admin"},"id":1};
+
+     $.ajax({
+         type: "POST",
+         url: "http://192.168.150.129:7050/chaincode",
+         data: JSON.stringify(sendInfo),
+         contentType: "application/json; charset=utf-8",
+         success: function (msg) {
+             if (msg) {
+                alert("called!!")
+             } else {
+                 alert("Cannot load Hyperledger Data!");
+             }
+         }
+     });
+
+    event.preventDefault(); // Prevent link from following its href
+  });
+});
+</script>
+ -->
+<script>
+$("tr").hover(function () { $(this).addClass("hilite"); }, 
+  function () { $(this).removeClass("hilite"); });
+
+$(".get_cid").click(function() {
+    var row = $(this).closest("tr");    // Find the row
+    var cidfordelete = row.find(".view_cid").text(); // Find the text
+    var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":["fdsDeleteWithCid",cidfordelete]},"secureContext":"admin"},"id":1};
+
+     $.ajax({
+         type: "POST",
+         url: "http://192.168.150.129:7050/chaincode",
+         data: JSON.stringify(sendInfo),
+         contentType: "application/json; charset=utf-8",
+         success: function (msg) {
+             if (msg) {
+                alert("BlackList에서 삭제 되었습니다!!")
+                location.reload();
+             } else {
+                alert("BlackList에서 삭제 하는 중 에러가 발생하였습니다!!");
+             }
+         }
+     });
+
+});
+</script>

@@ -102,13 +102,13 @@ h1 {
 }
 
 #header{ 
-  background-color: black;
   color: white;
   font-size: 15px;
   vertical-align: middle;
   height: 34px;
   padding: 10px;
   border-radius: 7px;
+  background: linear-gradient(to right, black , navy);
 }
 
 #header span{
@@ -210,3 +210,7 @@ select {
   border-radius: 5px;
   margin-bottom: 7px;
 }
+
+tr.hilite { 
+  background: #f1f1f1; 
+} 
