@@ -161,6 +161,9 @@ func (t *SimpleChaincode) fdsCreateFraudEntry(stub shim.ChaincodeStubInterface, 
 	}
 
 	nextEid := t.fdsGetNextEid(stub)
+	if nextEid == 0 { // if not initialized
+		t.fdsSetNextEid(stub, 1)
+	}
 	eidKey := PREFIX_EID + strconv.Itoa(nextEid)
 	cidKey := PREFIX_CID + args[IND_CID]
 	macKey := PREFIX_MAC + args[IND_MAC]
