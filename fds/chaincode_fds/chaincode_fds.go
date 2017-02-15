@@ -42,10 +42,10 @@ const IND_REGISTEREDBY = 6
 const IND_REASON = 7
 
 // key-value store 의 키 구분자
-const PREFIX_EID = "FDS_EID_"
-const PREFIX_CID = "FDS_CID_"
-const PREFIX_MAC = "FDS_MAC_"
-const PREFIX_UUID = "FDS_UUID_"
+const PREFIX_EID, PREFIX_EID_END = "FDS_EID_", "FDS_F"
+const PREFIX_CID, PREFIX_CID_END = "FDS_CID_", "FDS_D"
+const PREFIX_MAC, PREFIX_MAC_END = "FDS_MAC_", "FDS_N"
+const PREFIX_UUID, PREFIX_UUID_END = "FDS_UUID_", "FDS_V"
 
 const NEXTEIDKEY = "FDS_NEXTEID"
 
@@ -118,6 +118,8 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.fdsGetFraudEntriesWithMac(stub, args)
 	case "fdsGetFraudEntriesWithUuid":
 		return t.fdsGetFraudEntriesWithUuid(stub, args)
+	case "test":
+		return t.testFunc(stub, args)
 	}
 	return nil, errors.New("Invalid query function name")
 }
@@ -301,7 +303,6 @@ func (t *SimpleChaincode) fdsDeleteFraudEntryWithUuid(stub shim.ChaincodeStubInt
 //   FDS 조회 함수
 // ===========================================================
 
-//func (t *SimpleChaincode) fdsGetFraudEntriesWithCid(cid string) (entries [][]string, result bool) {
 func (t *SimpleChaincode) fdsGetFraudEntriesWithCid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var entryInBytes []byte
@@ -350,7 +351,6 @@ func (t *SimpleChaincode) fdsGetFraudEntriesWithCid(stub shim.ChaincodeStubInter
 	return entriesInBytes, nil
 }
 
-//func (t *SimpleChaincode) fdsGetFraudEntriesWithMac(mac string) (entries [][]string, result bool) {
 func (t *SimpleChaincode) fdsGetFraudEntriesWithMac(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var entryInBytes []byte
@@ -399,7 +399,6 @@ func (t *SimpleChaincode) fdsGetFraudEntriesWithMac(stub shim.ChaincodeStubInter
 	return entriesInBytes, nil
 }
 
-//func (t *SimpleChaincode) fdsGetFraudEntriesWithUuid(uuid string) (entries [][]string, result bool) {
 func (t *SimpleChaincode) fdsGetFraudEntriesWithUuid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var entryInBytes []byte
@@ -486,4 +485,20 @@ func (t *SimpleChaincode) fdsGetAllFraudEntries(stub shim.ChaincodeStubInterface
 	fmt.Println("Query response:")
 	printFraudEntries(entries)
 	return entriesInBytes, nil
+}
+
+// ===========================================================
+//   테스트 함수
+// ===========================================================
+
+func (t *SimpleChaincode) testFunc(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	iter, _ := stub.RangeQueryState(args[0], args[1])
+	fmt.Println("START OF ITERATION")
+	for iter.HasNext() {
+		key, value, _ := iter.Next()
+		fmt.Println("\t" + key + "\t:\t" + string(value))
+	}
+	fmt.Println("END OF ITERATION")
+	return nil, nil
 }
