@@ -125,8 +125,9 @@ $(document).ready(function() {
                 $('.blacklist_tbody > tr').remove()
                 for(i = 0; i < parsed_searchlist.length; i++){
                   if(parsed_searchlist[i].cid !== ""){
-                    $('.blacklist_tbody').append('<tr><td>'+(i+1)+'</td><td>'+parsed_searchlist[i].cid+'</td><td>'+parsed_searchlist[i].mac+'</td><td>'+parsed_searchlist[i].uuid+'</td><td>'+parsed_searchlist[i].finalDate+'</td><td>'+parsed_searchlist[i].finalTime+'</td><td><button class="button button1 get_cid">삭제</button></td></tr>')
+                    $('.blacklist_tbody').append('<tr><td>'+(i+1)+'</td><td>'+parsed_searchlist[i].cid+'</td><td>'+parsed_searchlist[i].mac+'</td><td>'+parsed_searchlist[i].uuid+'</td><td>'+parsed_searchlist[i].finalDate+'</td><td>'+parsed_searchlist[i].registeredBy+'</td><td><select id="selectForDelete"><option value="fdsDeleteFraudEntryWithCid" selected="selected">CID</option><option value="fdsDeleteFraudEntryWithMac">MAC</option><option value="fdsDeleteFraudEntryWithUuid">UUID</option></select><button class="button button1 get_cid">삭제</button></td></tr>')
                   }
+
                 }
               }
              } else {

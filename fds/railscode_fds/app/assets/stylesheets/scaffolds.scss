@@ -181,6 +181,16 @@ input[type="submit"] {
     border-radius: 3px;
     color: white;
     padding: 5px;
+    cursor: pointer;
+    text-decoration: none !important;
+    &:visited {
+      color: #fff;
+    }
+
+    &:hover {
+      color: #666;
+      background-color: #fff;
+    }
 }
 
 #inputWithForm input[type="text"] {
