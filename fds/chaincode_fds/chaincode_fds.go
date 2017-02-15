@@ -74,12 +74,12 @@ func appendToEIDList(b []byte, eid string) []byte {
 }
 
 func printFraudEntries(entries []FdsFraudEntry) {
-	fmt.Println("[\n")
+	fmt.Println("[")
 	for _, entry := range entries {
 		//fmt.Printf("\t[%v%v] = %v\n", PREFIX_EID, i+1, entry)
-		fmt.Printf("\t%v", entry)
+		fmt.Printf("\t%v\n", entry)
 	}
-	fmt.Println("\n]")
+	fmt.Println("]")
 }
 
 // ===========================================================
