@@ -3,8 +3,8 @@
 <div id="header">
   <%= image_tag "shinhan_logo.png" %><span>이상거래 관리 시스템</span>
 </div>
-<div>
-<p class="black_list_title">거래내역</p>
+<div class="black_list_title">
+<span>거래내역</span>
 </div>
 
 <table id="black_list_th">
@@ -46,17 +46,16 @@
 </div>
 
 <br>
-<div>
-<p class="black_list_title">BlackList</p>
+<div class="black_list_title">
+<span>BlackList</span>
 <select id="searchBox">
-  <option value="fdsGetwithid" selected="selected">CID</option>
-  <option value="fdsGetwithmac">MAC</option>
-  <option value="fdsGetwithuuid">UUID</option>
+  <option value="fdsGetFraudEntriesWithCid" selected="selected">CID</option>
+  <option value="fdsGetFraudEntriesWithMac">MAC</option>
+  <option value="fdsGetFraudEntriesWithUuid">UUID</option>
 </select>
-<input type="text" name="transaction[accountnum]" id="search_value">
-<%= link_to "검색", @search, class: "button button2" %>
+<input type="text" id="searchValue">
+<button class="btnSearch button1">검색</button>
 </div>
-<br>
 <table id="black_list_th">
   <thead >
     <tr>
@@ -70,18 +69,24 @@
     </tr>
   </thead>
 
-  <tbody>
-
+  <tbody class="blacklist_tbody">
       <% @parsed_hyperledger_result_list.each_with_index do |row, index| %>
         <tr>
           <% if !row["cid"].empty? %>
             <td><%= index + 1%></td>
             <td class="view_cid"><%= row["cid"] %></td>
-            <td><%= row["mac"] %></td>
-            <td><%= row["uuid"] %></td>
-            <td><%= row["finalDate"] %></td>
-            <td><%= row["finalTime"] %></td>
-            <td><button class="button button1 get_cid">삭제</button></td>
+            <td class="view_mac"><%= row["mac"] %></td>
+            <td class="view_uuid"><%= row["uuid"] %></td>
+            <td class="view_finalDate"><%= row["finalDate"] %></td>
+            <td class="view_registeredBy"><%= row["registeredBy"] %></td>
+            <td>
+              <select id="selectForDelete">
+                <option value="fdsDeleteFraudEntryWithCid" selected="selected">CID</option>
+                <option value="fdsDeleteFraudEntryWithMac">MAC</option>
+                <option value="fdsDeleteFraudEntryWithUuid">UUID</option>
+              </select>
+              <button class="button button1 delete_btn">삭제</button>
+            </td>
           <% end %>
         </tr>
       <% end %>
@@ -91,13 +96,19 @@
 <br>
 <%= link_to "새로고침", @reload_currentPage, class: "button button2" %>
 <!--HyperLedger FraudEntry-->
-<!-- <script>
+<script>
 $(document).ready(function() {
-  $('#btnDel').click(function(event){
+  $('.btnSearch').click(function(event){
  
-     var cidfordelete = $("#hyperledger_cid").text();
-     var sendInfo = {"jsonrpc": "2.0","method": "query","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":["fdsDeleteWithCid",cidfordelete]},"secureContext":"admin"},"id":1};
+     var searchCondition = $("#searchBox").val();
+     var searchValue = $("#searchValue").val();
+     var sendInfo = {"jsonrpc": "2.0","method": "query","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[searchCondition,searchValue]},"secureContext":"admin"},"id":1};
 
+     if (searchValue == ""){
+        searchCondition = "fdsGetAllFraudEntries";
+        sendInfo = {"jsonrpc": "2.0","method": "query","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[searchCondition]},"secureContext":"admin"},"id":1};
+      }
+     
      $.ajax({
          type: "POST",
          url: "http://192.168.150.129:7050/chaincode",
@@ -105,26 +116,42 @@ $(document).ready(function() {
          contentType: "application/json; charset=utf-8",
          success: function (msg) {
              if (msg) {
-                alert("called!!")
+                console.log(msg)
+              if(msg.error){
+                alert("에러 발생 : "+ JSON.stringify(sendInfo))
+              }else{
+                console.log(jQuery.parseJSON(msg.result.message))
+                var parsed_searchlist = jQuery.parseJSON(msg.result.message);
+                $('.blacklist_tbody > tr').remove()
+                for(i = 0; i < parsed_searchlist.length; i++){
+                  if(parsed_searchlist[i].cid !== ""){
+                    $('.blacklist_tbody').append('<tr><td>'+(i+1)+'</td><td>'+parsed_searchlist[i].cid+'</td><td>'+parsed_searchlist[i].mac+'</td><td>'+parsed_searchlist[i].uuid+'</td><td>'+parsed_searchlist[i].finalDate+'</td><td>'+parsed_searchlist[i].finalTime+'</td><td><button class="button button1 get_cid">삭제</button></td></tr>')
+                  }
+                }
+              }
              } else {
                  alert("Cannot load Hyperledger Data!");
              }
          }
      });
-
-    event.preventDefault(); // Prevent link from following its href
   });
 });
-</script>
- -->
-<script>
+
 $("tr").hover(function () { $(this).addClass("hilite"); }, 
   function () { $(this).removeClass("hilite"); });
 
-$(".get_cid").click(function() {
+$(".delete_btn").click(function() {
     var row = $(this).closest("tr");    // Find the row
-    var cidfordelete = row.find(".view_cid").text(); // Find the text
-    var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":["fdsDeleteFraudEntryWithCid",cidfordelete]},"secureContext":"admin"},"id":1};
+    var conditionForDelete = $("#selectForDelete").val();
+    var valueForDelete = row.find(".view_cid").text(); // Find the text
+
+    if (conditionForDelete == "fdsDeleteFraudEntryWithMac"){
+      valueForDelete = row.find(".view_mac").text(); 
+    } else if (conditionForDelete == "fdsDeleteFraudEntryWithUuid"){
+      valueForDelete = row.find(".view_uuid").text();
+    }
+
+    var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[conditionForDelete,valueForDelete]},"secureContext":"admin"},"id":1};
 
      $.ajax({
          type: "POST",

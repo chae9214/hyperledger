@@ -16,12 +16,9 @@ class TransactionsController < ApplicationController
     respond_to do |format|
       format.html { render :index }
       format.json { render json: @parsed_hyperledger_result_list}
-      format.js
     end
 
   end
-
-
 
   # GET /transactions/1
   # GET /transactions/1.json
@@ -95,7 +92,7 @@ class TransactionsController < ApplicationController
     end
 
     def query_from_hyperledger(key,value)
-      uri = URI('http://192.168.99.100:7050/chaincode')
+      uri = URI('http://192.168.150.129:7050/chaincode')
       req = Net::HTTP::Post.new(uri)
 
       json = Hash.new()
@@ -135,38 +132,4 @@ class TransactionsController < ApplicationController
       end
     end
     helper_method :query_from_hyperledger
-
-=begin
-    def invoke_to_hyperledger
-        uri = URI('http://192.168.150.129:7050/chaincode')
-      req = Net::HTTP::Post.new(uri)
-
-      json = Hash.new()
-      json['jsonrpc'] = "2.0"
-      json['method'] = "invoke"
-
-      json['params'] = Hash.new()
-      json['params']['type'] = 1
-
-      json['params']['chaincodeID'] = Hash.new()
-      json['params']['chaincodeID']['name'] = "mycc"
-
-      json['params']['ctorMsg'] = Hash.new()
-      json['params']['ctorMsg']['args'] = [ "register","cidValue","macValue","uuidValue","2017-01-01","e","f","g","h"]
-      json['params']['secureContext'] = "bob"
-      json['id'] = 1
-
-      req.body = json.to_json
-
-      req.content_type = 'application/json'
-
-      res = Net::HTTP.start(uri.hostname, uri.port) do |http|
-        puts req.body
-        http.request(req)
-      end
-
-      return res.body
-    end
-=end
-
 end

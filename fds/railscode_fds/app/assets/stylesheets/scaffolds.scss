@@ -118,8 +118,12 @@ h1 {
 }
 
 .black_list_title{
+  margin: 6px 0px;
+}
+
+.black_list_title span{
   width: 75px;
-  padding: 0px;
+  padding: 3px;
   margin: 10px 0px 5px 0px;
   border-radius: 10px;
   background-color: #30c191;
@@ -145,11 +149,22 @@ h1 {
 }
 
 .button1 {
-    background-color: #30c191; 
-    border: 2px solid #30c191;
-    border-radius: 3px;
-    padding: 2px;
-    color: white;
+  background-color: #30c191; 
+  border: 2px solid #30c191;
+  border-radius: 3px;
+  padding: 2px;
+  color: white;
+  font-size: 11px;
+
+  text-decoration: none !important;
+  &:visited {
+    color: #fff;
+  }
+
+  &:hover {
+    color: #666;
+    background-color: #fff;
+  }
 }
 
 .button2 {
@@ -189,6 +204,7 @@ input:focus, input:valid {
  box-shadow: none;
  outline: none;
  background-position: 0 0;
+ border-radius: 5px
 }
 
 input::-webkit-input-placeholder {
@@ -208,7 +224,7 @@ input:focus::-webkit-input-placeholder, input:valid::-webkit-input-placeholder {
 select {
   padding: 2px;
   border-radius: 5px;
-  margin-bottom: 7px;
+  font-size: 11px;
 }
 
 tr.hilite { 

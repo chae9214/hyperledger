@@ -48,14 +48,18 @@
     <%= f.label :주문번호 %>
     <%= f.text_field :ordernum %>
   </div>
-
+<!-- 
   <div class="field">
     <%= f.label :거래시간 %>
     <%= f.datetime_select :txtime %>
+  </div> -->
+
+  <div class="field" hidden> 
+    <%= f.text_field :txtime, :value => Time.now.localtime %>
   </div>
 
   <div class="field" hidden> 
-    <%= f.text_field :uuid, :value => 'hardcodeduuid' %>
+    <%= f.text_field :uuid, :value => '5331234522' %>
   </div>
   
   <div class="actions">
