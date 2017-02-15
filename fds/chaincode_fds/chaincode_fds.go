@@ -191,28 +191,28 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	switch function {
-	case "register":
+	case "fdsCreateFraudEntry":
 		return t.fdsCreateFraudEntry(stub, args)
-	case "fdsDeleteWithCid":
-		return t.fdsDeleteWithCid(stub, args)
-	case "fdsDeleteWithMac":
-		return t.fdsDeleteWithMac(stub, args)
-	case "fdsDeleteWithUuid":
-		return t.fdsDeleteWithUuid(stub, args)
+	case "fdsDeleteFraudEntryWithCid":
+		return t.fdsDeleteFraudEntryWithCid(stub, args)
+	case "fdsDeleteFraudEntryWithMac":
+		return t.fdsDeleteFraudEntryWithMac(stub, args)
+	case "fdsDeleteFraudEntryWithUuid":
+		return t.fdsDeleteFraudEntryWithUuid(stub, args)
 	}
 	return nil, errors.New("Invalid invoke function name. Expecting \"register\" \"removewith~\"")
 }
 
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	switch function {
-	case "fdsGetAll":
-		return t.fdsGetAll(stub, args)
-	case "fdsGetWithCid":
-		return t.fdsGetWithCid(stub, args)
-	case "fdsGetWithMac":
-		return t.fdsGetWithMac(stub, args)
-	case "fdsGetWithUuid":
-		return t.fdsGetWithUuid(stub, args)
+	case "fdsGetAllFraudEntries":
+		return t.fdsGetAllFraudEntries(stub, args)
+	case "fdsGetFraudEntriesWithCid":
+		return t.fdsGetFraudEntriesWithCid(stub, args)
+	case "fdsGetFraudEntriesWithMac":
+		return t.fdsGetFraudEntriesWithMac(stub, args)
+	case "fdsGetFraudEntriesWithUuid":
+		return t.fdsGetFraudEntriesWithUuid(stub, args)
 	case "getnexteid":
 		return []byte(strconv.Itoa(t.nextEID)), nil
 	}
@@ -292,7 +292,7 @@ func (t *SimpleChaincode) fdsCreateFraudEntry(stub shim.ChaincodeStubInterface, 
 //  FDS 삭제 함수
 // ===========================================================
 
-func (t *SimpleChaincode) fdsDeleteWithCid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) fdsDeleteFraudEntryWithCid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var err error
 
@@ -321,7 +321,7 @@ func (t *SimpleChaincode) fdsDeleteWithCid(stub shim.ChaincodeStubInterface, arg
 	return nil, nil
 }
 
-func (t *SimpleChaincode) fdsDeleteWithMac(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) fdsDeleteFraudEntryWithMac(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var err error
 
@@ -350,7 +350,7 @@ func (t *SimpleChaincode) fdsDeleteWithMac(stub shim.ChaincodeStubInterface, arg
 	return nil, nil
 }
 
-func (t *SimpleChaincode) fdsDeleteWithUuid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) fdsDeleteFraudEntryWithUuid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var err error
 
@@ -383,8 +383,8 @@ func (t *SimpleChaincode) fdsDeleteWithUuid(stub shim.ChaincodeStubInterface, ar
 //   조회 함수
 // ===========================================================
 
-//func (t *SimpleChaincode) fdsGetWithCid(cid string) (entries [][]string, result bool) {
-func (t *SimpleChaincode) fdsGetWithCid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+//func (t *SimpleChaincode) fdsGetFraudEntriesWithCid(cid string) (entries [][]string, result bool) {
+func (t *SimpleChaincode) fdsGetFraudEntriesWithCid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var entryInBytes []byte
 	var entriesInBytes []byte
@@ -429,8 +429,8 @@ func (t *SimpleChaincode) fdsGetWithCid(stub shim.ChaincodeStubInterface, args [
 	return entriesInBytes, nil
 }
 
-//func (t *SimpleChaincode) fdsGetWithMac(mac string) (entries [][]string, result bool) {
-func (t *SimpleChaincode) fdsGetWithMac(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+//func (t *SimpleChaincode) fdsGetFraudEntriesWithMac(mac string) (entries [][]string, result bool) {
+func (t *SimpleChaincode) fdsGetFraudEntriesWithMac(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var entryInBytes []byte
 	var entriesInBytes []byte
@@ -475,8 +475,8 @@ func (t *SimpleChaincode) fdsGetWithMac(stub shim.ChaincodeStubInterface, args [
 	return entriesInBytes, nil
 }
 
-//func (t *SimpleChaincode) fdsGetWithUuid(uuid string) (entries [][]string, result bool) {
-func (t *SimpleChaincode) fdsGetWithUuid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+//func (t *SimpleChaincode) fdsGetFraudEntriesWithUuid(uuid string) (entries [][]string, result bool) {
+func (t *SimpleChaincode) fdsGetFraudEntriesWithUuid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
 	var entryInBytes []byte
 	var entriesInBytes []byte
@@ -521,7 +521,7 @@ func (t *SimpleChaincode) fdsGetWithUuid(stub shim.ChaincodeStubInterface, args 
 	return entriesInBytes, nil
 }
 
-func (t *SimpleChaincode) fdsGetAll(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) fdsGetAllFraudEntries(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var entryInBytes []byte
 	var entriesInBytes []byte
 	var err error

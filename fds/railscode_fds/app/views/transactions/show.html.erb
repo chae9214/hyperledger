@@ -53,7 +53,7 @@ $(document).ready(function() {
      var view_registeredbyValue = $("#view_registeredbyValue").text();
      var view_reasonValue = $("#view_reasonValue").text();
 
-     var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":["register",view_cidValue,view_macValue,view_uuidValue,view_finaldateValue,view_finaltimeValue,view_producedbyValue,view_registeredbyValue,view_reasonValue]},"secureContext":"admin"},"id":1};
+     var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":["fdsCreateFraudEntry",view_cidValue,view_macValue,view_uuidValue,view_finaldateValue,view_finaltimeValue,view_producedbyValue,view_registeredbyValue,view_reasonValue]},"secureContext":"admin"},"id":1};
 
      $.ajax({
          type: "POST",

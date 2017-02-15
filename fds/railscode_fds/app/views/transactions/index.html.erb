@@ -91,6 +91,16 @@
 <br>
 <%= link_to "새로고침", @reload_currentPage, class: "button button2" %>
 </div>
+   <div id="top"> 
+       <a tabindex="-1" href="metadata.html" id="metadata-link" data-target="#modal" data-toggle="modal">Metadata</a>
+    </div>
+
+    <div id="modal" class="modal hide fade in" style="display:none;">
+      <div class="modal-header">header<a class="close" data-dismiss="modal">x</a></div>
+      <div class="modal-body"></div>
+      <div class="model-footer">footer</div>
+    </div>
+
 
 <!--HyperLedger FraudEntry-->
 <!-- <script>
@@ -126,7 +136,7 @@ $("tr").hover(function () { $(this).addClass("hilite"); },
 $(".get_cid").click(function() {
     var row = $(this).closest("tr");    // Find the row
     var cidfordelete = row.find(".view_cid").text(); // Find the text
-    var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":["fdsDeleteWithCid",cidfordelete]},"secureContext":"admin"},"id":1};
+    var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":["fdsDeleteFraudEntryWithCid",cidfordelete]},"secureContext":"admin"},"id":1};
 
      $.ajax({
          type: "POST",
@@ -144,4 +154,9 @@ $(".get_cid").click(function() {
      });
 
 });
+
+  $(document).ready(function() {
+     $('#top').find('a').trigger('click');
+
+    });
 </script>
