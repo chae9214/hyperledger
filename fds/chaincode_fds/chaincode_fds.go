@@ -15,13 +15,12 @@ import (
 // ===========================================================
 
 type SimpleChaincode struct {
-	nextEID int
 }
 
-type FraudEntry struct {
-	CID          string `json:"cid"`
-	MAC          string `json:"mac"`
-	UUID         string `json:"uuid"`
+type FdsFraudEntry struct {
+	Cid          string `json:"cid"`
+	Mac          string `json:"mac"`
+	Uuid         string `json:"uuid"`
 	FinalDate    string `json:"finalDate"`
 	FinalTime    string `json:"finalTime"`
 	ProducedBy   string `json:"producedBy"`
@@ -43,51 +42,18 @@ const IND_REGISTEREDBY = 6
 const IND_REASON = 7
 
 // key-value store 의 키 구분자
-const PREFIX_EID = "eid_"
-const PREFIX_CID = "cid_"
-const PREFIX_MAC = "mac_"
-const PREFIX_UUID = "uuid_"
+const PREFIX_EID = "FDS_EID_"
+const PREFIX_CID = "FDS_CID_"
+const PREFIX_MAC = "FDS_MAC_"
+const PREFIX_UUID = "FDS_UUID_"
+
+const NEXTEIDKEY = "FDS_NEXTEID"
 
 const FIELDSEP = "|"
 const ENTRYSEP = "$"
 
-/*
 // ===========================================================
-//  Initialization 함수
-// ===========================================================
-
-func CreateStub() ChaincodeStubInterface {
-	var stub ChaincodeStubInterface
-	stub.kvs = make(map[string][]byte)
-	return stub
-}
-
-func CreateFDSChaincodeStub() FDSChaincodeStub {
-	kvs := make(map[string][]byte)
-	nextEID := 1
-	stub := FDSChaincodeStub{ChaincodeStubInterface{kvs}, nextEID}
-	return stub
-}
-
-func CreateSLAChaincodeStub() SLAChaincodeStub {
-	kvs := make(map[string][]byte)
-	stub := SLAChaincodeStub{ChaincodeStubInterface{kvs}}
-	return stub
-}
-
-func (stub *ChaincodeStubInterface) String() string {
-	var s string
-
-	s += "<KVS>\n"
-	for k, v := range stub.kvs {
-		s += "\t" + k + ": " + string(v) + "\n"
-	}
-	return s
-}
-*/
-
-// ===========================================================
-//  Serialize / Deserialize 함수
+//  Helper 함수
 // ===========================================================
 
 func stringArrayToByteArray(slist []string) []byte {
@@ -107,40 +73,7 @@ func appendToEIDList(b []byte, eid string) []byte {
 	return stringArrayToByteArray(append(eidKeys, eid))
 }
 
-func entryStringsToJsonString(entries []string) string {
-	var fieldnames = make([]string, NUM_FIELDS)
-	fieldnames[IND_CID] = "cid"
-	fieldnames[IND_MAC] = "mac"
-	fieldnames[IND_UUID] = "uuid"
-	fieldnames[IND_FINALDATE] = "finalDate"
-	fieldnames[IND_FINALTIME] = "finalTime"
-	fieldnames[IND_PRODUCEDBY] = "producedBy"
-	fieldnames[IND_REGISTEREDBY] = "registeredBy"
-	fieldnames[IND_REASON] = "reason"
-
-	jsonStr := "[\n"
-	for i, entry := range entries {
-		jsonStr += "\t{ "
-		if entry != "" {
-			fields := strings.Split(entry, FIELDSEP)
-			for j, fieldname := range fieldnames {
-				jsonStr += "\"" + fieldname + "\" : \"" + fields[j] + "\""
-				if j < len(fields)-1 {
-					jsonStr += ", "
-				}
-			}
-		}
-		jsonStr += " }"
-		if i < len(entries)-1 {
-			jsonStr += ",\n"
-		}
-	}
-	jsonStr += "\n]"
-
-	return jsonStr
-}
-
-func printFraudEntries(entries []FraudEntry) {
+func printFraudEntries(entries []FdsFraudEntry) {
 	fmt.Println("[\n")
 	for _, entry := range entries {
 		//fmt.Printf("\t[%v%v] = %v\n", PREFIX_EID, i+1, entry)
@@ -148,35 +81,6 @@ func printFraudEntries(entries []FraudEntry) {
 	}
 	fmt.Println("\n]")
 }
-
-/*
-// ===========================================================
-//  ChaincodeStubInterface 함수
-// ===========================================================
-
-func (stub *ChaincodeStubInterface) PutState(key string, value []byte) error {
-	if value == nil {
-		return errors.New("entry cannot be empty")
-	} else {
-		stub.kvs[key] = value
-		return nil
-	}
-}
-
-func (stub *ChaincodeStubInterface) GetState(key string) ([]byte, error) {
-	value := stub.kvs[key]
-	return value, nil
-}
-
-func (stub *ChaincodeStubInterface) DelState(key string) error {
-	delete(stub.kvs, key)
-	return nil
-}
-
-func (stub *ChaincodeStubInterface) GetKVSLength() int {
-	return len(stub.kvs)
-}
-*/
 
 // ===========================================================
 //  SimpleChaincode 함수
@@ -186,6 +90,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	if len(args) != 0 {
 		return nil, errors.New("Initializing requires 0 argument but given" + strconv.Itoa(len(args)))
 	}
+	t.fdsSetNextEid(stub, 1)
 	return nil, nil
 }
 
@@ -200,7 +105,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	case "fdsDeleteFraudEntryWithUuid":
 		return t.fdsDeleteFraudEntryWithUuid(stub, args)
 	}
-	return nil, errors.New("Invalid invoke function name. Expecting \"register\" \"removewith~\"")
+	return nil, errors.New("Invalid invoke function name")
 }
 
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
@@ -213,19 +118,31 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.fdsGetFraudEntriesWithMac(stub, args)
 	case "fdsGetFraudEntriesWithUuid":
 		return t.fdsGetFraudEntriesWithUuid(stub, args)
-	case "getnexteid":
-		return []byte(strconv.Itoa(t.nextEID)), nil
 	}
-	return nil, errors.New("Invalid query function name. Expecting \"lookupwith~\"")
+	return nil, errors.New("Invalid query function name")
 }
 
 func main() {
 	t := new(SimpleChaincode)
-	t.nextEID = 1
 	err := shim.Start(t)
 	if err != nil {
 		fmt.Printf("Error starting Simple chaincode: %s", err)
 	}
+}
+
+// ===========================================================
+//   EID 조회/수정 함수
+// ===========================================================
+
+func (t *SimpleChaincode) fdsGetNextEid(stub shim.ChaincodeStubInterface) int {
+	nextEidInBytes, _ := stub.GetState(NEXTEIDKEY)
+	nextEidInInt, _ := strconv.Atoi(string(nextEidInBytes))
+	return nextEidInInt
+}
+
+func (t *SimpleChaincode) fdsSetNextEid(stub shim.ChaincodeStubInterface, nextEidInInt int) {
+	nextEidInBytes := []byte(strconv.Itoa(nextEidInInt))
+	stub.PutState(NEXTEIDKEY, nextEidInBytes)
 }
 
 // ===========================================================
@@ -241,12 +158,13 @@ func (t *SimpleChaincode) fdsCreateFraudEntry(stub shim.ChaincodeStubInterface, 
 		return nil, errors.New("Register requires" + strconv.Itoa(NUM_FIELDS) + "arguements but given" + strconv.Itoa(len(args)))
 	}
 
-	eidKey := PREFIX_EID + strconv.Itoa(t.nextEID)
+	nextEid := t.fdsGetNextEid(stub)
+	eidKey := PREFIX_EID + strconv.Itoa(nextEid)
 	cidKey := PREFIX_CID + args[IND_CID]
 	macKey := PREFIX_MAC + args[IND_MAC]
 	uuidKey := PREFIX_UUID + args[IND_UUID]
 
-	entry := FraudEntry{args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]}
+	entry := FdsFraudEntry{args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]}
 	entryInBytes, err = json.Marshal(entry)
 	if err != nil {
 		return nil, err
@@ -284,7 +202,7 @@ func (t *SimpleChaincode) fdsCreateFraudEntry(stub shim.ChaincodeStubInterface, 
 		return nil, err
 	}
 
-	t.nextEID++
+	t.fdsSetNextEid(stub, nextEid+1)
 	return nil, nil
 }
 
@@ -380,7 +298,7 @@ func (t *SimpleChaincode) fdsDeleteFraudEntryWithUuid(stub shim.ChaincodeStubInt
 }
 
 // ===========================================================
-//   조회 함수
+//   FDS 조회 함수
 // ===========================================================
 
 //func (t *SimpleChaincode) fdsGetFraudEntriesWithCid(cid string) (entries [][]string, result bool) {
@@ -404,15 +322,18 @@ func (t *SimpleChaincode) fdsGetFraudEntriesWithCid(stub shim.ChaincodeStubInter
 	//fmt.Println("EIDS looked up with", cidKey, ":", string(eidsInBytes))
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
-	entries := make([]FraudEntry, len(eidKeys))
+	entries := make([]FdsFraudEntry, len(eidKeys))
 	for i, eidKey := range eidKeys {
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
 			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
+		if entryInBytes == nil {
+			continue
+		}
 		//fmt.Println("ENTRY looked up with", eidKey, ":", string(entryInBytes))
 
-		var entry FraudEntry
+		var entry FdsFraudEntry
 		err = json.Unmarshal(entryInBytes, &entry)
 		if err != nil {
 			return nil, err
@@ -450,15 +371,18 @@ func (t *SimpleChaincode) fdsGetFraudEntriesWithMac(stub shim.ChaincodeStubInter
 	//fmt.Println("EIDS looked up with", macKey, ":", string(eidsInBytes))
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
-	entries := make([]FraudEntry, len(eidKeys))
+	entries := make([]FdsFraudEntry, len(eidKeys))
 	for i, eidKey := range eidKeys {
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
 			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
+		if entryInBytes == nil {
+			continue
+		}
 		//fmt.Println("ENTRY looked up with", eidKey, ":", string(entryInBytes))
 
-		var entry FraudEntry
+		var entry FdsFraudEntry
 		err = json.Unmarshal(entryInBytes, &entry)
 		if err != nil {
 			return nil, err
@@ -496,15 +420,18 @@ func (t *SimpleChaincode) fdsGetFraudEntriesWithUuid(stub shim.ChaincodeStubInte
 	//fmt.Println("EIDS looked up with", uuidKey, ":", string(eidsInBytes))
 
 	eidKeys := byteArrayToStringArray(eidsInBytes)
-	entries := make([]FraudEntry, len(eidKeys))
+	entries := make([]FdsFraudEntry, len(eidKeys))
 	for i, eidKey := range eidKeys {
 		entryInBytes, err = stub.GetState(eidKey)
 		if err != nil {
 			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
+		if entryInBytes == nil {
+			continue
+		}
 		//fmt.Println("ENTRY looked up with", eidKey, ":", string(entryInBytes))
 
-		var entry FraudEntry
+		var entry FdsFraudEntry
 		err = json.Unmarshal(entryInBytes, &entry)
 		if err != nil {
 			return nil, err
@@ -530,20 +457,21 @@ func (t *SimpleChaincode) fdsGetAllFraudEntries(stub shim.ChaincodeStubInterface
 		return nil, errors.New("Looking up all entries requires 0 argument but given" + strconv.Itoa(len(args)))
 	}
 
-	entries := make([]FraudEntry, t.nextEID-1)
-	for i := 0; i < t.nextEID-1; i++ {
+	nextEid := t.fdsGetNextEid(stub)
+	entries := make([]FdsFraudEntry, nextEid-1)
+	for i := 0; i < nextEid-1; i++ {
 		eidKey := PREFIX_EID + strconv.Itoa(i+1)
 
 		entryInBytes, err = stub.GetState(eidKey)
-		fmt.Println("ENTRY looked up with", eidKey, ":", string(entryInBytes))
+		//fmt.Println("ENTRY looked up with", eidKey, ":", string(entryInBytes))
 		if err != nil {
-			return nil, err
+			return nil, errors.New("Failed to delete state for" + eidKey)
 		}
 		if entryInBytes == nil {
 			continue
 		}
 
-		var entry FraudEntry
+		var entry FdsFraudEntry
 		err = json.Unmarshal(entryInBytes, &entry)
 		if err != nil {
 			return nil, err
