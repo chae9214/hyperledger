@@ -1,5 +1,4 @@
-/*
-Copyright IBM Corp. 2016 All Rights Reserved.
+/*copyright IBM Corp. 2016 All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,14 +25,21 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-
+	"strings"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-// SimpleChaincode example simple Chaincode implementation
+// ===========================================================
+//  Struct 및 Constant 정의
+// ===========================================================
 type SimpleChaincode struct {
 }
+
+// key-value store 의 키 구분자
 const ContractIDSeparator = "|"
+const FIELDSEP = "|"
+const ENTRYSEP = "$"
+
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	var A, B string    // Entities
@@ -77,6 +83,18 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 
 	switch function {
 
+	case "registerContract":
+		return t.registerContract(stub, args)
+	}
+
+	return nil, errors.New("Invalid invoke function name. Expecting \"searchContractByID\" \"searchContractListByName~\"")
+}
+
+// Query callback representing the query of a chaincode
+func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+
+	switch function {
+
 	case "searchContractByID":
 		return t.searchContractByID(stub, args)
 
@@ -86,11 +104,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	case "searchContractListByClient":
 		return t.searchContractListByClient(stub, args)
 
-	case "registerContract":
-		return t.registerContract(stub, args)
 	}
-
-	return nil, errors.New("Invalid invoke function name. Expecting \"searchContractByID\" \"searchContractListByName~\"")
+	return nil, errors.New("Invalid Query function name. Expecting \"searchContractByID\" \"searchContractListByName~\"")
 }
 
 func main() {
@@ -115,37 +130,6 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 	}
 
 	return nil, nil
-}
-
-// Query callback representing the query of a chaincode
-func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	if function != "query" {
-		return nil, errors.New("Invalid query function name. Expecting \"query\"")
-	}
-	var A string // Entities
-	var err error
-
-	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
-	}
-
-	A = args[0]
-
-	// Get the state from the ledger
-	Avalbytes, err := stub.GetState(A)
-	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
-		return nil, errors.New(jsonResp)
-	}
-
-	if Avalbytes == nil {
-		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
-		return nil, errors.New(jsonResp)
-	}
-
-	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
-	fmt.Printf("Query Response:%s\n", jsonResp)
-	return Avalbytes, nil
 }
 
 // ===========================================================
@@ -235,7 +219,7 @@ func (t *SimpleChaincode) searchContractByID(stub shim.ChaincodeStubInterface, a
 		return nil, errors.New("Failed to get state with" + dataInBytes)
 	}
 
-	// fmt.Printf("searchbyid Response:%s\n", Valuebytes)
+	fmt.Printf("searchbyid Response:%s\n", Valuebytes)
 
 	return Valuebytes, nil
 }
