@@ -95,7 +95,8 @@
 
 <br>
 <%= link_to "새로고침", @reload_currentPage, class: "button button2" %>
-<!--HyperLedger FraudEntry-->
+
+
 <script>
 $(document).ready(function() {
   $('.btnSearch').click(function(event){
@@ -125,10 +126,40 @@ $(document).ready(function() {
                 $('.blacklist_tbody > tr').remove()
                 for(i = 0; i < parsed_searchlist.length; i++){
                   if(parsed_searchlist[i].cid !== ""){
-                    $('.blacklist_tbody').append('<tr><td>'+(i+1)+'</td><td>'+parsed_searchlist[i].cid+'</td><td>'+parsed_searchlist[i].mac+'</td><td>'+parsed_searchlist[i].uuid+'</td><td>'+parsed_searchlist[i].finalDate+'</td><td>'+parsed_searchlist[i].registeredBy+'</td><td><select id="selectForDelete"><option value="fdsDeleteFraudEntryWithCid" selected="selected">CID</option><option value="fdsDeleteFraudEntryWithMac">MAC</option><option value="fdsDeleteFraudEntryWithUuid">UUID</option></select><button class="button button1 get_cid">삭제</button></td></tr>')
+                    $('.blacklist_tbody').append('<tr><td>'+(i+1)+'</td><td>'+parsed_searchlist[i].cid+'</td><td>'+parsed_searchlist[i].mac+'</td><td>'+parsed_searchlist[i].uuid+'</td><td>'+parsed_searchlist[i].finalDate+'</td><td>'+parsed_searchlist[i].registeredBy+'</td><td><select id="selectForDelete"><option value="fdsDeleteFraudEntryWithCid" selected="selected">CID</option><option value="fdsDeleteFraudEntryWithMac">MAC</option><option value="fdsDeleteFraudEntryWithUuid">UUID</option></select> <button class="button button1 delete_btn">삭제</button></td></tr>')
                   }
-
                 }
+
+                $("tr").hover(function () { $(this).addClass("hilite"); }, function () { $(this).removeClass("hilite"); });
+
+                $(".delete_btn").click(function() {
+                    var row = $(this).closest("tr");    // Find the row
+                    var conditionForDelete = $("#selectForDelete").val();
+                    var valueForDelete = row.find(".view_cid").text(); // Find the text
+
+                    if (conditionForDelete == "fdsDeleteFraudEntryWithMac"){
+                      valueForDelete = row.find(".view_mac").text(); 
+                    } else if (conditionForDelete == "fdsDeleteFraudEntryWithUuid"){
+                      valueForDelete = row.find(".view_uuid").text();
+                    }
+
+                    var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[conditionForDelete,valueForDelete]},"secureContext":"admin"},"id":1};
+
+                     $.ajax({
+                         type: "POST",
+                         url: "http://192.168.150.129:7050/chaincode",
+                         data: JSON.stringify(sendInfo),
+                         contentType: "application/json; charset=utf-8",
+                         success: function (msg) {
+                             if (msg) {
+                                alert("BlackList에서 삭제 되었습니다!!")
+                                location.reload();
+                             } else {
+                                alert("BlackList에서 삭제 하는 중 에러가 발생하였습니다!!");
+                             }
+                         }
+                     });
+                });
               }
              } else {
                  alert("Cannot load Hyperledger Data!");
@@ -138,8 +169,7 @@ $(document).ready(function() {
   });
 });
 
-$("tr").hover(function () { $(this).addClass("hilite"); }, 
-  function () { $(this).removeClass("hilite"); });
+$("tr").hover(function () { $(this).addClass("hilite"); }, function () { $(this).removeClass("hilite"); });
 
 $(".delete_btn").click(function() {
     var row = $(this).closest("tr");    // Find the row
@@ -168,6 +198,5 @@ $(".delete_btn").click(function() {
              }
          }
      });
-
 });
 </script>
