@@ -29,7 +29,7 @@ a {
 
   &:hover {
     color: #666;
-    background-color: #000;
+    background-color: #fff;
   }
 }
 
@@ -102,13 +102,13 @@ h1 {
 }
 
 #header{ 
-  background-color: black;
   color: white;
   font-size: 15px;
   vertical-align: middle;
   height: 34px;
   padding: 10px;
   border-radius: 7px;
+  background: linear-gradient(to right, black , navy);
 }
 
 #header span{
@@ -118,8 +118,12 @@ h1 {
 }
 
 .black_list_title{
+  margin: 6px 0px;
+}
+
+.black_list_title span{
   width: 75px;
-  padding: 0px;
+  padding: 3px;
   margin: 10px 0px 5px 0px;
   border-radius: 10px;
   background-color: #30c191;
@@ -145,9 +149,22 @@ h1 {
 }
 
 .button1 {
-    background-color: #30c191; 
-    border: 2px solid #30c191;
-    border-radius: 3px;
+  background-color: #30c191; 
+  border: 2px solid #30c191;
+  border-radius: 3px;
+  padding: 2px;
+  color: white;
+  font-size: 11px;
+
+  text-decoration: none !important;
+  &:visited {
+    color: #fff;
+  }
+
+  &:hover {
+    color: #666;
+    background-color: #fff;
+  }
 }
 
 .button2 {
@@ -155,7 +172,7 @@ h1 {
     border: 2px solid #8a8680;
     border-radius: 3px;
     padding: 5px;
-    color: white
+    color: white;
 }
 
 input[type="submit"] {
@@ -164,6 +181,16 @@ input[type="submit"] {
     border-radius: 3px;
     color: white;
     padding: 5px;
+    cursor: pointer;
+    text-decoration: none !important;
+    &:visited {
+      color: #fff;
+    }
+
+    &:hover {
+      color: #666;
+      background-color: #fff;
+    }
 }
 
 #inputWithForm input[type="text"] {
@@ -187,6 +214,7 @@ input:focus, input:valid {
  box-shadow: none;
  outline: none;
  background-position: 0 0;
+ border-radius: 5px
 }
 
 input::-webkit-input-placeholder {
@@ -202,3 +230,13 @@ input:focus::-webkit-input-placeholder, input:valid::-webkit-input-placeholder {
  transform: translateY(-20px);
  visibility: visible !important;
 }
+
+select {
+  padding: 2px;
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+tr.hilite { 
+  background: #f1f1f1; 
+} 
