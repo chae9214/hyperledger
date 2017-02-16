@@ -32,67 +32,67 @@ import (
 )
 
 // ===========================================================
-//  Struct ¹× Constant Á¤ÀÇ
+//  Struct ë° Constant ì •ì˜
 // ===========================================================
 type SimpleChaincode struct {
 }
 
-// Sla Contract ±¸Á¶Ã¼¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+// Sla Contract êµ¬ì¡°ì²´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 type SlaContract struct {
-	RegId           string           `json:  "RegId"`           // SLA°è¾àµî·Ï¹øÈ£
-	Name            string           `json:  "Name"`            // SLA°è¾à¸í
-	Kind            string           `json:  "Kind"`            // SLA°è¾àÁ¾·ù
-	StaDate         string           `json:  "StaDate"`         // SLA°è¾à½ÃÀÛÀÏ
-	EndDate         string           `json:  "EndDate"`         // SLA°è¾àÁ¾·áÀÏ
-	Client          string           `json:  "Client"`          // °í°´»ç¸í
-	ClientPerson    string           `json:  "ClientPerson"`    // °í°´´ã´çÀÚ¸í
-	ClientPersonTel string           `json:  "ClientPersonTel"` // °í°´´ã´çÀÚÀüÈ­¹øÈ£
-	AssessDate      string           `json:  "AssessDate"`      // Æò°¡¿¹Á¤ÀÏ
-	Progression     string           `json:  "Progression"`     // ÁøÇà´Ü°è
-	AssessYn        string           `json:  "AssessYn"`        // SLAÆò°¡ ´ë»ó¿©ºÎ
-	Approvals       []SlaApproval    `json:  "Approvals"`       // SLA°áÀç¼±Á¤º¸
-	ServiceItems    []SlaServiceItem `json:  "ServiceItems"`    // SLAÆò°¡Ç×¸ñ
+	RegId           string           `json:  "RegId"`           // SLAê³„ì•½ë“±ë¡ë²ˆí˜¸
+	Name            string           `json:  "Name"`            // SLAê³„ì•½ëª…
+	Kind            string           `json:  "Kind"`            // SLAê³„ì•½ì¢…ë¥˜
+	StaDate         string           `json:  "StaDate"`         // SLAê³„ì•½ì‹œì‘ì¼
+	EndDate         string           `json:  "EndDate"`         // SLAê³„ì•½ì¢…ë£Œì¼
+	Client          string           `json:  "Client"`          // ê³ ê°ì‚¬ëª…
+	ClientPerson    string           `json:  "ClientPerson"`    // ê³ ê°ë‹´ë‹¹ìëª…
+	ClientPersonTel string           `json:  "ClientPersonTel"` // ê³ ê°ë‹´ë‹¹ìì „í™”ë²ˆí˜¸
+	AssessDate      string           `json:  "AssessDate"`      // í‰ê°€ì˜ˆì •ì¼
+	Progression     string           `json:  "Progression"`     // ì§„í–‰ë‹¨ê³„
+	AssessYn        string           `json:  "AssessYn"`        // SLAí‰ê°€ ëŒ€ìƒì—¬ë¶€
+	Approvals       []SlaApproval    `json:  "Approvals"`       // SLAê²°ì¬ì„ ì •ë³´
+	ServiceItems    []SlaServiceItem `json:  "ServiceItems"`    // SLAí‰ê°€í•­ëª©
 }
 
-// Sla Approval ±¸Á¶Ã¼¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+// Sla Approval êµ¬ì¡°ì²´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 type SlaApproval struct {
-	ApprovalUserId     string `json:  "ApprovalUserId"`     // °áÀç»ç¿ëÀÚID
-	ApprovalCompany    string `json:  "ApprovalCompany"`    // °áÀçÈ¸»ç¸í
-	ApprovalDepartment string `json:  "ApprovalDepartment"` // °áÀçºÎ¼­¸í
-	ApprovalName       string `json:  "ApprovalName"`       // °áÀçÀÚ¸í
-	ApprovalState      string `json:  "ApprovalState"`      // °áÀç»óÅÂ
-	ApprovalDate       string `json:  "ApprovalDate"`       // °áÀçÀÏÀÚ
-	ApprovalComment    string `json:  "ApprovalComment"`    // ÀÇ°ß³»¿ë
-	ApprovalAlram      string `json:  "ApprovalAlram"`      // ¾Ë¶÷¿©ºÎ  TODO Alram --> Alarm
+	ApprovalUserId     string `json:  "ApprovalUserId"`     // ê²°ì¬ì‚¬ìš©ìID
+	ApprovalCompany    string `json:  "ApprovalCompany"`    // ê²°ì¬íšŒì‚¬ëª…
+	ApprovalDepartment string `json:  "ApprovalDepartment"` // ê²°ì¬ë¶€ì„œëª…
+	ApprovalName       string `json:  "ApprovalName"`       // ê²°ì¬ìëª…
+	ApprovalState      string `json:  "ApprovalState"`      // ê²°ì¬ìƒíƒœ
+	ApprovalDate       string `json:  "ApprovalDate"`       // ê²°ì¬ì¼ì
+	ApprovalComment    string `json:  "ApprovalComment"`    // ì˜ê²¬ë‚´ìš©
+	ApprovalAlram      string `json:  "ApprovalAlram"`      // ì•ŒëŒì—¬ë¶€  TODO Alram --> Alarm
 }
 
-// Sla ServiceItem ±¸Á¶Ã¼¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+// Sla ServiceItem êµ¬ì¡°ì²´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 type SlaServiceItem struct {
-	ServiceItem     string `json:  "ServiceItem"`     // ¼­ºñ½ºÇ×¸ñ
-	ScoreItem       string `json:  "ScoreItem"`       // Æò°¡Ç×¸ñ
-	MeasurementItem string `json:  "MeasurementItem"` // ÃøÁ¤±âÁØ
-	ExplainItem     string `json:  "ExplainItem"`     // ¼³¸í
-	DivideScore     string `json:  "DivideScore"`     // SLA¹èºĞÁ¡¼ö
+	ServiceItem     string `json:  "ServiceItem"`     // ì„œë¹„ìŠ¤í•­ëª©
+	ScoreItem       string `json:  "ScoreItem"`       // í‰ê°€í•­ëª©
+	MeasurementItem string `json:  "MeasurementItem"` // ì¸¡ì •ê¸°ì¤€
+	ExplainItem     string `json:  "ExplainItem"`     // ì„¤ëª…
+	DivideScore     string `json:  "DivideScore"`     // SLAë°°ë¶„ì ìˆ˜
 }
 
-// Sla EvaluationRoot±¸Á¶Ã¼¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+// Sla EvaluationRootêµ¬ì¡°ì²´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 type SlaEvalutionRoot struct {
-	RegId        string           `json:  "RegId"`        // SLA°è¾àµî·Ï¹øÈ£
-	ContractId   string           `json:  "ContractId"`   // SLA°è¾à¸í
-	Status       string           `json:  "Status"`       // SLA°è¾à¸í
-	Evaluations  []SlaEvaluation  `json:  "Evaluations"`  // SLAÆò°¡µî·Ï¹øÈ£
-	ServiceItems []SlaServiceItem `json:  "ServiceItems"` // SLAÆò°¡Ç×¸ñ
+	RegId        string           `json:  "RegId"`        // SLAê³„ì•½ë“±ë¡ë²ˆí˜¸
+	ContractId   string           `json:  "ContractId"`   // SLAê³„ì•½ëª…
+	Status       string           `json:  "Status"`       // SLAê³„ì•½ëª…
+	Evaluations  []SlaEvaluation  `json:  "Evaluations"`  // SLAí‰ê°€ë“±ë¡ë²ˆí˜¸
+	ServiceItems []SlaServiceItem `json:  "ServiceItems"` // SLAí‰ê°€í•­ëª©
 }
 
-// Sla Evaluation ±¸Á¶Ã¼¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+// Sla Evaluation êµ¬ì¡°ì²´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 type SlaEvaluation struct {
-	RegId                 string        `json:  "SlaContractRegId"` // SLA°è¾àµî·Ï¹øÈ£
-	EvaluationRootId      string        `json:  "SlaContractName"`  // SLA°è¾à¸í
-	ScoresForServiceItems string        `json:  "SlaContractName"`  // SLAÆò°¡Á¡¼öÇ×¸ñ
-	Approvals             []SlaApproval `json:  "Approvals"`        // SLA°áÀç¼±Á¤º¸
+	RegId                 string        `json:  "SlaContractRegId"` // SLAê³„ì•½ë“±ë¡ë²ˆí˜¸
+	EvaluationRootId      string        `json:  "SlaContractName"`  // SLAê³„ì•½ëª…
+	ScoresForServiceItems string        `json:  "SlaContractName"`  // SLAí‰ê°€ì ìˆ˜í•­ëª©
+	Approvals             []SlaApproval `json:  "Approvals"`        // SLAê²°ì¬ì„ ì •ë³´
 }
 
-// key-value store ÀÇ Å° ±¸ºĞÀÚ
+// key-value store ì˜ í‚¤ êµ¬ë¶„ì
 const FIELDSEP = "|"
 const ENTRYSEP = ","
 const SLA_ALL_DATA = "SLA_ALL_DATA"
@@ -106,7 +106,7 @@ const SLA_EVALUATION_ID_COUNT_KEY = "SLA_EVALUATION_ID_COUNT"
 const CURRENT_YEAR_KEY = "CURRENT_YEAR"
 
 // ===========================================================
-//  function Á¤ÀÇ ÇÔ¼ö
+//  function ì •ì˜ í•¨ìˆ˜
 // ===========================================================
 
 func padLeft(str string) string {
@@ -123,10 +123,10 @@ func padLeft(str string) string {
 }
 
 // ===========================================================
-//  Initialization ÇÔ¼ö
+//  Initialization í•¨ìˆ˜
 // ===========================================================
 
-// ÃÊ±âÈ­¸¦ Ã³¸®ÇÕ´Ï´Ù.
+// ì´ˆê¸°í™”ë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	var err error
@@ -134,7 +134,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 
 	err = stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	err = stub.PutState(SLA_EVALUATION_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
-	err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(year))) // ÇöÀç year
+	err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(year))) // í˜„ì¬ year
 
 	idInbytes, _ := stub.GetState(SLA_CONTRACT_ID_COUNT_KEY)
 	fmt.Println("SLA_CONTRACT_ID_COUNT_KEY :" + string(idInbytes))
@@ -181,7 +181,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	return nil, err
 }
 
-// ±â´É ÀÌº¥Æ®¸¦ È£ÃâÇÕ´Ï´Ù.
+// ê¸°ëŠ¥ ì´ë²¤íŠ¸ë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	switch function {
@@ -189,35 +189,35 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	case "slaGetContractId":
 		return t.slaGetContractId(stub, args)
 
-	// °è¾à »óÅÂ º¯°æ
-	case "slaCreateContract": // ¿äÃ»ÀÚ°¡ °è¾à »ı¼º (ÃÖÃÊ »ı¼º ¹× ÀÓ½ÃÀúÀå)
+	// ê³„ì•½ ìƒíƒœ ë³€ê²½
+	case "slaCreateContract": // ìš”ì²­ìê°€ ê³„ì•½ ìƒì„± (ìµœì´ˆ ìƒì„± ë° ì„ì‹œì €ì¥)
 		return t.slaCreateContract(stub, args)
 
-	case "slaUpdateContract": // ¿äÃ»ÀÚ°¡ °è¾à ¼öÁ¤ (ÀÓ½ÃÀúÀå ÈÄ / ½ÂÀÎ°ÅÀı ÈÄ)
+	case "slaUpdateContract": // ìš”ì²­ìê°€ ê³„ì•½ ìˆ˜ì • (ì„ì‹œì €ì¥ í›„ / ìŠ¹ì¸ê±°ì ˆ í›„)
 		return t.slaUpdateContract(stub, args)
 
-	case "slaAbandonContract": // ¿äÃ»ÀÚ°¡ °è¾à Æó±â (ÀÓ½ÃÀúÀå ÈÄ / ½ÂÀÎ°ÅÀı ÈÄ)
+	case "slaAbandonContract": // ìš”ì²­ìê°€ ê³„ì•½ íê¸° (ì„ì‹œì €ì¥ í›„ / ìŠ¹ì¸ê±°ì ˆ í›„)
 		return t.slaUpdateContract(stub, args)
 
-	// °áÀç ¿äÃ» / ½ÂÀÎ / °ÅÀı
-	case "slaSubmitContract": // ¿äÃ»ÀÚ --> °áÀçÀÚ  (ÃÖÃÊ »ı¼º ÈÄ °áÀç ¿äÃ» / ¼öÁ¤  ÈÄ °áÀç ¿äÃ» )
+	// ê²°ì¬ ìš”ì²­ / ìŠ¹ì¸ / ê±°ì ˆ
+	case "slaSubmitContract": // ìš”ì²­ì --> ê²°ì¬ì  (ìµœì´ˆ ìƒì„± í›„ ê²°ì¬ ìš”ì²­ / ìˆ˜ì •  í›„ ê²°ì¬ ìš”ì²­ )
 		return t.slaSubmitContract(stub, args)
 
-	case "slaApproveContract": // °áÀçÀÚ --> ´ÙÀ½ °áÀçÀÚ
+	case "slaApproveContract": // ê²°ì¬ì --> ë‹¤ìŒ ê²°ì¬ì
 		return t.slaApproveContract(stub, args)
 
-	case "slaRejectContract": // °áÀçÀÚ --> ¿äÃ»ÀÚ
+	case "slaRejectContract": // ê²°ì¬ì --> ìš”ì²­ì
 		return t.slaRejectContract(stub, args)
 
-	// ÃÖÁ¾ ½ÂÀÎ
-	case "slaCloseContract": // ÃÖÁ¾ °áÀçÀÚ ½ÂÀÎ
+	// ìµœì¢… ìŠ¹ì¸
+	case "slaCloseContract": // ìµœì¢… ê²°ì¬ì ìŠ¹ì¸
 		return t.slaCloseContract(stub, args)
 
 	case "slaGetEvaluationId":
 		return t.slaGetEvaluationId(stub, args)
 
-	// ÀüÃ¼ Æò°¡ »ı¼º
-	case "slaCreateEvaluationTemplateFromContract": // ÃÖÃÊ Æò°¡ »ı¼º (°è¾àµî·Ï ÃÖÁ¾ ½ÂÀÎ ÈÄ),
+	// ì „ì²´ í‰ê°€ ìƒì„±
+	case "slaCreateEvaluationTemplateFromContract": // ìµœì´ˆ í‰ê°€ ìƒì„± (ê³„ì•½ë“±ë¡ ìµœì¢… ìŠ¹ì¸ í›„),
 		_, err1 := t.slaCreateEvaluationRootFromContract(stub, args)
 		_, err2 := t.slaCreateEvaluationsFromContract(stub, args)
 
@@ -226,43 +226,43 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		}
 		return nil, err1
 
-	// °³º° Æò°¡ ÁøÇà
-	case "slaInitEvaluationValues": // °³º° Æò°¡ÀÇ Æò°¡Á¡¼ö ÀÔ·Â
+	// ê°œë³„ í‰ê°€ ì§„í–‰
+	case "slaInitEvaluationValues": // ê°œë³„ í‰ê°€ì˜ í‰ê°€ì ìˆ˜ ì…ë ¥
 		return t.slaInitEvaluationValues(stub, args)
 
-	case "slaUpdateEvaluationValues": // Æò°¡Á¡¼ö ¼öÁ¤
+	case "slaUpdateEvaluationValues": // í‰ê°€ì ìˆ˜ ìˆ˜ì •
 		return t.slaUpdateEvaluationValues(stub, args)
 
-	// °áÀç ¿äÃ» / ½ÂÀÎ / °ÅÀı
-	case "slaSubmitEvaluation": // ¿äÃ»ÀÚ --> °áÀçÀÚ  (ÃÖÃÊ »ı¼º ÈÄ °áÀç ¿äÃ» / ¼öÁ¤  ÈÄ °áÀç ¿äÃ» )
+	// ê²°ì¬ ìš”ì²­ / ìŠ¹ì¸ / ê±°ì ˆ
+	case "slaSubmitEvaluation": // ìš”ì²­ì --> ê²°ì¬ì  (ìµœì´ˆ ìƒì„± í›„ ê²°ì¬ ìš”ì²­ / ìˆ˜ì •  í›„ ê²°ì¬ ìš”ì²­ )
 		return t.slaSubmitEvaluation(stub, args)
 
-	case "slaApproveEvaluation": // °áÀçÀÚ --> ´ÙÀ½ °áÀçÀÚ
+	case "slaApproveEvaluation": // ê²°ì¬ì --> ë‹¤ìŒ ê²°ì¬ì
 		return t.slaApproveEvaluation(stub, args)
 
-	case "slaRejectEvaluation": // °áÀçÀÚ --> ¿äÃ»ÀÚ
+	case "slaRejectEvaluation": // ê²°ì¬ì --> ìš”ì²­ì
 		return t.slaRejectEvaluation(stub, args)
 
-	// Áö±Ş ¿äÃ» / ½ÂÀÎ / °ÅÀı
-	case "slaSubmitPayment": // ¿äÃ»ÀÚ --> Áö±ŞÀÚ
+	// ì§€ê¸‰ ìš”ì²­ / ìŠ¹ì¸ / ê±°ì ˆ
+	case "slaSubmitPayment": // ìš”ì²­ì --> ì§€ê¸‰ì
 		return t.slaSubmitPayment(stub, args)
 
-	case "slaClosePayment": // Áö±ŞÀÚ
+	case "slaClosePayment": // ì§€ê¸‰ì
 		return t.slaClosePayment(stub, args)
 
-	// °³º° Æò°¡ ¸¶¹«¸®
+	// ê°œë³„ í‰ê°€ ë§ˆë¬´ë¦¬
 	case "slaCloseEvaluation":
 		return t.slaCloseEvaluation(stub, args)
 
-	// ÀüÃ¼ Æò°¡ ¸¶¹«¸®
-	case "slaCloseEvaluationRoot": // ¸¶Áö¸· °³º° Æò°¡°¡ ¸¶¹«¸®µÉ °æ¿ì, ÀÚµ¿ È£Ãâ
+	// ì „ì²´ í‰ê°€ ë§ˆë¬´ë¦¬
+	case "slaCloseEvaluationRoot": // ë§ˆì§€ë§‰ ê°œë³„ í‰ê°€ê°€ ë§ˆë¬´ë¦¬ë  ê²½ìš°, ìë™ í˜¸ì¶œ
 		return t.slaCloseEvaluationRoot(stub, args)
 
 	}
 	return nil, errors.New("Invalid invoke function name. Expecting \"slaCreateContract\" \"slaUpdateContract\" \"slaApproveContract\" \"slaRejectContract\"")
 }
 
-// Äõ¸® ÀÌº¥Æ®¸¦ Ã³¸®ÇÕ´Ï´Ù.
+// ì¿¼ë¦¬ ì´ë²¤íŠ¸ë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	switch function {
@@ -295,10 +295,10 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	return nil, errors.New("Invalid Query function name. Expecting \"slaGetAllContracts\" \"slaGetContractWithId\" \"slaGetContractsWithName\" \"slaGetContractsWithClient\"")
 }
 
-// ¸ŞÀÎÇÔ¼ö¸¦ Ã³¸®ÇÕ´Ï´Ù.
+// ë©”ì¸í•¨ìˆ˜ë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 func main() {
 
-	// ºí·ÏÃ¼ÀÎ ÀÌº¥Æ®¸¦ È£ÃâÇÕ´Ï´Ù.
+	// ë¸”ë¡ì²´ì¸ ì´ë²¤íŠ¸ë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
 	err := shim.Start(new(SimpleChaincode))
 	if err != nil {
 		fmt.Printf("Er4ror starting Simple chaincode: %s", err)
@@ -306,7 +306,7 @@ func main() {
 }
 
 // ===========================================================
-//  SLAChaincodeStub µî·Ï ÇÔ¼ö
+//  SLAChaincodeStub ë“±ë¡ í•¨ìˆ˜
 // ===========================================================
 
 func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
@@ -314,7 +314,7 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	var contractId string
 	var err error
 
-	// 1.ÀúÀåµÈ ÇØ´ç °è¾à Ä«¿îÆ®¸¦ È£Ãâ
+	// 1.ì €ì¥ëœ í•´ë‹¹ ê³„ì•½ ì¹´ìš´íŠ¸ë¥¼ í˜¸ì¶œ
 	currentCountInBytes, err := stub.GetState(SLA_CONTRACT_ID_COUNT_KEY)
 	if err != nil {
 		return nil, errors.New("Failed to SLA_CONTRACT_ID_COUNT_KEY with " + SLA_CONTRACT_ID_COUNT_KEY)
@@ -325,7 +325,7 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	}
 	currentCount, _ := strconv.Atoi(string(currentCountInBytes))
 
-	// 2.»õ·Î¿î ¿¬µµÀÏ °æ¿ì, °è¾à Ä«¿îÆ®¸¦ ÃÊ±âÈ­
+	// 2.ìƒˆë¡œìš´ ì—°ë„ì¼ ê²½ìš°, ê³„ì•½ ì¹´ìš´íŠ¸ë¥¼ ì´ˆê¸°í™”
 	kvsCurrentYearInBytes, err := stub.GetState(CURRENT_YEAR_KEY)
 	if err != nil {
 		return nil, errors.New("Failed to kvsCurrentYearInBytes with " + CURRENT_YEAR_KEY)
@@ -337,21 +337,21 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	}
 
 	if string(kvsCurrentYearInBytes) != strconv.Itoa(currentYear) { // new year starts
-		err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(currentYear))) // »õ·Î¿î ÇöÀç ¿¬µµ
-		err = stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))  // Ä«¿îÆ®´Â 1ºÎÅÍ
+		err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(currentYear))) // ìƒˆë¡œìš´ í˜„ì¬ ì—°ë„
+		err = stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))  // ì¹´ìš´íŠ¸ëŠ” 1ë¶€í„°
 	}
 
-	// 3. °è¾à¹øÈ£ Ã¤¹øÀ» »ı¼ºÇÕ´Ï´Ù.
+	// 3. ê³„ì•½ë²ˆí˜¸ ì±„ë²ˆì„ ìƒì„±í•©ë‹ˆë‹¤.
 	contractId = CONTRACT_ID_PREFIX + strconv.Itoa(currentYear) + "_" + padLeft(strconv.Itoa(currentCount))
 
-	// 4. ´ÙÀ½ °è¾à¹øÈ£ Ä«¿îÆ®¸¦ ÀúÀå
+	// 4. ë‹¤ìŒ ê³„ì•½ë²ˆí˜¸ ì¹´ìš´íŠ¸ë¥¼ ì €ì¥
 	nextCount := currentCount + 1
 	stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(nextCount)))
 
 	return []byte(contractId), nil
 }
 
-// °è¾àÀ» µî·ÏÇÕ´Ï´Ù.
+// ê³„ì•½ì„ ë“±ë¡í•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
@@ -361,13 +361,13 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 
 	fmt.Printf("slaCreateContract Input Args:%s\n", args[0])
 
-	// JSON µ¥ÀÌÅÍ¸¦ µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	err = json.Unmarshal([]byte(content), &data)
 	if err != nil {
 		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
 	}
 
-	// JSON µ¥ÀÌÅÍ¸¦ Á¤·ÄÇÏ¿© µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ì •ë ¬í•˜ì—¬ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
@@ -386,7 +386,7 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 	contractName := data.Name
 	contractClient := data.Client
 
-	// A01. °è¾àID µî·ÏÇÕ´Ï´Ù.
+	// A01. ê³„ì•½ID ë“±ë¡í•©ë‹ˆë‹¤.
 	err = stub.PutState(data.RegId, []byte(content))
 
 	if err != nil {
@@ -396,12 +396,12 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 		fmt.Println("SlaContractRegId : ok")
 	}
 
-	// A02. °è¾à¸í µî·ÏÇÕ´Ï´Ù.
+	// A02. ê³„ì•½ëª… ë“±ë¡í•©ë‹ˆë‹¤.
 	{
 		var err error
 
-		// °è¾à¸íÀ¸·Î ±âÁ¸³»¿ª¸¦ Á¶È¸ÇÕ´Ï´Ù.
-		contractIDsInBytes, err := stub.GetState(contractName) // ¸®ÅÏ°ª ([]byte, error)
+		// ê³„ì•½ëª…ìœ¼ë¡œ ê¸°ì¡´ë‚´ì—­ë¥¼ ì¡°íšŒí•©ë‹ˆë‹¤.
+		contractIDsInBytes, err := stub.GetState(contractName) // ë¦¬í„´ê°’ ([]byte, error)
 
 		if err != nil {
 			return nil, errors.New("Failed to get state with" + string(contractIDsInBytes))
@@ -409,7 +409,7 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 
 		contractIDsInString := string(contractIDsInBytes)
 
-		//±âÁ¸³»¿ªÀÌ ¾øÀ»°æ¿ì "°è¾à¸í"-"°è¾àID¸ñ·Ï" µî·Ï
+		//ê¸°ì¡´ë‚´ì—­ì´ ì—†ì„ê²½ìš° "ê³„ì•½ëª…"-"ê³„ì•½IDëª©ë¡" ë“±ë¡
 		if contractIDsInString == "" {
 			err = stub.PutState(contractName, []byte(contractID))
 			if err != nil {
@@ -424,15 +424,15 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 		}
 	}
 
-	// A03. °í°´»ç¸í µî·ÏÇÕ´Ï´Ù.
+	// A03. ê³ ê°ì‚¬ëª… ë“±ë¡í•©ë‹ˆë‹¤.
 	{
 		var err error
 
-		//°è¾à¸íÀ¸·Î ±âÁ¸³»¿ªÁ¶È¸
-		contractIDsInBytes, _ := stub.GetState(contractClient) // ¸®ÅÏ°ª ([]byte, error)
+		//ê³„ì•½ëª…ìœ¼ë¡œ ê¸°ì¡´ë‚´ì—­ì¡°íšŒ
+		contractIDsInBytes, _ := stub.GetState(contractClient) // ë¦¬í„´ê°’ ([]byte, error)
 		contractIDsInString := string(contractIDsInBytes)
 
-		//±âÁ¸³»¿ªÀÌ ¾øÀ»°æ¿ì "°í°´»ç¸í"-"°è¾àID¸ñ·Ï" µî·Ï
+		//ê¸°ì¡´ë‚´ì—­ì´ ì—†ì„ê²½ìš° "ê³ ê°ì‚¬ëª…"-"ê³„ì•½IDëª©ë¡" ë“±ë¡
 		if contractIDsInString == "" {
 			err = stub.PutState(contractClient, []byte(contractID))
 			if err != nil {
@@ -447,12 +447,12 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 		}
 	}
 
-	// A04. ÀüÃ¼ Á¶È¸ µî·ÏÇÕ´Ï´Ù.
+	// A04. ì „ì²´ ì¡°íšŒ ë“±ë¡í•©ë‹ˆë‹¤.
 	{
 		var err error
 
-		// µ¥ÀÌÅÍ¸¦ ÀüÃ¼ Á¶È¸ÇÕ´Ï´Ù.
-		contractALLIDsInBytes, err := stub.GetState(SLA_ALL_DATA) // ¸®ÅÏ°ª ([]byte, error)
+		// ë°ì´í„°ë¥¼ ì „ì²´ ì¡°íšŒí•©ë‹ˆë‹¤.
+		contractALLIDsInBytes, err := stub.GetState(SLA_ALL_DATA) // ë¦¬í„´ê°’ ([]byte, error)
 
 		fmt.Println("= A04 == 01:" + string(contractALLIDsInBytes))
 
@@ -466,7 +466,7 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 
 		fmt.Println("= A04 == 03:" + contractALLIDsInString)
 
-		// ±âÁ¸³»¿ªÀÌ ¾øÀ»°æ¿ì "°è¾à¸í"-"°è¾àID¸ñ·Ï" µî·Ï
+		// ê¸°ì¡´ë‚´ì—­ì´ ì—†ì„ê²½ìš° "ê³„ì•½ëª…"-"ê³„ì•½IDëª©ë¡" ë“±ë¡
 		if contractALLIDsInString == "" {
 			err = stub.PutState(SLA_ALL_DATA, []byte(contractID))
 			fmt.Println("= A04 == 04:")
@@ -513,10 +513,10 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 }
 
 // // ===========================================================
-// //  SLAChaincodeStub ¾÷µ¥ÀÌÆ® ÇÔ¼ö
+// //  SLAChaincodeStub ì—…ë°ì´íŠ¸ í•¨ìˆ˜
 // // ===========================================================
 
-// // °è¾àÀ» ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù. (±âº»)
+// // ê³„ì•½ì„ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤. (ê¸°ë³¸)
 // func (t *SimpleChaincode) updateContractId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 // 	var dataInBytes string
@@ -531,16 +531,16 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 // 	dataInBytes = args[0]
 // 	contractID := args[0]
 
-// 	// ±âÁ¸³»¿ë Á¶È¸
+// 	// ê¸°ì¡´ë‚´ìš© ì¡°íšŒ
 // 	contractIDsInBytes, err := stub.GetState(contractID)
 // 	if err != nil {
 // 		return nil, errors.New("Failed to get state with " + string(contractIDsInBytes))
 // 	}
 
-// 	// UPDATDE Ã³¸®
+// 	// UPDATDE ì²˜ë¦¬
 // 	stub.PutState(contractID, []byte(args[1]))
 
-// 	// º¯°æ³»¿ë Á¶È¸
+// 	// ë³€ê²½ë‚´ìš© ì¡°íšŒ
 // 	update_value, err := stub.GetState(contractID)
 // 	if err != nil {
 // 		return nil, errors.New("Failed to get state with " + dataInBytes)
@@ -551,10 +551,10 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 // 	return []byte(update_value), nil
 // }
 
-// 1.°è¾àÀ» ¾÷µ¥ÀÌÆ® ÇÕ´Ï´Ù.
+// 1.ê³„ì•½ì„ ì—…ë°ì´íŠ¸ í•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) slaUpdateContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
-	// create ¿Í À¯»ç
+	// create ì™€ ìœ ì‚¬
 	var err error
 	var data SlaContract
 
@@ -562,32 +562,32 @@ func (t *SimpleChaincode) slaUpdateContract(stub shim.ChaincodeStubInterface, ar
 
 	fmt.Printf("slaCreateContract Input Args:%s\n", args[0])
 
-	// JSON µ¥ÀÌÅÍ¸¦ µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	err = json.Unmarshal([]byte(content), &data)
 	if err != nil {
 		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
 	}
 
-	// ÀÓ½ÃÀúÀå µ¥ÀÌÅÍ¸¦ Ã³¸®ÇÕ´Ï´Ù.
+	// ì„ì‹œì €ì¥ ë°ì´í„°ë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 
-	//	data.Name = "±è¾Æ¹«°³"
-	//	data.Kind = "Æ¯¼ö"
+	//	data.Name = "ê¹€ì•„ë¬´ê°œ"
+	//	data.Kind = "íŠ¹ìˆ˜"
 	//	data.StaDate = "2018-01-01"
 	//	data.EndDate = "2018-01-01"
-	//	data.Client = "½ÅÇÑÀºÇà(Shinhan.com)"
-	//	data.ClientPerson = "½ÅÇÑ¾Æ¹«°³"
+	//	data.Client = "ì‹ í•œì€í–‰(Shinhan.com)"
+	//	data.ClientPerson = "ì‹ í•œì•„ë¬´ê°œ"
 	//	data.ClientPersonTel = "010-9999-9999"
 	//	data.AssessDate = "2018-12-12"
-	//	data.Progression = "ÁøÇà"
+	//	data.Progression = "ì§„í–‰"
 	//	data.AssessYn = "Y"
 
-	// JSON µ¥ÀÌÅÍ¸¦ Á¤·ÄÇÏ¿© µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ì •ë ¬í•˜ì—¬ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	//	jsonData, err := json.MarshalIndent(data, "", "  ")
 	//	if err != nil {
 	//		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
 	//	}
 
-	// JSON µ¥ÀÌÅÍ¸¦ µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	//err = json.Unmarshal([]byte(content), &data)
 
 	fmt.Printf("= contractListBytes contractListBytes ====================================================\n")
@@ -611,7 +611,7 @@ func (t *SimpleChaincode) slaUpdateContract(stub shim.ChaincodeStubInterface, ar
 	contractName := data.Name
 	contractClient := data.Client
 
-	// A01. °è¾àID µî·ÏÇÕ´Ï´Ù.
+	// A01. ê³„ì•½ID ë“±ë¡í•©ë‹ˆë‹¤.
 	err = stub.PutState(data.RegId, []byte(content))
 
 	if err != nil {
@@ -624,10 +624,10 @@ func (t *SimpleChaincode) slaUpdateContract(stub shim.ChaincodeStubInterface, ar
 }
 
 /*
-// TEMP. EX)) 1.°è¾àÀ» ¾÷µ¥ÀÌÆ® ÇÕ´Ï´Ù.
+// TEMP. EX)) 1.ê³„ì•½ì„ ì—…ë°ì´íŠ¸ í•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
-	// create ¿Í À¯»ç
+	// create ì™€ ìœ ì‚¬
 	var err error
 	var data SlaContract
 
@@ -635,31 +635,31 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 
 	fmt.Printf("slaCreateContract Input Args:%s\n", args[0])
 
-	// JSON µ¥ÀÌÅÍ¸¦ µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	err = json.Unmarshal([]byte(content), &data)
 	if err != nil {
 		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
 	}
 
-	// ÀÓ½ÃÀúÀå µ¥ÀÌÅÍ¸¦ Ã³¸®ÇÕ´Ï´Ù.
-	data.Name = "±è¾Æ¹«°³"
-	data.Kind = "Æ¯¼ö"
+	// ì„ì‹œì €ì¥ ë°ì´í„°ë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+	data.Name = "ê¹€ì•„ë¬´ê°œ"
+	data.Kind = "íŠ¹ìˆ˜"
 	data.StaDate = "2018-01-01"
 	data.EndDate = "2018-01-01"
-	data.Client = "½ÅÇÑÀºÇà(Shinhan.com)"
-	data.ClientPerson = "½ÅÇÑ¾Æ¹«°³"
+	data.Client = "ì‹ í•œì€í–‰(Shinhan.com)"
+	data.ClientPerson = "ì‹ í•œì•„ë¬´ê°œ"
 	data.ClientPersonTel = "010-9999-9999"
 	data.AssessDate = "2018-12-12"
-	data.Progression = "ÁøÇà"
+	data.Progression = "ì§„í–‰"
 	data.AssessYn = "Y"
 
-	// JSON µ¥ÀÌÅÍ¸¦ Á¤·ÄÇÏ¿© µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ì •ë ¬í•˜ì—¬ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	//	jsonData, err := json.MarshalIndent(data, "", "  ")
 	//	if err != nil {
 	//		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
 	//	}
 
-	// JSON µ¥ÀÌÅÍ¸¦ µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	//err = json.Unmarshal([]byte(content), &data)
 
 	fmt.Printf("= contractListBytes contractListBytes ====================================================\n")
@@ -683,7 +683,7 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 	contractName := data.Name
 	contractClient := data.Client
 
-	// A01. °è¾àID µî·ÏÇÕ´Ï´Ù.
+	// A01. ê³„ì•½ID ë“±ë¡í•©ë‹ˆë‹¤.
 	err = stub.PutState(data.RegId, []byte(contractListStirng))
 
 	if err != nil {
@@ -693,12 +693,12 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 		fmt.Println("SlaContractRegId : ok")
 	}
 
-	// A02. °è¾à¸í µî·ÏÇÕ´Ï´Ù.
+	// A02. ê³„ì•½ëª… ë“±ë¡í•©ë‹ˆë‹¤.
 	{
 		var err error
 
-		// °è¾à¸íÀ¸·Î ±âÁ¸³»¿ª¸¦ Á¶È¸ÇÕ´Ï´Ù.
-		contractIDsInBytes, err := stub.GetState(contractName) // ¸®ÅÏ°ª ([]byte, error)
+		// ê³„ì•½ëª…ìœ¼ë¡œ ê¸°ì¡´ë‚´ì—­ë¥¼ ì¡°íšŒí•©ë‹ˆë‹¤.
+		contractIDsInBytes, err := stub.GetState(contractName) // ë¦¬í„´ê°’ ([]byte, error)
 
 		if err != nil {
 			return nil, errors.New("Failed to get state with" + string(contractIDsInBytes))
@@ -706,7 +706,7 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 
 		contractIDsInString := string(contractIDsInBytes)
 
-		//±âÁ¸³»¿ªÀÌ ¾øÀ»°æ¿ì "°è¾à¸í"-"°è¾àID¸ñ·Ï" µî·Ï
+		//ê¸°ì¡´ë‚´ì—­ì´ ì—†ì„ê²½ìš° "ê³„ì•½ëª…"-"ê³„ì•½IDëª©ë¡" ë“±ë¡
 		if contractIDsInString == "" {
 			err = stub.PutState(contractName, []byte(contractID))
 			if err != nil {
@@ -721,15 +721,15 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 		}
 	}
 
-	// A03. °í°´»ç¸í µî·ÏÇÕ´Ï´Ù.
+	// A03. ê³ ê°ì‚¬ëª… ë“±ë¡í•©ë‹ˆë‹¤.
 	{
 		var err error
 
-		//°è¾à¸íÀ¸·Î ±âÁ¸³»¿ªÁ¶È¸
-		contractIDsInBytes, _ := stub.GetState(contractClient) // ¸®ÅÏ°ª ([]byte, error)
+		//ê³„ì•½ëª…ìœ¼ë¡œ ê¸°ì¡´ë‚´ì—­ì¡°íšŒ
+		contractIDsInBytes, _ := stub.GetState(contractClient) // ë¦¬í„´ê°’ ([]byte, error)
 		contractIDsInString := string(contractIDsInBytes)
 
-		//±âÁ¸³»¿ªÀÌ ¾øÀ»°æ¿ì "°í°´»ç¸í"-"°è¾àID¸ñ·Ï" µî·Ï
+		//ê¸°ì¡´ë‚´ì—­ì´ ì—†ì„ê²½ìš° "ê³ ê°ì‚¬ëª…"-"ê³„ì•½IDëª©ë¡" ë“±ë¡
 		if contractIDsInString == "" {
 			err = stub.PutState(contractClient, []byte(contractID))
 			if err != nil {
@@ -744,12 +744,12 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 		}
 	}
 
-	// A04. ÀüÃ¼ Á¶È¸ µî·ÏÇÕ´Ï´Ù.
+	// A04. ì „ì²´ ì¡°íšŒ ë“±ë¡í•©ë‹ˆë‹¤.
 	{
 		var err error
 
-		// µ¥ÀÌÅÍ¸¦ ÀüÃ¼ Á¶È¸ÇÕ´Ï´Ù.
-		contractALLIDsInBytes, err := stub.GetState(SLA_ALL_DATA) // ¸®ÅÏ°ª ([]byte, error)
+		// ë°ì´í„°ë¥¼ ì „ì²´ ì¡°íšŒí•©ë‹ˆë‹¤.
+		contractALLIDsInBytes, err := stub.GetState(SLA_ALL_DATA) // ë¦¬í„´ê°’ ([]byte, error)
 
 		fmt.Println("= A04 == 01:" + string(contractALLIDsInBytes))
 
@@ -763,7 +763,7 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 
 		fmt.Println("= A04 == 03:" + contractALLIDsInString)
 
-		// ±âÁ¸³»¿ªÀÌ ¾øÀ»°æ¿ì "°è¾à¸í"-"°è¾àID¸ñ·Ï" µî·Ï
+		// ê¸°ì¡´ë‚´ì—­ì´ ì—†ì„ê²½ìš° "ê³„ì•½ëª…"-"ê³„ì•½IDëª©ë¡" ë“±ë¡
 		if contractALLIDsInString == "" {
 			err = stub.PutState(SLA_ALL_DATA, []byte(contractID))
 			fmt.Println("= A04 == 04:")
@@ -787,17 +787,21 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 }
 */
 
-// 2.°è¾àÀ» ½ÂÀÎÇÕ´Ï´Ù.
+// 2.ê³„ì•½ì„ ìŠ¹ì¸í•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) slaApproveContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	// °è¾à¹øÈ£ > °è¾à ½ÃÄö½º >  °áÁ¦ Á¤º¸
+	// ê³„ì•½ë²ˆí˜¸ > ê³„ì•½ ì‹œí€€ìŠ¤ >  ê²°ì œ ì •ë³´
 
 	var err error
 	var data SlaApproval
-
-    SlaContractRegId			:= args [0] // SLA°è¾àµî·Ï¹øÈ£
-    SlaContractApprovalUserId	:= args [1] // °áÀç»ç¿ëÀÚID
-    SlaContractApprovalComment	:= args [2] // ÀÇ°ß³»¿ë
-    SlaContractProgression 		:= args [3] // ÁøÇà´Ü°è
+    year, month, day := time.Now().Date()
+    
+    SlaContractRegId			:= args [0] // SLAê³„ì•½ë“±ë¡ë²ˆí˜¸
+    SlaContractApprovalUserId	:= args [1] // ê²°ì¬ì‚¬ìš©ìID
+    SlaContractApprovalComment	:= args [2] // ì˜ê²¬ë‚´ìš©
+    SlaContractProgression 		:= args [3] // ì§„í–‰ë‹¨ê³„
+    SlaContractApprovalState    := "ìŠ¹ì¸"
+    SlaContractApprovalDate     = "" ê²°ì¬ì¼ì
+    ApprovalDate := year + month + day
 
 	//content := args[0]
 
@@ -806,34 +810,32 @@ func (t *SimpleChaincode) slaApproveContract(stub shim.ChaincodeStubInterface, a
 	fmt.Printf("slaApproveContract Input Args:%s\n", args[2])
 	fmt.Printf("slaApproveContract Input Args:%s\n", args[3])
 
-	// °è¾àIDÀ¸·Î ¸ñ·Ï Á¶È¸
+	// ê³„ì•½IDìœ¼ë¡œ ëª©ë¡ ì¡°íšŒ
 	contractIDsInBytes, err := stub.GetState(SlaContractRegId)
 	if err != nil { return nil, errors.New("Failed to get state with " + string(contractIDsInBytes)) }
 
-	// JSON µ¥ÀÌÅÍ¸¦ µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	content, err = json.Unmarshal([]byte(contractIDsInBytes), &data)
 	if err != nil {	return nil, errors.New("Failed to slaApproveContract with " + contractIDsInBytes) }
 
-	// ÀÓ½ÃÀúÀå µ¥ÀÌÅÍ¸¦ Ã³¸®ÇÕ´Ï´Ù.
+	// ì„ì‹œì €ì¥ ë°ì´í„°ë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 
-		data.ApprovalUserId = "±è¾Æ¹«°³"
-		data.Kind = "Æ¯¼ö"
-		data.StaDate = "2018-01-01"
-		data.EndDate = "2018-01-01"
-		data.Client = "½ÅÇÑÀºÇà(Shinhan.com)"
-		data.ClientPerson = "½ÅÇÑ¾Æ¹«°³"
-		data.ClientPersonTel = "010-9999-9999"
-		data.AssessDate = "2018-12-12"
-		data.Progression = "ÁøÇà"
-		data.AssessYn = "Y"
+    data.ApprovalUserId     =  SlaContractApprovalUserId // ê²°ì¬ì‚¬ìš©ìID
+    data.ApprovalCompany    =         ê²°ì¬íšŒì‚¬ëª…
+    data.ApprovalDepartment =         ê²°ì¬ë¶€ì„œëª…
+    data.ApprovalName       =         ê²°ì¬ìëª…
+    data.ApprovalState      =         ê²°ì¬ìƒíƒœ
+    data.ApprovalDate       =         ê²°ì¬ì¼ì
+    data.ApprovalComment    =         ì˜ê²¬ë‚´ìš©
+    data.ApprovalAlram      =         ì•ŒëŒì—¬ë¶€  T
 
-	// JSON µ¥ÀÌÅÍ¸¦ Á¤·ÄÇÏ¿© µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ì •ë ¬í•˜ì—¬ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	//	jsonData, err := json.MarshalIndent(data, "", "  ")
 	//	if err != nil {
 	//		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
 	//	}
 
-	// JSON µ¥ÀÌÅÍ¸¦ µğÄÚµù(Unmarshal)ÇÕ´Ï´Ù.
+	// JSON ë°ì´í„°ë¥¼ ë””ì½”ë”©(Unmarshal)í•©ë‹ˆë‹¤.
 	err = json.Unmarshal([]byte(content), &data)
 
 	fmt.Printf("= contractListBytes contractListBytes ====================================================\n")
@@ -857,7 +859,7 @@ func (t *SimpleChaincode) slaApproveContract(stub shim.ChaincodeStubInterface, a
 	contractName := data.Name
 	contractClient := data.Client
 
-	// A01. °è¾àID µî·ÏÇÕ´Ï´Ù.
+	// A01. ê³„ì•½ID ë“±ë¡í•©ë‹ˆë‹¤.
 	err = stub.PutState(data.RegId, []byte(content))
 
 	if err != nil {
@@ -868,23 +870,23 @@ func (t *SimpleChaincode) slaApproveContract(stub shim.ChaincodeStubInterface, a
 	}
 	return nil, nil
 
-// 3.°è¾àÀ» ¹İ·ÁÇÕ´Ï´Ù.
+// 3.ê³„ì•½ì„ ë°˜ë ¤í•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) slaRejectContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	// °è¾à¹øÈ£ > °è¾à ½ÃÄö½º >  °áÁ¦ Á¤º¸
+	// ê³„ì•½ë²ˆí˜¸ > ê³„ì•½ ì‹œí€€ìŠ¤ >  ê²°ì œ ì •ë³´
 
 	return nil, nil
 }
 
 func (t *SimpleChaincode) slaAbandonContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	// ¾÷µ¥ÀÌÆ®¸¦ abandon state  º¯°æ
+	// ì—…ë°ì´íŠ¸ë¥¼ abandon state  ë³€ê²½
 	return nil, nil
 }
 func (t *SimpleChaincode) slaSubmitContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	// ¾÷µ¥ÀÌÆ®¸¦ submit state  º¯°æ
+	// ì—…ë°ì´íŠ¸ë¥¼ submit state  ë³€ê²½
 	return nil, nil
 }
 func (t *SimpleChaincode) slaCloseContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	// ¾÷µ¥ÀÌÆ®¸¦ submit state  º¯°æ
+	// ì—…ë°ì´íŠ¸ë¥¼ submit state  ë³€ê²½
 	return nil, nil
 }
 func (t *SimpleChaincode) slaGetEvaluationId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
@@ -929,10 +931,10 @@ func (t *SimpleChaincode) slaCloseEvaluationRoot(stub shim.ChaincodeStubInterfac
 }
 
 // ===========================================================
-//  SLAChaincodeStub °Ë»ö ÇÔ¼ö
+//  SLAChaincodeStub ê²€ìƒ‰ í•¨ìˆ˜
 // ===========================================================
 
-// SLA µ¥ÀÌÅÍ ÀüÃ¼¸¦ Á¶È¸ÇÕ´Ï´Ù.  (abandon Á¦¿Ü)
+// SLA ë°ì´í„° ì „ì²´ë¥¼ ì¡°íšŒí•©ë‹ˆë‹¤.  (abandon ì œì™¸)
 func (t *SimpleChaincode) slaGetAllContracts(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var dataInBytes string
@@ -946,20 +948,20 @@ func (t *SimpleChaincode) slaGetAllContracts(stub shim.ChaincodeStubInterface, a
 
 	dataInBytes = args[0]
 
-	// °è¾à¸íÀ¸·Î °è¾àID¸ñ·Ï Á¶È¸
+	// ê³„ì•½ëª…ìœ¼ë¡œ ê³„ì•½IDëª©ë¡ ì¡°íšŒ
 	contractIDsInBytes, err := stub.GetState(SLA_ALL_DATA)
 	contractIDsInString := string(contractIDsInBytes)
 	if err != nil {
 		return nil, errors.New("Failed to get state with " + dataInBytes)
 	}
 
-	// °è¾àID¸ñ·ÏÀÇ ÇüÅÂ¸¦ ½ºÆ®¸µ¿¡¼­ ¹è¿­·Î ÀüÈ¯
+	// ê³„ì•½IDëª©ë¡ì˜ í˜•íƒœë¥¼ ìŠ¤íŠ¸ë§ì—ì„œ ë°°ì—´ë¡œ ì „í™˜
 	contractIDs := strings.Split(contractIDsInString, FIELDSEP)
 
-	// ¸®ÅÏ°ª ÃÊ±âÈ­
+	// ë¦¬í„´ê°’ ì´ˆê¸°í™”
 	contractList := make([]string, len(contractIDs))
 
-	// °è¾à ÀüÃ¼ ID¸ñ·Ï Á¶È¸
+	// ê³„ì•½ ì „ì²´ IDëª©ë¡ ì¡°íšŒ
 	for i, _ := range contractIDs {
 		contractInBytes, _ := stub.GetState(contractIDs[i])
 		contractList[i] = string(contractInBytes)
@@ -973,7 +975,7 @@ func (t *SimpleChaincode) slaGetAllContracts(stub shim.ChaincodeStubInterface, a
 
 }
 
-// IDÀ¸·Î Á¶È¸ÇÕ´Ï´Ù.
+// IDìœ¼ë¡œ ì¡°íšŒí•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) slaGetContractWithId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var dataInBytes string
@@ -997,7 +999,7 @@ func (t *SimpleChaincode) slaGetContractWithId(stub shim.ChaincodeStubInterface,
 	return Valuebytes, nil
 }
 
-// °è¾à¸íÀ¸·Î Á¶È¸ÇÕ´Ï´Ù.
+// ê³„ì•½ëª…ìœ¼ë¡œ ì¡°íšŒí•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) slaGetContractsWithName(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var dataInBytes string
@@ -1013,20 +1015,20 @@ func (t *SimpleChaincode) slaGetContractsWithName(stub shim.ChaincodeStubInterfa
 	dataInBytes = args[0]
 	contractName := args[0]
 
-	// °è¾à¸íÀ¸·Î °è¾àID¸ñ·Ï Á¶È¸
+	// ê³„ì•½ëª…ìœ¼ë¡œ ê³„ì•½IDëª©ë¡ ì¡°íšŒ
 	contractIDsInBytes, err := stub.GetState(contractName)
 	contractIDsInString := string(contractIDsInBytes)
 	if err != nil {
 		return nil, errors.New("Failed to get state with " + dataInBytes)
 	}
 
-	// °è¾àID¸ñ·ÏÀÇ ÇüÅÂ¸¦ ½ºÆ®¸µ¿¡¼­ ¹è¿­·Î ÀüÈ¯ÇÕ´Ï´Ù.
+	// ê³„ì•½IDëª©ë¡ì˜ í˜•íƒœë¥¼ ìŠ¤íŠ¸ë§ì—ì„œ ë°°ì—´ë¡œ ì „í™˜í•©ë‹ˆë‹¤.
 	contractIDs := strings.Split(contractIDsInString, FIELDSEP)
 
-	// ¸®ÅÏ°ª ÃÊ±âÈ­
+	// ë¦¬í„´ê°’ ì´ˆê¸°í™”
 	contractList := make([]SlaContract, len(contractIDs))
 
-	// °è¾àID¸ñ·ÏÀ¸·Î °è¾à³»¿ëÀ» ÃßÃâÇÏ¿© °è¾à¸ñ·Ï ÀÛ¼º
+	// ê³„ì•½IDëª©ë¡ìœ¼ë¡œ ê³„ì•½ë‚´ìš©ì„ ì¶”ì¶œí•˜ì—¬ ê³„ì•½ëª©ë¡ ì‘ì„±
 	for i, _ := range contractIDs {
 		contractInBytes, _ := stub.GetState(contractIDs[i])
 
@@ -1042,7 +1044,7 @@ func (t *SimpleChaincode) slaGetContractsWithName(stub shim.ChaincodeStubInterfa
 
 }
 
-// °í°´»ç¸íÀ¸·Î Á¶È¸ÇÕ´Ï´Ù.
+// ê³ ê°ì‚¬ëª…ìœ¼ë¡œ ì¡°íšŒí•©ë‹ˆë‹¤.
 func (t *SimpleChaincode) slaGetContractsWithClient(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var dataInBytes string
@@ -1058,20 +1060,20 @@ func (t *SimpleChaincode) slaGetContractsWithClient(stub shim.ChaincodeStubInter
 	dataInBytes = args[0]
 	contractClient := args[0]
 
-	// °è¾à¸íÀ¸·Î °è¾àID¸ñ·Ï Á¶È¸
+	// ê³„ì•½ëª…ìœ¼ë¡œ ê³„ì•½IDëª©ë¡ ì¡°íšŒ
 	contractIDsInBytes, err := stub.GetState(contractClient)
 	contractIDsInString := string(contractIDsInBytes)
 	if err != nil {
 		return nil, errors.New("Failed to get state with " + dataInBytes)
 	}
 
-	// °è¾àID¸ñ·ÏÀÇ ÇüÅÂ¸¦ ½ºÆ®¸µ¿¡¼­ ¹è¿­·Î ÀüÈ¯ÇÕ´Ï´Ù.
+	// ê³„ì•½IDëª©ë¡ì˜ í˜•íƒœë¥¼ ìŠ¤íŠ¸ë§ì—ì„œ ë°°ì—´ë¡œ ì „í™˜í•©ë‹ˆë‹¤.
 	contractIDs := strings.Split(contractIDsInString, FIELDSEP)
 
-	// ¸®ÅÏ°ª ÃÊ±âÈ­
+	// ë¦¬í„´ê°’ ì´ˆê¸°í™”
 	contractList := make([]SlaContract, len(contractIDs))
 
-	// °è¾àID¸ñ·ÏÀ¸·Î °è¾à³»¿ëÀ» ÃßÃâÇÏ¿© °è¾à¸ñ·Ï ÀÛ¼º
+	// ê³„ì•½IDëª©ë¡ìœ¼ë¡œ ê³„ì•½ë‚´ìš©ì„ ì¶”ì¶œí•˜ì—¬ ê³„ì•½ëª©ë¡ ì‘ì„±
 	for i, _ := range contractIDs {
 		contractInBytes, _ := stub.GetState(contractIDs[i])
 
