@@ -2,3 +2,5 @@ eclipse.preferences.version=1
 encoding//fds/chaincode_fds/chaincode_fds.go=UTF-8
 encoding//fds/chaincode_fds/chaincode_fds_test.go=UTF-8
 encoding//sla/chaincode_sla/chaincode_sla.go=UTF-8
+encoding//sla/chaincode_sla/chaincode_sla_test.go=UTF-8
+encoding//sla/chaincode_sla/chaincode_sla_test_old.go=UTF-8

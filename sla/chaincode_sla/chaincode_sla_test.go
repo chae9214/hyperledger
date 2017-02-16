@@ -1,5 +1,7 @@
 package main
 
+// go test chaincode_sla_test.go chaincode_sla.go
+
 import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
