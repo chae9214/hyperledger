@@ -135,49 +135,6 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	err = stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	err = stub.PutState(SLA_EVALUATION_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(year))) // 현재 year
-
-	idInbytes, _ := stub.GetState(SLA_CONTRACT_ID_COUNT_KEY)
-	fmt.Println("SLA_CONTRACT_ID_COUNT_KEY :" + string(idInbytes))
-
-	idInbytes, _ = stub.GetState(SLA_EVALUATION_ID_COUNT_KEY)
-	fmt.Println("SLA_EVALUATION_ID_COUNT_KEY :" + string(idInbytes))
-
-	idInbytes, _ = stub.GetState(CURRENT_YEAR_KEY)
-	fmt.Println("CURRENT_YEAR_KEY :" + string(idInbytes))
-
-	/*
-		var A, B string
-		var Aval, Bval int // Asset holdings
-		var err error
-
-		if len(args) != 4 {
-			return nil, errors.New("Incorrect number of arguments. Expecting 4")
-		}
-
-		// Initialize the chaincode
-		A = args[0]
-		Aval, err = strconv.Atoi(args[1])
-		if err != nil {
-			return nil, errors.New("Expecting integer value for asset holding")
-		}
-		B = args[2]
-		Bval, err = strconv.Atoi(args[3])
-		if err != nil {
-			return nil, errors.New("Expecting integer value for asset holding")
-		}
-		fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
-
-		// Write the state to the ledger
-		err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
-		if err != nil {
-			return nil, err
-		}
-
-		err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
-		if err != nil {
-			return nil, err
-		}
-	*/
 	return nil, err
 }
 
@@ -185,9 +142,6 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	switch function {
-
-	case "slaGetContractId":
-		return t.slaGetContractId(stub, args)
 
 	// 계약 상태 변경
 	case "slaCreateContract": // 요청자가 계약 생성 (최초 생성 및 임시저장)
@@ -198,8 +152,6 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 
 	case "slaUpdateContract1": // 요청자가 계약 수정 (임시저장 후 / 승인거절 후)
 		return t.slaUpdateContract1(stub, args)
-
-
 
 	case "slaAbandonContract": // 요청자가 계약 폐기 (임시저장 후 / 승인거절 후)
 		return t.slaUpdateContract(stub, args)
@@ -217,9 +169,6 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	// 최종 승인
 	case "slaCloseContract": // 최종 결재자 승인
 		return t.slaCloseContract(stub, args)
-
-	case "slaGetEvaluationId":
-		return t.slaGetEvaluationId(stub, args)
 
 	// 전체 평가 생성
 	case "slaCreateEvaluationTemplateFromContract": // 최초 평가 생성 (계약등록 최종 승인 후),
@@ -272,6 +221,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	switch function {
 
+	case "slaGetContractId":
+		return t.slaGetContractId(stub, args)
+
 	case "slaGetAllContracts":
 		return t.slaGetAllContracts(stub, args)
 
@@ -283,6 +235,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	case "slaGetContractsWithClient":
 		return t.slaGetContractsWithClient(stub, args)
+
+	case "slaGetEvaluationId":
+		return t.slaGetEvaluationId(stub, args)
 
 	case "slaGetAllEvaluations":
 		return t.slaGetAllContracts(stub, args)
@@ -297,7 +252,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.slaGetContractsWithClient(stub, args)
 
 	}
-	return nil, errors.New("Invalid Query function name. Expecting \"slaGetAllContracts\" \"slaGetContractWithId\" \"slaGetContractsWithName\" \"slaGetContractsWithClient\"")
+	return nil, errors.New("Invalid Query function name. Expecting \"????slaGetAllContracts\" \"slaGetContractWithId\" \"slaGetContractsWithName\" \"slaGetContractsWithClient\"")
 }
 
 // 메인함수를 처리합니다.
@@ -573,28 +528,28 @@ func (t *SimpleChaincode) slaUpdateContract(stub shim.ChaincodeStubInterface, ar
 		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
 	}
 
-// 임시저장 데이터를 처리합니다.
-/*
-	data.Name = "김아무개"
-	data.Kind = "특수"
-	data.StaDate = "2018-01-01"
-	data.EndDate = "2018-01-01"
-	data.Client = "신한은행(Shinhan.com)"
-	data.ClientPerson = "신한아무개"
-	data.ClientPersonTel = "010-9999-9999"
-	data.AssessDate = "2018-12-12"
-	data.Progression = "진행"
-	data.AssessYn = "Y"
-*/
+	// 임시저장 데이터를 처리합니다.
+	/*
+		data.Name = "김아무개"
+		data.Kind = "특수"
+		data.StaDate = "2018-01-01"
+		data.EndDate = "2018-01-01"
+		data.Client = "신한은행(Shinhan.com)"
+		data.ClientPerson = "신한아무개"
+		data.ClientPersonTel = "010-9999-9999"
+		data.AssessDate = "2018-12-12"
+		data.Progression = "진행"
+		data.AssessYn = "Y"
+	*/
 	// JSON 데이터를 정렬하여 디코딩(Unmarshal)합니다.
-//	jsonData, err := json.MarshalIndent(data, "", "  ")
-//	if err != nil {
-//		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
-//	}
+	//	jsonData, err := json.MarshalIndent(data, "", "  ")
+	//	if err != nil {
+	//		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
+	//	}
 
 	// JSON 데이터를 디코딩(Unmarshal)합니다.
 	//err = json.Unmarshal([]byte(content), &data)
-	
+
 	fmt.Printf("= contractListBytes contractListBytes ====================================================\n")
 	contractListStirng, _ := json.Marshal(data)
 
@@ -749,14 +704,14 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 	data.AssessYn = "Y"
 
 	// JSON 데이터를 정렬하여 디코딩(Unmarshal)합니다.
-//	jsonData, err := json.MarshalIndent(data, "", "  ")
-//	if err != nil {
-//		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
-//	}
+	//	jsonData, err := json.MarshalIndent(data, "", "  ")
+	//	if err != nil {
+	//		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
+	//	}
 
 	// JSON 데이터를 디코딩(Unmarshal)합니다.
 	//err = json.Unmarshal([]byte(content), &data)
-	
+
 	fmt.Printf("= contractListBytes contractListBytes ====================================================\n")
 	contractListStirng, _ := json.Marshal(data)
 
