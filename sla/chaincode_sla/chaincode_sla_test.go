@@ -67,8 +67,14 @@ func TestChaincodeSla_Query_slaGetContractId(t *testing.T) {
 	scc := new(SimpleChaincode)
 	stub := shim.NewMockStub("sla_chaincode", scc)
 
+	stub.MockTransactionStart("init")
 	checkInit(t, stub, []string{})
+
+	stub.MockTransactionStart("query")
 	checkQuery(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00001")
+
+	stub.MockTransactionStart("query")
+	checkQuery(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00002")
 }
 
 func TestChaincodeSla_Invoke_slaCreateContract(t *testing.T) {
@@ -120,8 +126,12 @@ func TestChaincodeSla_Invoke_slaCreateContract(t *testing.T) {
 	scc := new(SimpleChaincode)
 	stub := shim.NewMockStub("sla_chaincode", scc)
 
+	stub.MockTransactionStart("init")
 	checkInit(t, stub, []string{})
+
+	stub.MockTransactionStart("invoke")
 	checkInvoke(t, stub, "slaCreateContract", []string{contractContentInJson})
 
+	stub.MockTransactionStart("query")
 	checkQuery(t, stub, "slaGetContractWithId", []string{"SLA_CONT_2017_00005"}, contractContentInJson)
 }
