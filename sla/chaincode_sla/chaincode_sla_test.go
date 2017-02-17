@@ -192,7 +192,7 @@ func TestChaincodeSla_Invoke_slaUpdateContract(t *testing.T) {
 		  "StaDate": "2017-02-01",
 		  "EndDate": "2017-12-01",
 		  "Client": "신한은행",
-		  "ClientPerson": "개인",
+		  "ClientPerson": "기업",
 		  "ClientPersonTel": "010-1111-2222",
 		  "AssessDate": "2017-12-31",
 		  "Progression": "작성",

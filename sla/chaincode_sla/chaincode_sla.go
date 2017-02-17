@@ -102,8 +102,13 @@ const EVALUATION_ID_PREFIX = "SLA_EVAL_"
 
 const SLA_CONTRACT_ID_COUNT_KEY = "SLA_CONTRACT_ID_COUNT"
 const SLA_EVALUATION_ID_COUNT_KEY = "SLA_EVALUATION_ID_COUNT"
-
 const CURRENT_YEAR_KEY = "CURRENT_YEAR"
+
+// 결재 상태
+const SLA_APPROVAL_STATE_TEMP = "TEMP" // "TEMP": 임시저장
+const SLA_APPROVAL_STATE_SUBMITTED = "SUBMITTED"
+const SLA_APPROVAL_STATE_APPROVED = "APPROVED"
+const SLA_APPROVAL_STATE_REJECTED = "REJECTED"
 
 // ===========================================================
 //  function 정의 함수
@@ -742,64 +747,44 @@ func (t *SimpleChaincode) slaUpdateContract1(stub shim.ChaincodeStubInterface, a
 func (t *SimpleChaincode) slaApproveContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	// 계약번호 > 계약 시퀀스 >  결제 정보
-
 	var err error
-	var data SlaContract
+	var targetContract SlaContract
 
-	slaTime := time.Now()
-
-	SlaContractRegId := args[0]                             // SLA계약등록번호
-	SlaContractApprovalUserId := args[1]                    // 결재사용자ID
-	SlaContractApprovalComment := args[2]                   // 의견내용
-	SlaContractProgression := args[3]                       // 진행단계
-	SlaContractApprovalState := "승인"                        // 승인상태
-	SlaContractApprovalDate := slaTime.Format("2006-01-02") // 현재일자
-
-	SlaApprovalNo, _ := strconv.Atoi(SlaContractProgression)
-	fmt.Println(SlaContractApprovalDate)
-
-	//content := args[0]
-
-	fmt.Printf("slaApproveContract Input Args:%s\n", args[0])
-	fmt.Printf("slaApproveContract Input Args:%s\n", args[1])
-	fmt.Printf("slaApproveContract Input Args:%s\n", args[2])
-	fmt.Printf("slaApproveContract Input Args:%s\n", args[3])
-	fmt.Printf("slaApproveContract Input Args:%s\n", SlaContractProgression)
-
-	// 계약ID으로 목록 조회
-	contractIDsInBytes, err := stub.GetState(SlaContractRegId)
+	// 1. 해당 계약 찾기 및 Struct 생성
+	SlaContractRegId := args[0]
+	targetContractInBytes, err := stub.GetState(SlaContractRegId)
 	if err != nil {
-		return nil, errors.New("Failed to get state with " + string(contractIDsInBytes))
+		return nil, errors.New("Failed to get state with " + string(targetContractInBytes))
 	}
-	fmt.Printf("=================[" + string(contractIDsInBytes) + "]=================\n")
-
-	// JSON 데이터를 디코딩(Unmarshal)합니다.
-	err = json.Unmarshal([]byte(contractIDsInBytes), &data)
+	// 저장된 JSON형태의 데이터를 go의 struct 형태로 디코딩(Unmarshal)합니다.
+	err = json.Unmarshal([]byte(targetContractInBytes), &targetContract)
 	if err != nil {
-		return nil, errors.New("Failed to slaApproveContract with " + string(contractIDsInBytes))
+		return nil, errors.New("Failed to slaApproveContract with " + string(targetContractInBytes))
 	}
 
-	// 데이터 입력
-	data.Approvals[SlaApprovalNo].ApprovalUserId = SlaContractApprovalUserId   // 결재사용자ID
-	data.Approvals[SlaApprovalNo].ApprovalState = SlaContractApprovalState     // 결재상태
-	data.Approvals[SlaApprovalNo].ApprovalDate = SlaContractApprovalDate       // 결재일자
-	data.Approvals[SlaApprovalNo].ApprovalComment = SlaContractApprovalComment // 의견내용
+	// 2. 변경할 데이터 준비
+	// 진행단계 ==> 결재 배열의 인덱스로 전환
+	SlaContractProgressionInString := args[3] // 진행단계
+	SlaApprovalPregressionIndex, _ := strconv.Atoi(SlaContractProgressionInString)
 
-	content, _ := json.Marshal(data)
+	// 승인상태로 변경될 데이터 준비
+	SlaContractApprovalUserId := args[1]                       // 결재사용자ID
+	SlaContractApprovalState := SLA_APPROVAL_STATE_APPROVED    // 승인상태
+	SlaContractApprovalDate := time.Now().Format("2006-01-02") // 현재일자
+	SlaContractApprovalComment := args[2]                      // 의견내용
 
-	// JSON 데이터를 정렬하여 디코딩(Unmarshal)합니다.
-	jsonData, err := json.MarshalIndent(data, "", "  ")
+	// 3. 데이터 내용 변경
+	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalUserId = SlaContractApprovalUserId   // 결재사용자ID
+	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalState = SlaContractApprovalState     // 결재상태
+	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalDate = SlaContractApprovalDate       // 결재일자
+	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalComment = SlaContractApprovalComment // 의견내용
+	targetContractInJson, _ := json.Marshal(targetContract)
+
+	// 4. 변경된 계약을 KVS에 저장합니다.
+	err = stub.PutState(SlaContractRegId, []byte(targetContractInJson))
+
 	if err != nil {
-		return nil, errors.New("Failed to registerContractByIdToJSON with " + string(contractIDsInBytes))
-	}
-
-	fmt.Printf("=================[" + string(jsonData) + "]=================\n")
-
-	// 계약ID 등록합니다.
-	err = stub.PutState(SlaContractRegId, []byte(content))
-
-	if err != nil {
-		return nil, errors.New("Failed to put state with" + string(content))
+		return nil, errors.New("Failed to put state with" + string(targetContractInJson))
 	}
 
 	return nil, nil
@@ -808,6 +793,47 @@ func (t *SimpleChaincode) slaApproveContract(stub shim.ChaincodeStubInterface, a
 // 3.계약을 반려합니다.
 func (t *SimpleChaincode) slaRejectContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	// 계약번호 > 계약 시퀀스 >  결제 정보
+
+	// 계약번호 > 계약 시퀀스 >  결제 정보
+	var err error
+	var targetContract SlaContract
+
+	// 1. 해당 계약 찾기 및 Struct 생성
+	SlaContractRegId := args[0]
+	targetContractInBytes, err := stub.GetState(SlaContractRegId)
+	if err != nil {
+		return nil, errors.New("Failed to get state with " + string(targetContractInBytes))
+	}
+	// 저장된 JSON형태의 데이터를 go의 struct 형태로 디코딩(Unmarshal)합니다.
+	err = json.Unmarshal([]byte(targetContractInBytes), &targetContract)
+	if err != nil {
+		return nil, errors.New("Failed to slaApproveContract with " + string(targetContractInBytes))
+	}
+
+	// 2. 변경할 데이터 준비
+	// 진행단계 ==> 결재 배열의 인덱스로 전환
+	SlaContractProgressionInString := args[3] // 진행단계
+	SlaApprovalPregressionIndex, _ := strconv.Atoi(SlaContractProgressionInString)
+
+	// 승인상태로 변경될 데이터 준비
+	SlaContractApprovalUserId := args[1]                       // 결재사용자ID
+	SlaContractApprovalState := SLA_APPROVAL_STATE_REJECTED    // 반려상태
+	SlaContractApprovalDate := time.Now().Format("2006-01-02") // 현재일자
+	SlaContractApprovalComment := args[2]                      // 의견내용
+
+	// 3. 데이터 내용 변경
+	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalUserId = SlaContractApprovalUserId   // 결재사용자ID
+	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalState = SlaContractApprovalState     // 결재상태
+	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalDate = SlaContractApprovalDate       // 결재일자
+	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalComment = SlaContractApprovalComment // 의견내용
+	targetContractInJson, _ := json.Marshal(targetContract)
+
+	// 4. 변경된 계약을 KVS에 저장합니다.
+	err = stub.PutState(SlaContractRegId, []byte(targetContractInJson))
+
+	if err != nil {
+		return nil, errors.New("Failed to put state with" + string(targetContractInJson))
+	}
 
 	return nil, nil
 }
