@@ -237,7 +237,7 @@ func TestChaincodeSla_Invoke_slaApproveContract(t *testing.T) {
 	stub := shim.NewMockStub("sla_chaincode", scc)
 
 	contractContentInJson := `{
-		  "RegId": "SLA_CONT_2017_00005",
+		  "RegId": "SLA_CONT_2017_00001",
 		  "Name": "홍길동",
 		  "Kind": "보통계약",
 		  "StaDate": "2017-02-01",
@@ -284,15 +284,10 @@ func TestChaincodeSla_Invoke_slaApproveContract(t *testing.T) {
 	SlaContractRegId := "SLA_CONT_2017_00001"
 	SlaContractApprovalUserId := "20170101"
 	SlaContractApprovalComment := "내용확인 하였음"
-	SlaContractProgression := "1"
+	SlaContractProgression := "0"
 
 	checkInit(t, stub, []string{})
 	checkInvoke(t, stub, "slaCreateContract", []string{contractContentInJson})
 	checkInvoke(t, stub, "slaApproveContract", []string{SlaContractRegId, SlaContractApprovalUserId, SlaContractApprovalComment, SlaContractProgression})
-
-	
-	//	checkInvoke(t, stub, "slaApproveContract", []string{updateContractContentInJson})
-	//
-	//	checkQuery(t, stub, "slaGetContractWithId", []string{"SLA_CONT_2017_00005"}, updateContractContentInJson)
 
 }

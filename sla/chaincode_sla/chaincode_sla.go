@@ -755,7 +755,7 @@ func (t *SimpleChaincode) slaApproveContract(stub shim.ChaincodeStubInterface, a
 	SlaContractApprovalState := "승인"                        // 승인상태
 	SlaContractApprovalDate := slaTime.Format("2006-01-02") // 현재일자
 
-    SlaApprovalNo, _ := strconv.Atoi(SlaContractProgression)
+	SlaApprovalNo, _ := strconv.Atoi(SlaContractProgression)
 	fmt.Println(SlaContractApprovalDate)
 
 	//content := args[0]
@@ -765,25 +765,35 @@ func (t *SimpleChaincode) slaApproveContract(stub shim.ChaincodeStubInterface, a
 	fmt.Printf("slaApproveContract Input Args:%s\n", args[2])
 	fmt.Printf("slaApproveContract Input Args:%s\n", args[3])
 	fmt.Printf("slaApproveContract Input Args:%s\n", SlaContractProgression)
+
 	// 계약ID으로 목록 조회
 	contractIDsInBytes, err := stub.GetState(SlaContractRegId)
 	if err != nil {
 		return nil, errors.New("Failed to get state with " + string(contractIDsInBytes))
 	}
-	fmt.Printf("= 1. ====================================================\n")
+	fmt.Printf("=================[" + string(contractIDsInBytes) + "]=================\n")
+
 	// JSON 데이터를 디코딩(Unmarshal)합니다.
 	err = json.Unmarshal([]byte(contractIDsInBytes), &data)
 	if err != nil {
 		return nil, errors.New("Failed to slaApproveContract with " + string(contractIDsInBytes))
 	}
-    fmt.Printf("= 2. ====================================================\n")
+
+	// 데이터 입력
 	data.Approvals[SlaApprovalNo].ApprovalUserId = SlaContractApprovalUserId   // 결재사용자ID
 	data.Approvals[SlaApprovalNo].ApprovalState = SlaContractApprovalState     // 결재상태
 	data.Approvals[SlaApprovalNo].ApprovalDate = SlaContractApprovalDate       // 결재일자
 	data.Approvals[SlaApprovalNo].ApprovalComment = SlaContractApprovalComment // 의견내용
 
-	fmt.Printf("= contractListBytes contractListBytes ====================================================\n")
 	content, _ := json.Marshal(data)
+
+	// JSON 데이터를 정렬하여 디코딩(Unmarshal)합니다.
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return nil, errors.New("Failed to registerContractByIdToJSON with " + string(contractIDsInBytes))
+	}
+
+	fmt.Printf("=================[" + string(jsonData) + "]=================\n")
 
 	// 계약ID 등록합니다.
 	err = stub.PutState(SlaContractRegId, []byte(content))
