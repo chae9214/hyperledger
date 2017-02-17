@@ -48,7 +48,7 @@ type SlaContract struct {
 	ClientPerson    string           `json:  "ClientPerson"`    // 고객담당자명
 	ClientPersonTel string           `json:  "ClientPersonTel"` // 고객담당자전화번호
 	AssessDate      string           `json:  "AssessDate"`      // 평가예정일
-	Progression     string           `json:  "Progression"`     // 진행단계
+	Progression     string           `json:  "Progression"`     // 진행단계   const SLA_CONTRACT_PROGRESSION.... 사용할 것
 	AssessYn        string           `json:  "AssessYn"`        // SLA평가 대상여부
 	Approvals       []SlaApproval    `json:  "Approvals"`       // SLA결재선정보
 	ServiceItems    []SlaServiceItem `json:  "ServiceItems"`    // SLA평가항목
@@ -60,7 +60,7 @@ type SlaApproval struct {
 	ApprovalCompany    string `json:  "ApprovalCompany"`    // 결재회사명
 	ApprovalDepartment string `json:  "ApprovalDepartment"` // 결재부서명
 	ApprovalName       string `json:  "ApprovalName"`       // 결재자명
-	ApprovalState      string `json:  "ApprovalState"`      // 결재상태
+	ApprovalState      string `json:  "ApprovalState"`      // 결재상태 const SLA_APPROVAL_STATE.... 사용할 것
 	ApprovalDate       string `json:  "ApprovalDate"`       // 결재일자
 	ApprovalComment    string `json:  "ApprovalComment"`    // 의견내용
 	ApprovalAlram      string `json:  "ApprovalAlram"`      // 알람여부  TODO Alram --> Alarm
@@ -103,6 +103,14 @@ const EVALUATION_ID_PREFIX = "SLA_EVAL_"
 const SLA_CONTRACT_ID_COUNT_KEY = "SLA_CONTRACT_ID_COUNT"
 const SLA_EVALUATION_ID_COUNT_KEY = "SLA_EVALUATION_ID_COUNT"
 const CURRENT_YEAR_KEY = "CURRENT_YEAR"
+
+// 계약 상태
+const SLA_CONTRACT_PROGRESSION_TEMP = "TEMP" // "TEMP": 임시저장
+const SLA_CONTRACT_PROGRESSION_IN_PROGRESS_INTERNAL_REVIEW_REQUESTED = "IN_PROGRESS_INTERNAL_REVIEW_REQUESTED"
+const SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED = "IN_PROGRESS_CLIENT_REVIEW_REQUESTED"
+const SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_MANAGER_REVIEW_REQUESTED = "IN_PROGRESS_CLIENT_MANAGER_REVIEW_REQUESTED"
+const SLA_CONTRACT_PROGRESSION_CLOSED = "CLOSED"
+const SLA_CONTRACT_PROGRESSION_ABANDONED = "ABANDONED"
 
 // 결재 상태
 const SLA_APPROVAL_STATE_TEMP = "TEMP" // "TEMP": 임시저장
@@ -837,19 +845,20 @@ func (t *SimpleChaincode) slaRejectContract(stub shim.ChaincodeStubInterface, ar
 
 	return nil, nil
 }
-
-func (t *SimpleChaincode) slaAbandonContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	// 업데이트를 abandon state  변경
-	return nil, nil
-}
 func (t *SimpleChaincode) slaSubmitContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	// 업데이트를 submit state  변경
 	return nil, nil
 }
+func (t *SimpleChaincode) slaAbandonContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	// 업데이트를 abandon state  변경
+	return nil, nil
+}
+
 func (t *SimpleChaincode) slaCloseContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	// 업데이트를 submit state  변경
 	return nil, nil
 }
+
 func (t *SimpleChaincode) slaGetEvaluationId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	return nil, nil
 }

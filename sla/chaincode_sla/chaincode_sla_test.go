@@ -289,7 +289,7 @@ func TestChaincodeSla_Invoke_slaApproveContract(t *testing.T) {
                 }`
 
 	// Update 내용 적용
-	updateContractContentInJson := `{"RegId":"SLA_CONT_2017_00001","Name":"홍길동","Kind":"보통계약","StaDate":"2017-02-01","EndDate":"2017-12-01","Client":"신한은행","ClientPerson":"개인","ClientPersonTel":"010-1111-2222","AssessDate":"2017-12-31","Progression":"작성","AssessYn":"포함","Approvals":[{"ApprovalUserId":"20170101","ApprovalCompany":"test","ApprovalDepartment":"test","ApprovalName":"test","ApprovalState":"승인","ApprovalDate":"2017-02-17","ApprovalComment":"내용확인 하였음","ApprovalAlram":"test"},{"ApprovalUserId":"test2","ApprovalCompany":"test2","ApprovalDepartment":"test2","ApprovalName":"test2","ApprovalState":"test2","ApprovalDate":"test2","ApprovalComment":"test2","ApprovalAlram":"test2"}],"ServiceItems":[{"ServiceItem":"test","ScoreItem":"test","MeasurementItem":"test","ExplainItem":"test","DivideScore":"test"}]}`
+	updateContractContentInJson := `{"RegId":"SLA_CONT_2017_00001","Name":"홍길동","Kind":"보통계약","StaDate":"2017-02-01","EndDate":"2017-12-01","Client":"신한은행","ClientPerson":"개인","ClientPersonTel":"010-1111-2222","AssessDate":"2017-12-31","Progression":"작성","AssessYn":"포함","Approvals":[{"ApprovalUserId":"20170101","ApprovalCompany":"test","ApprovalDepartment":"test","ApprovalName":"test","ApprovalState":"APPROVED","ApprovalDate":"2017-02-17","ApprovalComment":"내용확인 하였음","ApprovalAlram":"test"},{"ApprovalUserId":"test2","ApprovalCompany":"test2","ApprovalDepartment":"test2","ApprovalName":"test2","ApprovalState":"test2","ApprovalDate":"test2","ApprovalComment":"test2","ApprovalAlram":"test2"}],"ServiceItems":[{"ServiceItem":"test","ScoreItem":"test","MeasurementItem":"test","ExplainItem":"test","DivideScore":"test"}]}`
 
 	SlaContractRegId := "SLA_CONT_2017_00001"
 	SlaContractApprovalUserId := "20170101"
@@ -313,7 +313,7 @@ func TestChaincodeSla_Invoke_slaApproveContract(t *testing.T) {
 
 }
 
-// 3.계약을 반려합니다.
+//3.계약을 반려합니다.
 func TestChaincodeSla_Invoke_slaRejectContract(t *testing.T) {
 
 	contractContentInJson := `{
@@ -362,7 +362,7 @@ func TestChaincodeSla_Invoke_slaRejectContract(t *testing.T) {
                 }`
 
 	// Update 내용 적용
-	updateContractContentInJson := `{"RegId":"SLA_CONT_2017_00001","Name":"홍길동","Kind":"보통계약","StaDate":"2017-02-01","EndDate":"2017-12-01","Client":"신한은행","ClientPerson":"개인","ClientPersonTel":"010-1111-2222","AssessDate":"2017-12-31","Progression":"작성","AssessYn":"포함","Approvals":[{"ApprovalUserId":"20170101","ApprovalCompany":"test","ApprovalDepartment":"test","ApprovalName":"test","ApprovalState":"반려","ApprovalDate":"2017-02-17","ApprovalComment":"반려 하였음","ApprovalAlram":"test"},{"ApprovalUserId":"test2","ApprovalCompany":"test2","ApprovalDepartment":"test2","ApprovalName":"test2","ApprovalState":"test2","ApprovalDate":"test2","ApprovalComment":"test2","ApprovalAlram":"test2"}],"ServiceItems":[{"ServiceItem":"test","ScoreItem":"test","MeasurementItem":"test","ExplainItem":"test","DivideScore":"test"}]}`
+	updateContractContentInJson := `{"RegId":"SLA_CONT_2017_00001","Name":"홍길동","Kind":"보통계약","StaDate":"2017-02-01","EndDate":"2017-12-01","Client":"신한은행","ClientPerson":"개인","ClientPersonTel":"010-1111-2222","AssessDate":"2017-12-31","Progression":"작성","AssessYn":"포함","Approvals":[{"ApprovalUserId":"20170101","ApprovalCompany":"test","ApprovalDepartment":"test","ApprovalName":"test","ApprovalState":"REJECTED","ApprovalDate":"2017-02-17","ApprovalComment":"반려 하였음","ApprovalAlram":"test"},{"ApprovalUserId":"test2","ApprovalCompany":"test2","ApprovalDepartment":"test2","ApprovalName":"test2","ApprovalState":"test2","ApprovalDate":"test2","ApprovalComment":"test2","ApprovalAlram":"test2"}],"ServiceItems":[{"ServiceItem":"test","ScoreItem":"test","MeasurementItem":"test","ExplainItem":"test","DivideScore":"test"}]}`
 
 	SlaContractRegId := "SLA_CONT_2017_00001"
 	SlaContractApprovalUserId := "20170101"
