@@ -1,0 +1,31 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Rests</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Job</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @rests.each do |rest| %>
+      <tr>
+        <td><%= rest.name %></td>
+        <td><%= rest.age %></td>
+        <td><%= rest.job %></td>
+        <td><%= link_to 'Show', rest %></td>
+        <td><%= link_to 'Edit', edit_rest_path(rest) %></td>
+        <td><%= link_to 'Destroy', rest, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Rest', new_rest_path %>

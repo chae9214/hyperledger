@@ -1,0 +1,32 @@
+<%= form_for(rest) do |f| %>
+  <% if rest.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(rest.errors.count, "error") %> prohibited this rest from being saved:</h2>
+
+      <ul>
+      <% rest.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name %>
+    <%= f.text_field :name %>
+  </div>
+
+  <div class="field">
+    <%= f.label :age %>
+    <%= f.number_field :age %>
+  </div>
+
+  <div class="field">
+    <%= f.label :job %>
+    <%= f.text_field :job %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
