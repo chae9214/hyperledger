@@ -109,13 +109,11 @@ const CURRENT_YEAR_KEY = "CURRENT_YEAR"
 //  function 정의 함수
 // ===========================================================
 
-func padLeft(str string) string {
-
-	length := 5
+func padLeft(str string, padLength int) string {
 	pad := "0"
 
 	for {
-		if len(str) >= length {
+		if len(str) >= padLength {
 			return str
 		}
 		str = pad + str
@@ -302,7 +300,7 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	}
 
 	// 3. 계약번호 채번을 생성합니다.
-	contractId = CONTRACT_ID_PREFIX + strconv.Itoa(currentYear) + "_" + padLeft(strconv.Itoa(currentCount))
+	contractId = CONTRACT_ID_PREFIX + strconv.Itoa(currentYear) + "_" + padLeft(strconv.Itoa(currentCount), 5)
 
 	// 4. 다음 계약번호 카운트를 저장
 	nextCount := currentCount + 1
