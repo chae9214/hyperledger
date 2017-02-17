@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170214043649) do
+ActiveRecord::Schema.define(version: 20170217024419) do
 
   create_table "black_lists", force: :cascade do |t|
     t.string   "cid"
@@ -21,6 +21,14 @@ ActiveRecord::Schema.define(version: 20170214043649) do
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
     t.string   "test"
+  end
+
+  create_table "rests", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "age"
+    t.string   "job"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "transactions", force: :cascade do |t|

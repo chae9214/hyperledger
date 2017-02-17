@@ -1,0 +1,2 @@
+class Rest < ApplicationRecord
+end
