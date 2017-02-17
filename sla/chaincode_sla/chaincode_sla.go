@@ -308,6 +308,8 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	nextCount := currentCount + 1
 	stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(nextCount)))
 
+	// 5. 혹시 같은 계약번호가 있는지 확인할 것.
+
 	return []byte(contractId), nil
 }
 
