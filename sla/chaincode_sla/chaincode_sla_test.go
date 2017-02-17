@@ -243,61 +243,72 @@ func TestChaincodeSla_Invoke_slaUpdateContract(t *testing.T) {
 // 2.계약을 승인합니다
 func TestChaincodeSla_Invoke_slaApproveContract(t *testing.T) {
 
-	scc := new(SimpleChaincode)
-	stub := shim.NewMockStub("sla_chaincode", scc)
-
 	contractContentInJson := `{
-		  "RegId": "SLA_CONT_2017_00001",
-		  "Name": "홍길동",
-		  "Kind": "보통계약",
-		  "StaDate": "2017-02-01",
-		  "EndDate": "2017-12-01",
-		  "Client": "신한은행",
-		  "ClientPerson": "개인",
-		  "ClientPersonTel": "010-1111-2222",
-		  "AssessDate": "2017-12-31",
-		  "Progression": "작성",
-		  "AssessYn": "포함",
-		  "Approvals": [
-		    {
-		      "ApprovalUserId": "test",
-		      "ApprovalCompany": "test",
-		      "ApprovalDepartment": "test",
-		      "ApprovalName": "test",
-		      "ApprovalState": "test",
-		      "ApprovalDate": "test",
-		      "ApprovalComment": "test",
-		      "ApprovalAlram": "test"
-		    },
-		    {
-		      "ApprovalUserId": "test2",
-		      "ApprovalCompany": "test2",
-		      "ApprovalDepartment": "test2",
-		      "ApprovalName": "test2",
-		      "ApprovalState": "test2",
-		      "ApprovalDate": "test2",
-		      "ApprovalComment": "test2",
-		      "ApprovalAlram": "test2"
-		    }
-		  ],
-		  "ServiceItems": [
-		    {
-		      "ServiceItem": "test",
-		      "ScoreItem": "test",
-		      "MeasurementItem": "test",
-		      "ExplainItem": "test",
-		      "DivideScore": "test"
-		    }
-		  ]
-		}`
+                  "RegId": "SLA_CONT_2017_00001",
+                  "Name": "홍길동",
+                  "Kind": "보통계약",
+                  "StaDate": "2017-02-01",
+                  "EndDate": "2017-12-01",
+                  "Client": "신한은행",
+                  "ClientPerson": "개인",
+                  "ClientPersonTel": "010-1111-2222",
+                  "AssessDate": "2017-12-31",
+                  "Progression": "작성",
+                  "AssessYn": "포함",
+                  "Approvals": [
+                    {
+                      "ApprovalUserId": "test",
+                      "ApprovalCompany": "test",
+                      "ApprovalDepartment": "test",
+                      "ApprovalName": "test",
+                      "ApprovalState": "test",
+                      "ApprovalDate": "test",
+                      "ApprovalComment": "test",
+                      "ApprovalAlram": "test"
+                    },
+                    {
+                      "ApprovalUserId": "test2",
+                      "ApprovalCompany": "test2",
+                      "ApprovalDepartment": "test2",
+                      "ApprovalName": "test2",
+                      "ApprovalState": "test2",
+                      "ApprovalDate": "test2",
+                      "ApprovalComment": "test2",
+                      "ApprovalAlram": "test2"
+                    }
+                  ],
+                  "ServiceItems": [
+                    {
+                      "ServiceItem": "test",
+                      "ScoreItem": "test",
+                      "MeasurementItem": "test",
+                      "ExplainItem": "test",
+                      "DivideScore": "test"
+                    }
+                  ]
+                }`
+
+	// Update 내용 적용
+	updateContractContentInJson := `{"RegId":"SLA_CONT_2017_00001","Name":"홍길동","Kind":"보통계약","StaDate":"2017-02-01","EndDate":"2017-12-01","Client":"신한은행","ClientPerson":"개인","ClientPersonTel":"010-1111-2222","AssessDate":"2017-12-31","Progression":"작성","AssessYn":"포함","Approvals":[{"ApprovalUserId":"20170101","ApprovalCompany":"test","ApprovalDepartment":"test","ApprovalName":"test","ApprovalState":"승인","ApprovalDate":"2017-02-17","ApprovalComment":"내용확인 하였음","ApprovalAlram":"test"},{"ApprovalUserId":"test2","ApprovalCompany":"test2","ApprovalDepartment":"test2","ApprovalName":"test2","ApprovalState":"test2","ApprovalDate":"test2","ApprovalComment":"test2","ApprovalAlram":"test2"}],"ServiceItems":[{"ServiceItem":"test","ScoreItem":"test","MeasurementItem":"test","ExplainItem":"test","DivideScore":"test"}]}`
 
 	SlaContractRegId := "SLA_CONT_2017_00001"
 	SlaContractApprovalUserId := "20170101"
 	SlaContractApprovalComment := "내용확인 하였음"
 	SlaContractProgression := "0"
 
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("sla_chaincode", scc)
+
+	stub.MockTransactionStart("init")
 	checkInit(t, stub, []string{})
+
+	stub.MockTransactionStart("invoke")
 	checkInvoke(t, stub, "slaCreateContract", []string{contractContentInJson})
+
+	stub.MockTransactionStart("invoke")
 	checkInvoke(t, stub, "slaApproveContract", []string{SlaContractRegId, SlaContractApprovalUserId, SlaContractApprovalComment, SlaContractProgression})
+
+	stub.MockTransactionStart("query")
+	checkQuery(t, stub, "slaGetContractWithId", []string{"SLA_CONT_2017_00001"}, updateContractContentInJson)
 
 }
