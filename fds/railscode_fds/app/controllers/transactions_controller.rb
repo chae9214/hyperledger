@@ -92,7 +92,7 @@ class TransactionsController < ApplicationController
     end
 
     def query_from_hyperledger(key,value)
-      uri = URI('http://192.168.150.129:7050/chaincode')
+      uri = URI('http://192.168.99.100:7050/chaincode')
       req = Net::HTTP::Post.new(uri)
 
       json = Hash.new()
