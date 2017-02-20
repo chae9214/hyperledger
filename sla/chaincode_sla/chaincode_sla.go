@@ -97,10 +97,15 @@ const FIELDSEP = "|"
 const ENTRYSEP = ","
 const SLA_ALL_DATA = "SLA_ALL_DATA"
 
+const CONTRACT_TEMP_ID_PREFIX = "SLA_CONT_TEMP"
 const CONTRACT_ID_PREFIX = "SLA_CONT_"
+const EVALUATION_TEMP_ID_PREFIX = "SLA_EVAL_TEMP"
 const EVALUATION_ID_PREFIX = "SLA_EVAL_"
 
+
+const SLA_CONTRACT_TEMP_ID_COUNT_KEY = "SLA_CONTRACT_TEMP_ID_COUNT"
 const SLA_CONTRACT_ID_COUNT_KEY = "SLA_CONTRACT_ID_COUNT"
+const SLA_EVALUATION_TEMP_ID_COUNT_KEY = "SLA_EVALUATION_TEMP_ID_COUNT"
 const SLA_EVALUATION_ID_COUNT_KEY = "SLA_EVALUATION_ID_COUNT"
 const CURRENT_YEAR_KEY = "CURRENT_YEAR"
 
@@ -243,6 +248,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	switch function {
 
+	case "slaGetTempContractId":
+		return t.slaGetTempContractId(stub, args)
+
 	case "slaGetContractId":
 		return t.slaGetContractId(stub, args)
 
@@ -290,6 +298,40 @@ func main() {
 // ===========================================================
 //  SLAChaincodeStub 등록 함수
 // ===========================================================
+
+func (t *SimpleChaincode) slaGetTempContractId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var contractTempId string
+	var err error
+
+	// 1.저장된 해당 계약 카운트를 호출
+	currentCountInBytes, err := stub.GetState(SLA_CONTRACT_TEMP_ID_COUNT_KEY)
+	if err != nil {
+		return nil, errors.New("Failed to SLA_CONTRACT_TEMP_ID_COUNT_KEY with " + SLA_CONTRACT_TEMP_ID_COUNT_KEY)
+	}
+
+	if currentCountInBytes == nil { // if not initialized
+		err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
+	}
+	currentCount, _ := strconv.Atoi(string(currentCountInBytes))
+
+	// 2.카운트가 1000을 넘어가면 초기화
+	if currentCount > 100000 { // new year starts
+		err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))  // 카운트는 1부터
+	}
+
+	// 3. 계약번호 채번을 생성합니다.
+	currentYear, _, _ := time.Now().Date()
+	contractTempId = CONTRACT_TEMP_ID_PREFIX + strconv.Itoa(currentYear) + "_" + padLeft(strconv.Itoa(currentCount), 5)
+
+	// 4. 다음 계약번호 카운트를 저장
+	nextCount := currentCount + 1
+	stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(nextCount)))
+
+	// 5. 혹시 같은 계약번호가 있는지 확인할 것.
+
+	return []byte(contractId), nil
+}
 
 func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
