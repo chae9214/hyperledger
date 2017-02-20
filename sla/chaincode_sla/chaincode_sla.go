@@ -102,7 +102,6 @@ const CONTRACT_ID_PREFIX = "SLA_CONT_"
 const EVALUATION_TEMP_ID_PREFIX = "SLA_EVAL_TEMP"
 const EVALUATION_ID_PREFIX = "SLA_EVAL_"
 
-
 const SLA_CONTRACT_TEMP_ID_COUNT_KEY = "SLA_CONTRACT_TEMP_ID_COUNT"
 const SLA_CONTRACT_ID_COUNT_KEY = "SLA_CONTRACT_ID_COUNT"
 const SLA_EVALUATION_TEMP_ID_COUNT_KEY = "SLA_EVALUATION_TEMP_ID_COUNT"
@@ -317,7 +316,7 @@ func (t *SimpleChaincode) slaGetTempContractId(stub shim.ChaincodeStubInterface,
 
 	// 2.카운트가 1000을 넘어가면 초기화
 	if currentCount > 100000 { // new year starts
-		err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))  // 카운트는 1부터
+		err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1))) // 카운트는 1부터
 	}
 
 	// 3. 계약번호 채번을 생성합니다.
@@ -693,7 +692,7 @@ func (t *SimpleChaincode) slaAbandonContract(stub shim.ChaincodeStubInterface, a
 	}
 
 	// 3. 해당 결재 내용으로 변경
-	targetContract.Progression = SLA_CONTRACT_PROGRESSION_ABANDONED  // 새 진행단계 (Progression)
+	targetContract.Progression = SLA_CONTRACT_PROGRESSION_ABANDONED // 새 진행단계 (Progression)
 
 	// 4. Json 형태로 저장: golang struct -> string
 	targetContractInJson, _ := json.MarshalIndent(targetContract, "", "  ")
@@ -730,7 +729,7 @@ func (t *SimpleChaincode) slaCloseContract(stub shim.ChaincodeStubInterface, arg
 	}
 
 	// 3. 최종 진행단계(Progression)를 확인하여 현재 진행단계를 찾고 변경할 Approval을 찾음
-	var targetApproval := &(targetContract.Approvals[3])// approval to update for target contract
+	targetApproval := &(targetContract.Approvals[3]) // approval to update for target contract
 
 	// 4. 해당 결재 내용으로 변경
 	targetContract.Progression = SLA_CONTRACT_PROGRESSION_CLOSED  // 새 진행단계 (Progression)
