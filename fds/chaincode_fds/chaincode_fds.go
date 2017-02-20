@@ -18,18 +18,22 @@ type SimpleChaincode struct {
 }
 
 type FdsFraudEntry struct {
-	Cid          string `json:"cid"`
-	Mac          string `json:"mac"`
-	Uuid         string `json:"uuid"`
-	FinalDate    string `json:"finalDate"`
-	FinalTime    string `json:"finalTime"`
-	ProducedBy   string `json:"producedBy"`
-	RegisteredBy string `json:"registeredBy"`
-	Reason       string `json:"reason"`
+	Eid                      int    `json:"eid"`
+	Cid                      string `json:"cid"`
+	Mac                      string `json:"mac"`
+	Uuid                     string `json:"uuid"`
+	FinalDate                string `json:"finalDate"`
+	FinalTime                string `json:"finalTime"`
+	ProducedBy               string `json:"producedBy"`
+	RegisteredBy             string `json:"registeredBy"`
+	Reason                   string `json:"reason"`
+	LedgerStatus             string `json:"ledgerStatus"`
+	LedgerStatusUpdateTime   string `json:"reason"`
+	LedgerStatusUpdateReason string `json:"reason"`
 }
 
-// fraud entry 의 필드갯수
-const NUM_FIELDS = 8
+// fraud entry 의 필드갯수 (EID 제외)
+const NUM_FIELDS = 11
 
 // fraud entry 의 각 필드별 인덱스
 const IND_CID = 0
@@ -40,12 +44,15 @@ const IND_FINALTIME = 4
 const IND_PRODUCEDBY = 5
 const IND_REGISTEREDBY = 6
 const IND_REASON = 7
+const IND_LS = 8
+const IND_LSUPDATETIME = 9
+const IND_LSUPDATEREASON = 10
 
 // key-value store 의 키 구분자
-const PREFIX_EID, PREFIX_EID_END = "FDS_EID_", "FDS_F"
-const PREFIX_CID, PREFIX_CID_END = "FDS_CID_", "FDS_D"
-const PREFIX_MAC, PREFIX_MAC_END = "FDS_MAC_", "FDS_N"
-const PREFIX_UUID, PREFIX_UUID_END = "FDS_UUID_", "FDS_V"
+const PREFIX_EID = "FDS_EID_"
+const PREFIX_CID = "FDS_CID_"
+const PREFIX_MAC = "FDS_MAC_"
+const PREFIX_UUID = "FDS_UUID_"
 
 const NEXTEIDKEY = "FDS_NEXTEID"
 
@@ -63,9 +70,8 @@ func stringArrayToByteArray(slist []string) []byte {
 func byteArrayToStringArray(b []byte) []string {
 	if string(b) == "" {
 		return []string{}
-	} else {
-		return strings.Split(string(b), FIELDSEP)
 	}
+	return strings.Split(string(b), FIELDSEP)
 }
 
 func appendToEIDList(b []byte, eid string) []byte {
@@ -118,8 +124,8 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.fdsGetFraudEntriesWithMac(stub, args)
 	case "fdsGetFraudEntriesWithUuid":
 		return t.fdsGetFraudEntriesWithUuid(stub, args)
-	case "test":
-		return t.testFunc(stub, args)
+	case "listkvs": // use with argument "eid"/"cid"/"mac"/"uuid"
+		return t.listkvs(stub, args)
 	}
 	return nil, errors.New("Invalid query function name")
 }
@@ -169,7 +175,7 @@ func (t *SimpleChaincode) fdsCreateFraudEntry(stub shim.ChaincodeStubInterface, 
 	macKey := PREFIX_MAC + args[IND_MAC]
 	uuidKey := PREFIX_UUID + args[IND_UUID]
 
-	entry := FdsFraudEntry{args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]}
+	entry := FdsFraudEntry{nextEid, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]}
 	entryInBytes, err = json.Marshal(entry)
 	if err != nil {
 		return nil, err
@@ -494,9 +500,21 @@ func (t *SimpleChaincode) fdsGetAllFraudEntries(stub shim.ChaincodeStubInterface
 //   테스트 함수
 // ===========================================================
 
-func (t *SimpleChaincode) testFunc(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) listkvs(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var start, end string
 
-	iter, _ := stub.RangeQueryState(args[0], args[1])
+	switch args[0] {
+	case "eid":
+		start, end = PREFIX_EID, "FDS_F"
+	case "cid":
+		start, end = PREFIX_CID, "FDS_D"
+	case "mac":
+		start, end = PREFIX_MAC, "FDS_N"
+	case "uuid":
+		start, end = PREFIX_UUID, "FDS_V"
+	}
+
+	iter, _ := stub.RangeQueryState(start, end)
 	fmt.Println("START OF ITERATION")
 	for iter.HasNext() {
 		key, value, _ := iter.Next()
