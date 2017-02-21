@@ -6,7 +6,9 @@ class RestsController < ApplicationController
   def index
     @rests = Rest.all
 
+    logger.debug "START HERE\n"
     test_httparty
+    logger.debug "END HERE\n"
   end
 
   # GET /rests/1
@@ -76,6 +78,6 @@ class RestsController < ApplicationController
 
     def test_httparty
       response = HTTParty.get('http://localhost:3000')
-      puts response.body, response.code, response.message, response.headers.inspect
+      logger.debug response.body, response.code, response.message, response.headers.inspect
     end
 end

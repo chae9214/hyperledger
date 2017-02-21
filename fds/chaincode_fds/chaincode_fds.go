@@ -27,13 +27,13 @@ type FdsFraudEntry struct {
 	ProducedBy               string `json:"producedBy"`
 	RegisteredBy             string `json:"registeredBy"`
 	Reason                   string `json:"reason"`
-	LedgerStatus             string `json:"ledgerStatus"`
-	LedgerStatusUpdateTime   string `json:"reason"`
-	LedgerStatusUpdateReason string `json:"reason"`
+	LedgerStatus             int    `json:"ledgerStatus"`
+	LedgerStatusUpdateTime   string `json:"ledgerStatusUpdateTime"`
+	LedgerStatusUpdateReason string `json:"ledgerStatusUpdateReason"`
 }
 
-// fraud entry 의 필드갯수 (EID 제외)
-const NUM_FIELDS = 11
+// registerFraudEntry 의 필드갯수
+const NUM_FIELDS = 8
 
 // fraud entry 의 각 필드별 인덱스
 const IND_CID = 0
@@ -53,6 +53,9 @@ const PREFIX_EID = "FDS_EID_"
 const PREFIX_CID = "FDS_CID_"
 const PREFIX_MAC = "FDS_MAC_"
 const PREFIX_UUID = "FDS_UUID_"
+
+const LS_BLACKLIST = 9
+const LS_WHITELIST = 1
 
 const NEXTEIDKEY = "FDS_NEXTEID"
 
@@ -104,6 +107,10 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	switch function {
 	case "fdsCreateFraudEntry":
 		return t.fdsCreateFraudEntry(stub, args)
+	case "fdsUpdateLedgerStatusWithEid":
+		return t.fdsUpdateLedgerStatusWithEid(stub, args)
+	case "fdsDeleteFraudEntryWithEid":
+		return t.fdsDeleteFraudEntryWithEid(stub, args)
 	case "fdsDeleteFraudEntryWithCid":
 		return t.fdsDeleteFraudEntryWithCid(stub, args)
 	case "fdsDeleteFraudEntryWithMac":
@@ -154,7 +161,7 @@ func (t *SimpleChaincode) fdsSetNextEid(stub shim.ChaincodeStubInterface, nextEi
 }
 
 // ===========================================================
-//  FDS 등록/수정 함수
+//  FdsFraudEntry 등록 함수
 // ===========================================================
 
 func (t *SimpleChaincode) fdsCreateFraudEntry(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
@@ -175,7 +182,7 @@ func (t *SimpleChaincode) fdsCreateFraudEntry(stub shim.ChaincodeStubInterface, 
 	macKey := PREFIX_MAC + args[IND_MAC]
 	uuidKey := PREFIX_UUID + args[IND_UUID]
 
-	entry := FdsFraudEntry{nextEid, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]}
+	entry := FdsFraudEntry{nextEid, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], LS_BLACKLIST, "", ""}
 	entryInBytes, err = json.Marshal(entry)
 	if err != nil {
 		return nil, err
@@ -218,8 +225,71 @@ func (t *SimpleChaincode) fdsCreateFraudEntry(stub shim.ChaincodeStubInterface, 
 }
 
 // ===========================================================
-//  FDS 삭제 함수
+//  FdsFraudEntry 수정 함수
 // ===========================================================
+
+func (t *SimpleChaincode) fdsUpdateLedgerStatusWithEid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var entryInBytes []byte
+	var err error
+
+	if len(args) != 4 {
+		return nil, errors.New("Looking up with EID requires 4 argument but given" + strconv.Itoa(len(args)))
+	}
+
+	eidKey := PREFIX_EID + args[0]
+
+	entryInBytes, err = stub.GetState(eidKey)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + eidKey + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+	var entry FdsFraudEntry
+	err = json.Unmarshal(entryInBytes, &entry)
+	if err != nil {
+		return nil, err
+	}
+
+	switch args[1] {
+	case "BL":
+		entry.LedgerStatus = LS_BLACKLIST
+	case "WL":
+		entry.LedgerStatus = LS_WHITELIST
+	}
+	entry.LedgerStatusUpdateTime = args[2]
+	entry.LedgerStatusUpdateReason = args[3]
+
+	entryInBytes, err = json.Marshal(entry)
+	if err != nil {
+		return nil, err
+	}
+
+	err = stub.PutState(eidKey, entryInBytes)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+// ===========================================================
+//  FdsFraudEntry 삭제 함수
+// ===========================================================
+
+func (t *SimpleChaincode) fdsDeleteFraudEntryWithEid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+
+	if len(args) != 1 {
+		return nil, errors.New("Removing with EID requires 1 argument but given" + strconv.Itoa(len(args)))
+	}
+
+	eidKey := PREFIX_EID + args[0]
+
+	err = stub.DelState(eidKey)
+	if err != nil {
+		return nil, errors.New("Failed to delete state for" + eidKey)
+	}
+	return nil, nil
+}
 
 func (t *SimpleChaincode) fdsDeleteFraudEntryWithCid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var eidsInBytes []byte
@@ -309,7 +379,7 @@ func (t *SimpleChaincode) fdsDeleteFraudEntryWithUuid(stub shim.ChaincodeStubInt
 }
 
 // ===========================================================
-//   FDS 조회 함수
+//   FdsFraudEntry 조회 함수
 // ===========================================================
 
 func (t *SimpleChaincode) fdsGetFraudEntriesWithCid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
