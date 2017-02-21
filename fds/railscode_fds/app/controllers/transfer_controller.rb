@@ -17,12 +17,22 @@ class TransferController < ApplicationController
 		puts "#{params[:device][:IPAddr]}"
 		puts "#{params[:device][:Type]}"
 
+
+    	@dateTime = Time.now.strftime("%Y-%d-%m %I:%M:%S") 
+
+		#Transaction.new
+		@query = "INSERT INTO transactions (	
+								) VALUES (
+										 ) "
+		
+		puts @query
+		ActiveRecord::Base.connection.execute(@query)
 		# 처리결과 응답 
-		@respJson = '{
+		@returnMsg = '{
 			"orderNum":"N16021810001",							
 			"result":"Y"
 		}'
 
-		render json: @respJson
+		render json: @returnMsg
 	end
 end
