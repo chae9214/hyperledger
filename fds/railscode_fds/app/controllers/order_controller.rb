@@ -3,26 +3,57 @@ class OrderController < ApplicationController
 
 		# Request Parameter 파싱 작업 
 		params.to_json
-		puts "#{params[:order][:orderNum]}"
-		puts "#{params[:order][:product][:productCode]}"
-		puts "#{params[:order][:product][:productPrice]}"
-		puts "#{params[:order][:accountID]}"
-		puts "#{params[:customer][:name]}"
-		puts "#{params[:customer][:birth]}"
-		puts "#{params[:customer][:cardnum]}"
-		puts "#{params[:customer][:UUID]}"
-		puts "#{params[:device][:deviceID]}"
-		puts "#{params[:device][:MAC]}"
-		puts "#{params[:device][:IPAddr]}"
-		puts "#{params[:device][:Type]}"
+		@orderNum 		= "#{params[:order][:orderNum]}"
+		@productCode 	= "#{params[:order][:product][:productCode]}"
+		@productPrice 	= "#{params[:order][:product][:productPrice]}"
+		@accountID 		= "#{params[:order][:accountID]}"
+		@customName 	= "#{params[:customer][:name]}"
+		@customBirth 	= "#{params[:customer][:birth]}"
+		@customCardnum 	= "#{params[:customer][:cardnum]}"
+		@customUUID 	= "#{params[:customer][:UUID]}"
+		@deviceID		= "#{params[:device][:deviceID]}"
+		@deviceMAC 		= "#{params[:device][:MAC]}"
+		@deviceIPAddr	= "#{params[:device][:IPAddr]}"
+		@deviceType		= "#{params[:device][:Type]}"
 
+    	@dateTime = Time.now.strftime("%Y-%d-%m %I:%M:%S") 
+
+		#Transaction.new
+		@query = "INSERT INTO transactions (	stats , 
+											cid, 
+											mac, 
+											accountnum, 
+											txtime, 
+											created_at, 
+											updated_at, 
+											uuid, 
+											cardnum, 
+											ordernum, 
+											correspondentid, 
+											posid
+								) VALUES (	'', 
+											'', 
+											'"+ @deviceMAC +"',
+											'',
+											'"+ @dateTime +"',
+											'"+ @dateTime +"',
+											'"+ @dateTime +"',
+											'"+ @customUUID +"',
+											'"+ @customCardnum +"',
+											'"+ @orderNum +"',
+											'"+ @accountID +"',
+											'"+ @deviceType +"'
+										 ) "
+		
+		puts @query
+		ActiveRecord::Base.connection.execute(@query)
 
 		# 처리결과 응답 
-		@respJson = '{
+		@returnMsg = '{
 			"orderNum":"N16021810001",							
 			"result":"Y"
 		}'
 
-		render json: @respJson
+		render json: @returnMsg
 	end
 end
