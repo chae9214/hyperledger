@@ -57,7 +57,7 @@ const PREFIX_UUID = "FDS_UUID_"
 const LS_BLACKLIST = 9
 const LS_WHITELIST = 1
 
-const NEXTEIDKEY = "FDS_NEXTEID"
+const FDS_NEXTEID_KEY = "FDS_NEXTEID"
 
 const FIELDSEP = "|"
 const ENTRYSEP = "$"
@@ -150,14 +150,14 @@ func main() {
 // ===========================================================
 
 func (t *SimpleChaincode) fdsGetNextEid(stub shim.ChaincodeStubInterface) int {
-	nextEidInBytes, _ := stub.GetState(NEXTEIDKEY)
+	nextEidInBytes, _ := stub.GetState(FDS_NEXTEID_KEY)
 	nextEidInInt, _ := strconv.Atoi(string(nextEidInBytes))
 	return nextEidInInt
 }
 
 func (t *SimpleChaincode) fdsSetNextEid(stub shim.ChaincodeStubInterface, nextEidInInt int) {
 	nextEidInBytes := []byte(strconv.Itoa(nextEidInInt))
-	stub.PutState(NEXTEIDKEY, nextEidInBytes)
+	stub.PutState(FDS_NEXTEID_KEY, nextEidInBytes)
 }
 
 // ===========================================================
@@ -174,9 +174,9 @@ func (t *SimpleChaincode) fdsCreateFraudEntry(stub shim.ChaincodeStubInterface, 
 	}
 
 	nextEid := t.fdsGetNextEid(stub)
-	if nextEid == 0 { // if not initialized
-		t.fdsSetNextEid(stub, 1)
-	}
+	// if nextEid == 0 { // if not initialized
+	// 	t.fdsSetNextEid(stub, 1)
+	// }
 	eidKey := PREFIX_EID + strconv.Itoa(nextEid)
 	cidKey := PREFIX_CID + args[IND_CID]
 	macKey := PREFIX_MAC + args[IND_MAC]
