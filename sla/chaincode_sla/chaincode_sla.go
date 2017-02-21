@@ -94,12 +94,13 @@ type SlaEvaluation struct {
 
 // key-value store 의 키 구분자
 const FIELDSEP = "|"
-const ENTRYSEP = ","
+
+// const ENTRYSEP = ","
 const SLA_ALL_DATA = "SLA_ALL_DATA"
 
-const CONTRACT_TEMP_ID_PREFIX = "SLA_CONT_TEMP"
+const CONTRACT_TEMP_ID_PREFIX = "SLA_CONT_TEMP_"
 const CONTRACT_ID_PREFIX = "SLA_CONT_"
-const EVALUATION_TEMP_ID_PREFIX = "SLA_EVAL_TEMP"
+const EVALUATION_TEMP_ID_PREFIX = "SLA_EVAL_TEMP_"
 const EVALUATION_ID_PREFIX = "SLA_EVAL_"
 
 const SLA_CONTRACT_TEMP_ID_COUNT_KEY = "SLA_CONTRACT_TEMP_ID_COUNT"
@@ -159,7 +160,9 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	year, _, _ := time.Now().Date()
 
 	err = stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
+	err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	err = stub.PutState(SLA_EVALUATION_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
+	err = stub.PutState(SLA_EVALUATION_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(year))) // 현재 year
 	err = stub.PutState(SLA_ALL_DATA, []byte(""))
 	return nil, err
@@ -169,6 +172,12 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	switch function {
+
+	case "slaGetContractTempId":
+		return t.slaGetTempContractId(stub, args)
+
+	case "slaGetContractId":
+		return t.slaGetContractId(stub, args)
 
 	// 최초 생성 + 임시 저장
 	case "slaCreateTempContract": // 요청자가 계약 생성 (최초 생성하고 임시저장할 경우)
@@ -247,12 +256,6 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	switch function {
 
-	case "slaGetTempContractId":
-		return t.slaGetTempContractId(stub, args)
-
-	case "slaGetContractId":
-		return t.slaGetContractId(stub, args)
-
 	case "slaGetAllContracts":
 		return t.slaGetAllContracts(stub, args)
 
@@ -299,7 +302,6 @@ func main() {
 // ===========================================================
 
 func (t *SimpleChaincode) slaGetTempContractId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-
 	var contractTempId string
 	var err error
 
@@ -308,7 +310,6 @@ func (t *SimpleChaincode) slaGetTempContractId(stub shim.ChaincodeStubInterface,
 	if err != nil {
 		return nil, errors.New("Failed to SLA_CONTRACT_TEMP_ID_COUNT_KEY with " + SLA_CONTRACT_TEMP_ID_COUNT_KEY)
 	}
-
 	if currentCountInBytes == nil { // if not initialized
 		err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	}
@@ -327,13 +328,12 @@ func (t *SimpleChaincode) slaGetTempContractId(stub shim.ChaincodeStubInterface,
 	nextCount := currentCount + 1
 	stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(nextCount)))
 
-	// 5. 혹시 같은 계약번호가 있는지 확인할 것.
+	// TODO 5. 혹시 같은 계약번호가 있는지 확인할 것.
 
-	return []byte(contractId), nil
+	return []byte(contractTempId), nil
 }
 
 func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-
 	var contractId string
 	var err error
 
@@ -342,7 +342,6 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	if err != nil {
 		return nil, errors.New("Failed to SLA_CONTRACT_ID_COUNT_KEY with " + SLA_CONTRACT_ID_COUNT_KEY)
 	}
-
 	if currentCountInBytes == nil { // if not initialized
 		err = stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	}
@@ -353,7 +352,6 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	if err != nil {
 		return nil, errors.New("Failed to kvsCurrentYearInBytes with " + CURRENT_YEAR_KEY)
 	}
-
 	currentYear, _, _ := time.Now().Date()
 	if kvsCurrentYearInBytes == nil { // if not initialized
 		err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(currentYear)))
@@ -371,7 +369,7 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	nextCount := currentCount + 1
 	stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(nextCount)))
 
-	// 5. 혹시 같은 계약번호가 있는지 확인할 것.
+	// TODO 5. 혹시 같은 계약번호가 있는지 확인할 것.
 
 	return []byte(contractId), nil
 }
@@ -438,14 +436,19 @@ func (t *SimpleChaincode) slaSubmitContract(stub shim.ChaincodeStubInterface, ar
 	var err error
 	var targetContract SlaContract
 
+	// todo 동일한 ID의 계약이 있을경우 튕겨 내야함.... submit 두번 할 수 없도록 해야함....
+
 	// JSON 데이터를 디코딩(Unmarshal)합니다: string -> []byte -> golang struct
 	err = json.Unmarshal([]byte(args[0]), &targetContract)
 	if err != nil {
 		return nil, errors.New("Failed to slaSubmitContract with " + args[0])
 	}
 
+	// 상태 변경: 계약상태 + Approvals[0]의 상태
 	// 계약상태를 SLA_CONTRACT_PROGRESSION_TEMP 로 변경
 	targetContract.Progression = SLA_CONTRACT_PROGRESSION_IN_PROGRESS_INTERNAL_REVIEW_REQUESTED
+	// 첫번째 Approval의 state를 "SUBMITTED"로 변경
+	targetContract.Approvals[0].ApprovalState = SLA_APPROVAL_STATE_SUBMITTED
 
 	// JSON 데이터를 정렬하여 디코딩(Unmarshal)합니다: golang struct --> string
 	targetContractInJson, err := json.MarshalIndent(targetContract, "", "  ")
@@ -649,11 +652,11 @@ func (t *SimpleChaincode) slaRejectContract(stub shim.ChaincodeStubInterface, ar
 	case SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_MANAGER_REVIEW_REQUESTED:
 		targetApproval = &(targetContract.Approvals[3]) // approval to change
 	case SLA_CONTRACT_PROGRESSION_CLOSED:
-		return nil, errors.New("Approval cannot have the current progression of \"CLOSED\" ")
+		return nil, errors.New("Reject cannot have the current progression of \"CLOSED\" ")
 	case SLA_CONTRACT_PROGRESSION_ABANDONED:
-		return nil, errors.New("Approval cannot have the current progression of \"ABANDONED\" ")
+		return nil, errors.New("Reject cannot have the current progression of \"ABANDONED\" ")
 	default:
-		return nil, errors.New("Approval cannot have the current progression of " + targetContract.Progression)
+		return nil, errors.New("Reject cannot have the current progression of " + targetContract.Progression)
 	}
 
 	// 3. 데이터 내용 변경
@@ -674,37 +677,7 @@ func (t *SimpleChaincode) slaRejectContract(stub shim.ChaincodeStubInterface, ar
 	return nil, nil
 }
 
-func (t *SimpleChaincode) slaAbandonContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	var err error
-	var targetContract SlaContract
-
-	// 1. 해당 계약 찾기 및 Struct 생성
-	slaContractRegId := args[0]
-	targetContractInBytes, err := stub.GetState(slaContractRegId)
-	if err != nil {
-		return nil, errors.New("Failed to get state with " + string(targetContractInBytes))
-	}
-
-	// 2. JSON 데이터를 디코딩(Unmarshal)합니다: string -> []byte -> golang struct
-	err = json.Unmarshal([]byte(targetContractInBytes), &targetContract)
-	if err != nil {
-		return nil, errors.New("Failed to slaCloseContract with " + string(targetContractInBytes))
-	}
-
-	// 3. 해당 결재 내용으로 변경
-	targetContract.Progression = SLA_CONTRACT_PROGRESSION_ABANDONED // 새 진행단계 (Progression)
-
-	// 4. Json 형태로 저장: golang struct -> string
-	targetContractInJson, _ := json.MarshalIndent(targetContract, "", "  ")
-
-	// 5. 변경된 계약을 KVS에 저장합니다.
-	err = stub.PutState(slaContractRegId, []byte(targetContractInJson))
-	if err != nil {
-		return nil, errors.New("Failed to put state with" + string(targetContractInJson))
-	}
-	return nil, nil
-}
-
+// 4.계약을 마무리(종료)합니다.
 func (t *SimpleChaincode) slaCloseContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	//계약번호 > 계약 시퀀스 >  결제 정보
 	var err error
@@ -738,6 +711,38 @@ func (t *SimpleChaincode) slaCloseContract(stub shim.ChaincodeStubInterface, arg
 	targetApproval.ApprovalDate = time.Now().Format("2006-01-02") // 현재일자
 	targetApproval.ApprovalComment = args[2]                      // 의견내용
 
+	targetContractInJson, _ := json.MarshalIndent(targetContract, "", "  ")
+
+	// 5. 변경된 계약을 KVS에 저장합니다.
+	err = stub.PutState(slaContractRegId, []byte(targetContractInJson))
+	if err != nil {
+		return nil, errors.New("Failed to put state with" + string(targetContractInJson))
+	}
+	return nil, nil
+}
+
+// 5.계약을 폐기합니다.
+func (t *SimpleChaincode) slaAbandonContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+	var targetContract SlaContract
+
+	// 1. 해당 계약 찾기 및 Struct 생성
+	slaContractRegId := args[0]
+	targetContractInBytes, err := stub.GetState(slaContractRegId)
+	if err != nil {
+		return nil, errors.New("Failed to get state with " + string(targetContractInBytes))
+	}
+
+	// 2. JSON 데이터를 디코딩(Unmarshal)합니다: string -> []byte -> golang struct
+	err = json.Unmarshal([]byte(targetContractInBytes), &targetContract)
+	if err != nil {
+		return nil, errors.New("Failed to slaCloseContract with " + string(targetContractInBytes))
+	}
+
+	// 3. 해당 결재 내용으로 변경
+	targetContract.Progression = SLA_CONTRACT_PROGRESSION_ABANDONED // 새 진행단계 (Progression)
+
+	// 4. Json 형태로 저장: golang struct -> string
 	targetContractInJson, _ := json.MarshalIndent(targetContract, "", "  ")
 
 	// 5. 변경된 계약을 KVS에 저장합니다.
@@ -793,26 +798,16 @@ func (t *SimpleChaincode) slaCloseEvaluationRoot(stub shim.ChaincodeStubInterfac
 //  SLAChaincodeStub 검색 함수
 // ===========================================================
 
-// SLA 데이터 전체를 조회합니다.  (abandon 제외)
+// SLA 데이터 전체를 조회합니다.  (abandon 포함)
 func (t *SimpleChaincode) slaGetAllContracts(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-
-	var dataInBytes string
 	var err error
 
-	fmt.Printf("slaGetAllContracts Input Args:%s\n", args[0])
-
-	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting name of the value to slaGetContractsWithName")
-	}
-
-	dataInBytes = args[0]
-
-	// 계약명으로 계약ID목록 조회
+	// 전체 계약ID목록 조회
 	contractIDsInBytes, err := stub.GetState(SLA_ALL_DATA)
-	contractIDsInString := string(contractIDsInBytes)
 	if err != nil {
-		return nil, errors.New("Failed to get state with " + dataInBytes)
+		return nil, errors.New("Failed to get state with " + SLA_ALL_DATA)
 	}
+	contractIDsInString := string(contractIDsInBytes)
 
 	// 계약ID목록의 형태를 스트링에서 배열로 전환
 	contractIDs := strings.Split(contractIDsInString, FIELDSEP)
@@ -823,129 +818,104 @@ func (t *SimpleChaincode) slaGetAllContracts(stub shim.ChaincodeStubInterface, a
 	// 계약 전체 ID목록 조회
 	for i, _ := range contractIDs {
 		contractInBytes, _ := stub.GetState(contractIDs[i])
+		if err != nil {
+			return nil, errors.New("Failed to get state with " + contractIDs[i])
+		}
 		contractList[i] = string(contractInBytes)
 	}
 
-	contractListBytes := strings.Join(contractList, ENTRYSEP)
+	// 계약 전체 String
+	contractListInString := strings.Join(contractList, FIELDSEP)
 
-	fmt.Printf("slaGetContractsWithName Response:%s\n", contractListBytes)
-
-	return []byte(contractListBytes), nil
+	return []byte(contractListInString), nil
 
 }
 
 // ID으로 조회합니다.
 func (t *SimpleChaincode) slaGetContractWithId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-
-	var dataInBytes string
 	var err error
-
-	fmt.Printf("slaGetContractWithId Input Args:%s\n", args[0])
-
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting name of the Value to slaGetContractWithId")
 	}
 
-	dataInBytes = args[0]
-	Valuebytes, err := stub.GetState(args[0])
-
+	contractInBytes, err := stub.GetState(args[0])
 	if err != nil {
-		return nil, errors.New("Failed to get state with" + dataInBytes)
+		return nil, errors.New("Failed to get state with" + args[0])
 	}
 
-	fmt.Printf("searchbyid Response:%s\n", Valuebytes)
-
-	return Valuebytes, nil
+	return contractInBytes, nil
 }
 
 // 계약명으로 조회합니다.
 func (t *SimpleChaincode) slaGetContractsWithName(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-
-	var dataInBytes string
 	var err error
-	var data SlaContract
-
-	fmt.Printf("slaGetContractsWithName Input Args:%s\n", args[0])
 
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting name of the value to slaGetContractsWithName")
 	}
-
-	dataInBytes = args[0]
 	contractName := args[0]
 
 	// 계약명으로 계약ID목록 조회
 	contractIDsInBytes, err := stub.GetState(contractName)
-	contractIDsInString := string(contractIDsInBytes)
 	if err != nil {
-		return nil, errors.New("Failed to get state with " + dataInBytes)
+		return nil, errors.New("Failed to get state with " + contractName)
 	}
+	contractIDsInString := string(contractIDsInBytes)
 
 	// 계약ID목록의 형태를 스트링에서 배열로 전환합니다.
 	contractIDs := strings.Split(contractIDsInString, FIELDSEP)
 
 	// 리턴값 초기화
-	contractList := make([]SlaContract, len(contractIDs))
+	contractList := make([]string, len(contractIDs))
 
 	// 계약ID목록으로 계약내용을 추출하여 계약목록 작성
 	for i, _ := range contractIDs {
 		contractInBytes, _ := stub.GetState(contractIDs[i])
-
-		err = json.Unmarshal(contractInBytes, &data)
-		contractList[i] = data
+		if err != nil {
+			return nil, errors.New("Failed to get state with " + contractIDs[i])
+		}
+		contractList[i] = string(contractInBytes)
 	}
+	// 계약 전체 String
+	contractListInString := strings.Join(contractList, FIELDSEP)
 
-	contractListBytes, _ := json.Marshal(contractList)
-
-	fmt.Printf("slaGetContractsWithName Response:%s\n", contractListBytes)
-
-	return []byte(contractListBytes), nil
-
+	return []byte(contractListInString), nil
 }
 
 // 고객사명으로 조회합니다.
 func (t *SimpleChaincode) slaGetContractsWithClient(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-
-	var dataInBytes string
 	var err error
-	var data SlaContract
-
-	fmt.Printf("slaGetContractsWithClient Input Args:%s\n", args[0])
 
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting name of the value to slaGetContractsWithClient")
 	}
-
-	dataInBytes = args[0]
-	contractClient := args[0]
+	clientName := args[0]
 
 	// 계약명으로 계약ID목록 조회
-	contractIDsInBytes, err := stub.GetState(contractClient)
-	contractIDsInString := string(contractIDsInBytes)
+	contractIDsInBytes, err := stub.GetState(clientName)
 	if err != nil {
-		return nil, errors.New("Failed to get state with " + dataInBytes)
+		return nil, errors.New("Failed to get state with " + clientName)
 	}
+	contractIDsInString := string(contractIDsInBytes)
 
 	// 계약ID목록의 형태를 스트링에서 배열로 전환합니다.
 	contractIDs := strings.Split(contractIDsInString, FIELDSEP)
 
 	// 리턴값 초기화
-	contractList := make([]SlaContract, len(contractIDs))
+	contractList := make([]string, len(contractIDs))
 
 	// 계약ID목록으로 계약내용을 추출하여 계약목록 작성
 	for i, _ := range contractIDs {
 		contractInBytes, _ := stub.GetState(contractIDs[i])
-
-		err = json.Unmarshal(contractInBytes, &data)
-		contractList[i] = data
+		if err != nil {
+			return nil, errors.New("Failed to get state with " + contractIDs[i])
+		}
+		contractList[i] = string(contractInBytes)
 	}
+	// 계약 전체 String
+	contractListInString := strings.Join(contractList, FIELDSEP)
 
-	contractListBytes, _ := json.Marshal(contractList)
-
-	fmt.Printf("slaGetContractsWithName Response:%s\n", contractListBytes)
-
-	return []byte(contractListBytes), nil
-
+	return []byte(contractListInString), nil
 }
 
 func (t *SimpleChaincode) slaGetAllEvaluations(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
