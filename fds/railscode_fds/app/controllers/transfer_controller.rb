@@ -26,7 +26,7 @@ class TransferController < ApplicationController
 										 ) "
 		
 		puts @query
-		ActiveRecord::Base.connection.execute(@query)
+		#ActiveRecord::Base.connection.execute(@query)
 		# 처리결과 응답 
 		@returnMsg = '{
 			"orderNum":"N16021810001",							
