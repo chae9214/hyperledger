@@ -63,7 +63,7 @@ type SlaApproval struct {
 	ApprovalState      string `json:  "ApprovalState"`      // 결재상태 const SLA_APPROVAL_STATE.... 사용할 것
 	ApprovalDate       string `json:  "ApprovalDate"`       // 결재일자
 	ApprovalComment    string `json:  "ApprovalComment"`    // 의견내용
-	ApprovalAlram      string `json:  "ApprovalAlram"`      // 알람여부  TODO Alram --> Alarm
+	ApprovalAlarm      string `json:  "ApprovalAlarm"`      // 알람여부
 }
 
 // Sla ServiceItem 구조체를 설정합니다.
@@ -97,14 +97,29 @@ const FIELDSEP = "|"
 const ENTRYSEP = ","
 const SLA_ALL_DATA = "SLA_ALL_DATA"
 
+const CONTRACT_TEMP_ID_PREFIX = "SLA_CONT_TEMP"
 const CONTRACT_ID_PREFIX = "SLA_CONT_"
+const EVALUATION_TEMP_ID_PREFIX = "SLA_EVAL_TEMP"
 const EVALUATION_ID_PREFIX = "SLA_EVAL_"
 
+const SLA_CONTRACT_TEMP_ID_COUNT_KEY = "SLA_CONTRACT_TEMP_ID_COUNT"
 const SLA_CONTRACT_ID_COUNT_KEY = "SLA_CONTRACT_ID_COUNT"
+const SLA_EVALUATION_TEMP_ID_COUNT_KEY = "SLA_EVALUATION_TEMP_ID_COUNT"
 const SLA_EVALUATION_ID_COUNT_KEY = "SLA_EVALUATION_ID_COUNT"
 const CURRENT_YEAR_KEY = "CURRENT_YEAR"
 
-// 계약 상태
+//  계약 상태: SlaContract -> PROGRESSION
+// -------------------------------------------------------------------------------------------------------
+//  1. [초기 --> slaCreateTempContract] 임시저장상태: 							SLA_CONTRACT_PROGRESSION_TEMP
+//  2. [초기 --> slaSubmitContract
+//      slaCreateContract --> slaSubmitContract] Submit되어서 내부 검토 요청상태: 	SLA_CONTRACT_PROGRESSION_IN_PROGRESS_INTERNAL_REVIEW_REQUESTED
+//  3. [slaSubmitContract --> slaApproveContract] 고객현업 검토 요청상태:			SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED
+//  4. [slaApproveContract --> slaApproveContract]고객관리자 검토 요청상태: 		SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_MANAGER_REVIEW_REQUESTED
+//  5. [slaApproveContract --> slaApproveContract] 계약 등록 완료상태: 			SLA_CONTRACT_PROGRESSION_CLOSED
+//  6. [Any state --> slaAbandonContract] 계약 폐기상태:						SLA_CONTRACT_PROGRESSION_ABANDONED
+// -------------------------------------------------------------------------------------------------------
+//  * 반려될 경우 (slaRejectContract) 해당 상태에 머무른다
+// -------------------------------------------------------------------------------------------------------
 const SLA_CONTRACT_PROGRESSION_TEMP = "TEMP" // "TEMP": 임시저장
 const SLA_CONTRACT_PROGRESSION_IN_PROGRESS_INTERNAL_REVIEW_REQUESTED = "IN_PROGRESS_INTERNAL_REVIEW_REQUESTED"
 const SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED = "IN_PROGRESS_CLIENT_REVIEW_REQUESTED"
@@ -112,14 +127,14 @@ const SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_MANAGER_REVIEW_REQUESTED = "IN
 const SLA_CONTRACT_PROGRESSION_CLOSED = "CLOSED"
 const SLA_CONTRACT_PROGRESSION_ABANDONED = "ABANDONED"
 
-// 결재 상태
+// 결재 상태: SlaContract -> Approvals --> ApprovalState
 const SLA_APPROVAL_STATE_TEMP = "TEMP" // "TEMP": 임시저장
 const SLA_APPROVAL_STATE_SUBMITTED = "SUBMITTED"
 const SLA_APPROVAL_STATE_APPROVED = "APPROVED"
 const SLA_APPROVAL_STATE_REJECTED = "REJECTED"
 
 // ===========================================================
-//  function 정의 함수
+// Utility 함수
 // ===========================================================
 
 func padLeft(str string, padLength int) string {
@@ -146,6 +161,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	err = stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	err = stub.PutState(SLA_EVALUATION_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(year))) // 현재 year
+	err = stub.PutState(SLA_ALL_DATA, []byte(""))
 	return nil, err
 }
 
@@ -154,29 +170,31 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 
 	switch function {
 
-	// 계약 상태 변경
-	case "slaCreateContract": // 요청자가 계약 생성 (최초 생성 및 임시저장)
-		return t.slaCreateContract(stub, args)
+	// 최초 생성 + 임시 저장
+	case "slaCreateTempContract": // 요청자가 계약 생성 (최초 생성하고 임시저장할 경우)
+		return t.slaCreateTempContract(stub, args) //done
 
-	case "slaUpdateContract": // 요청자가 계약 수정 (임시저장 후 / 승인거절 후)
-		return t.slaUpdateContract(stub, args)
-
-	case "slaAbandonContract": // 요청자가 계약 폐기 (임시저장 후 / 승인거절 후)
-		return t.slaUpdateContract(stub, args)
+	// 최초 생성 + 바로 결제 요청
+	case "slaSubmitContract": // 요청자 --> 결재자 (최초 생성하고 바로 결재 요청할 경우 / 수정  후 결재 요청 )
+		return t.slaSubmitContract(stub, args) //done
 
 	// 결재 요청 / 승인 / 거절
-	case "slaSubmitContract": // 요청자 --> 결재자  (최초 생성 후 결재 요청 / 수정  후 결재 요청 )
-		return t.slaSubmitContract(stub, args)
+	case "slaUpdateContract": // 요청자가 계약 수정 (임시저장 후 / 승인거절 후)
+		return t.slaUpdateContract(stub, args) //done
 
 	case "slaApproveContract": // 결재자 --> 다음 결재자
-		return t.slaApproveContract(stub, args)
+		return t.slaApproveContract(stub, args) // done
 
 	case "slaRejectContract": // 결재자 --> 요청자
-		return t.slaRejectContract(stub, args)
+		return t.slaRejectContract(stub, args) // done
 
 	// 최종 승인
 	case "slaCloseContract": // 최종 결재자 승인
 		return t.slaCloseContract(stub, args)
+
+	// 최종 폐
+	case "slaAbandonContract": // 요청자가 계약 폐기 (임시저장 후 / 승인거절 후)
+		return t.slaUpdateContract(stub, args)
 
 	// 전체 평가 생성
 	case "slaCreateEvaluationTemplateFromContract": // 최초 평가 생성 (계약등록 최종 승인 후),
@@ -229,6 +247,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	switch function {
 
+	case "slaGetTempContractId":
+		return t.slaGetTempContractId(stub, args)
+
 	case "slaGetContractId":
 		return t.slaGetContractId(stub, args)
 
@@ -260,7 +281,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.slaGetContractsWithClient(stub, args)
 
 	}
-	return nil, errors.New("Invalid Query function name. Expecting \"????slaGetAllContracts\" \"slaGetContractWithId\" \"slaGetContractsWithName\" \"slaGetContractsWithClient\"")
+	return nil, errors.New("Invalid Query function name. Expecting \"slaGetAllContracts\" \"slaGetContractWithId\" \"slaGetContractsWithName\" \"slaGetContractsWithClient\"")
 }
 
 // 메인함수를 처리합니다.
@@ -276,6 +297,40 @@ func main() {
 // ===========================================================
 //  SLAChaincodeStub 등록 함수
 // ===========================================================
+
+func (t *SimpleChaincode) slaGetTempContractId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var contractTempId string
+	var err error
+
+	// 1.저장된 해당 계약 카운트를 호출
+	currentCountInBytes, err := stub.GetState(SLA_CONTRACT_TEMP_ID_COUNT_KEY)
+	if err != nil {
+		return nil, errors.New("Failed to SLA_CONTRACT_TEMP_ID_COUNT_KEY with " + SLA_CONTRACT_TEMP_ID_COUNT_KEY)
+	}
+
+	if currentCountInBytes == nil { // if not initialized
+		err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
+	}
+	currentCount, _ := strconv.Atoi(string(currentCountInBytes))
+
+	// 2.카운트가 1000을 넘어가면 초기화
+	if currentCount > 100000 { // new year starts
+		err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1))) // 카운트는 1부터
+	}
+
+	// 3. 계약번호 채번을 생성합니다.
+	currentYear, _, _ := time.Now().Date()
+	contractTempId = CONTRACT_TEMP_ID_PREFIX + strconv.Itoa(currentYear) + "_" + padLeft(strconv.Itoa(currentCount), 5)
+
+	// 4. 다음 계약번호 카운트를 저장
+	nextCount := currentCount + 1
+	stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(nextCount)))
+
+	// 5. 혹시 같은 계약번호가 있는지 확인할 것.
+
+	return []byte(contractId), nil
+}
 
 func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
@@ -321,49 +376,87 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	return []byte(contractId), nil
 }
 
-// 계약을 등록합니다.
-func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-
+// 최초 생성 + 임시저장 계약을 생성합니다.
+// KVS: 계약ID와 전체계약에 대한 KVS는 저장
+//		계약명과 고객명에 따른 KVS는 저장하지 않음.
+func (t *SimpleChaincode) slaCreateTempContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
-	var data SlaContract
+	var targetContract SlaContract
 
-	content := args[0]
-
-	fmt.Printf("slaCreateContract Input Args:%s\n", args[0])
-
-	// JSON 데이터를 디코딩(Unmarshal)합니다.
-	err = json.Unmarshal([]byte(content), &data)
+	// JSON 데이터를 디코딩(Unmarshal)합니다: string -> []byte -> golang struct
+	err = json.Unmarshal([]byte(args[0]), &targetContract)
 	if err != nil {
-		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
+		return nil, errors.New("Failed to registerContractByIdToJSON with " + args[0])
 	}
 
-	// JSON 데이터를 정렬하여 디코딩(Unmarshal)합니다.
-	jsonData, err := json.MarshalIndent(data, "", "  ")
+	// 계약상태를 SLA_CONTRACT_PROGRESSION_TEMP 로 변경
+	targetContract.Progression = SLA_CONTRACT_PROGRESSION_TEMP
+
+	// JSON 데이터를 정렬하여 디코딩(Unmarshal)합니다: golang struct --> string
+	targetContractInJson, err := json.MarshalIndent(targetContract, "", "  ")
 	if err != nil {
-		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
+		return nil, errors.New("Failed to registerContractByIdToJSON with " + string(targetContractInJson))
 	}
-
-	fmt.Printf("= jsonData ====================================================\n")
-	fmt.Println(data.RegId)
-	fmt.Println(data.Name)
-	fmt.Println(data.Client)
-	fmt.Println(SLA_ALL_DATA)
-	fmt.Println("")
-	fmt.Println(string(jsonData))
-	fmt.Printf("===============================================================\n")
-
-	contractID := data.RegId
-	contractName := data.Name
-	contractClient := data.Client
 
 	// A01. 계약ID 등록합니다.
-	err = stub.PutState(data.RegId, []byte(content))
-
+	err = stub.PutState(targetContract.RegId, targetContractInJson)
 	if err != nil {
-		return nil, errors.New("Failed to put state with" + content)
+		return nil, errors.New("Failed to put state with" + args[0])
+	}
 
-	} else {
-		fmt.Println("SlaContractRegId : ok")
+	// 전체 조회 등록합니다.
+	{
+		var err error
+
+		// 데이터를 전체 조회합니다.
+		contractALLIdsInBytes, err := stub.GetState(SLA_ALL_DATA) // 리턴값 ([]byte, error)
+		if err != nil {
+			return nil, errors.New("Failed to get state with" + string(contractALLIdsInBytes))
+		}
+		contractALLIdsInString := string(contractALLIdsInBytes)
+
+		// 최초이 없을경우 "계약명"-"계약ID목록" 등록 or 기존에 포함되어 있으면
+		if contractALLIdsInString == "" {
+			err = stub.PutState(SLA_ALL_DATA, []byte(targetContract.RegId))
+			if err != nil {
+				return nil, err
+			}
+		} else if !strings.Contains(contractALLIdsInString, targetContract.RegId) { // 계약번호가 존재하지 않을 때만 추가
+			err = stub.PutState(SLA_ALL_DATA, []byte(contractALLIdsInString+FIELDSEP+targetContract.RegId))
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return nil, nil
+
+}
+
+// 최초 생성 + 내부결제를 요청합니다.
+// KVS: 계약ID, 전체계약, 계약명, 고객명에 따른 KVS 저장
+func (t *SimpleChaincode) slaSubmitContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+	var targetContract SlaContract
+
+	// JSON 데이터를 디코딩(Unmarshal)합니다: string -> []byte -> golang struct
+	err = json.Unmarshal([]byte(args[0]), &targetContract)
+	if err != nil {
+		return nil, errors.New("Failed to slaSubmitContract with " + args[0])
+	}
+
+	// 계약상태를 SLA_CONTRACT_PROGRESSION_TEMP 로 변경
+	targetContract.Progression = SLA_CONTRACT_PROGRESSION_IN_PROGRESS_INTERNAL_REVIEW_REQUESTED
+
+	// JSON 데이터를 정렬하여 디코딩(Unmarshal)합니다: golang struct --> string
+	targetContractInJson, err := json.MarshalIndent(targetContract, "", "  ")
+	if err != nil {
+		return nil, errors.New("Failed to registerContractByIdToJSON with " + string(targetContractInJson))
+	}
+
+	// A01. 계약ID 등록합니다.
+	err = stub.PutState(targetContract.RegId, targetContractInJson)
+	if err != nil {
+		return nil, errors.New("Failed to put state with" + args[0])
 	}
 
 	// A02. 계약명 등록합니다.
@@ -371,26 +464,20 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 		var err error
 
 		// 계약명으로 기존내역를 조회합니다.
-		contractIDsInBytes, err := stub.GetState(contractName) // 리턴값 ([]byte, error)
-
+		contractIDsInBytes, err := stub.GetState(targetContract.Name)
 		if err != nil {
-			return nil, errors.New("Failed to get state with" + string(contractIDsInBytes))
+			return nil, errors.New("Failed to get state with" + targetContract.Name)
 		}
-
 		contractIDsInString := string(contractIDsInBytes)
 
 		//기존내역이 없을경우 "계약명"-"계약ID목록" 등록
 		if contractIDsInString == "" {
-			err = stub.PutState(contractName, []byte(contractID))
-			if err != nil {
-				return nil, err
-			}
-
+			err = stub.PutState(targetContract.Name, []byte(targetContract.RegId))
 		} else {
-			err = stub.PutState(contractName, []byte(contractIDsInString+FIELDSEP+contractID))
-			if err != nil {
-				return nil, err
-			}
+			err = stub.PutState(targetContract.Name, []byte(contractIDsInString+FIELDSEP+targetContract.RegId))
+		}
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -399,188 +486,68 @@ func (t *SimpleChaincode) slaCreateContract(stub shim.ChaincodeStubInterface, ar
 		var err error
 
 		//계약명으로 기존내역조회
-		contractIDsInBytes, _ := stub.GetState(contractClient) // 리턴값 ([]byte, error)
+		contractIDsInBytes, _ := stub.GetState(targetContract.Client) // 리턴값 ([]byte, error)
+		if err != nil {
+			return nil, errors.New("Failed to get state with" + targetContract.Client)
+		}
 		contractIDsInString := string(contractIDsInBytes)
 
 		//기존내역이 없을경우 "고객사명"-"계약ID목록" 등록
 		if contractIDsInString == "" {
-			err = stub.PutState(contractClient, []byte(contractID))
-			if err != nil {
-				return nil, err
-			}
-
+			err = stub.PutState(targetContract.Client, []byte(targetContract.RegId))
 		} else {
-			err = stub.PutState(contractClient, []byte(contractIDsInString+FIELDSEP+contractID))
-			if err != nil {
-				return nil, err
-			}
+			err = stub.PutState(targetContract.Client, []byte(contractIDsInString+FIELDSEP+targetContract.RegId))
+		}
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	// A04. 전체 조회 등록합니다.
+	// A04. 전체 조회 등록합니다.  단 임시저장 때 계약번호를 딴 경우가 있으므로 이미 있는경우에는 건너 뛴다
 	{
 		var err error
 
 		// 데이터를 전체 조회합니다.
-		contractALLIDsInBytes, err := stub.GetState(SLA_ALL_DATA) // 리턴값 ([]byte, error)
-
-		fmt.Println("= A04 == 01:" + string(contractALLIDsInBytes))
-
+		contractALLIdsInBytes, err := stub.GetState(SLA_ALL_DATA) // 리턴값 ([]byte, error)
 		if err != nil {
-			return nil, errors.New("Failed to get state with" + string(contractALLIDsInBytes))
+			return nil, errors.New("Failed to get state with" + string(contractALLIdsInBytes))
 		}
+		contractALLIdsInString := string(contractALLIdsInBytes)
 
-		fmt.Println("= A04 == 02:" + string(contractALLIDsInBytes))
-
-		contractALLIDsInString := string(contractALLIDsInBytes)
-
-		fmt.Println("= A04 == 03:" + contractALLIDsInString)
-
-		// 기존내역이 없을경우 "계약명"-"계약ID목록" 등록
-		if contractALLIDsInString == "" {
-			err = stub.PutState(SLA_ALL_DATA, []byte(contractID))
-			fmt.Println("= A04 == 04:")
-
+		// 최초이 없을경우 "계약명"-"계약ID목록" 등록 or
+		if contractALLIdsInString == "" {
+			err = stub.PutState(SLA_ALL_DATA, []byte(targetContract.RegId))
 			if err != nil {
 				return nil, err
 			}
-
-		} else {
-			err = stub.PutState(SLA_ALL_DATA, []byte(contractALLIDsInString+FIELDSEP+contractID))
-
-			fmt.Println("= A04 == 05:")
-
+		} else if !strings.Contains(contractALLIdsInString, targetContract.RegId) { // 계약번호가 존재하지 않을 때만 추가
+			err = stub.PutState(SLA_ALL_DATA, []byte(contractALLIdsInString+FIELDSEP+targetContract.RegId))
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
-
-	/*
-		err = stub.PutState(data[0].SlaContractName, []byte(content))
-		if err != nil {
-			return nil, errors.New("Failed to put state with" + content)
-		} else {
-		    fmt.Println("SlaContractName : ok")
-		}
-
-		err = stub.PutState(data[0].SlaContractClient, []byte(content))
-		if err != nil {
-			return nil, errors.New("Failed to put state with" + content)
-		} else {
-		    fmt.Println("SlaContractClient : ok")
-		}
-
-		err = stub.PutState(SLA_ALL_DATA, []byte(content))
-		if err != nil {
-			return nil, errors.New("Failed to put state with" + content)
-		} else {
-		    fmt.Println("SLA_ALL_DATA : ok")
-		}
-
-	*/
 	return nil, nil
 }
-
-// // ===========================================================
-// //  SLAChaincodeStub 업데이트 함수
-// // ===========================================================
-
-// // 계약을 업데이트합니다. (기본)
-// func (t *SimpleChaincode) updateContractId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-
-// 	var dataInBytes string
-// 	var err error
-
-// 	fmt.Printf("updateContractId Input Args:%s\n", args[0])
-
-// 	if len(args) != 1 {
-// 		return nil, errors.New("Incorrect number of arguments. Expecting name of the value to slaGetContractsWithClient")
-// 	}
-
-// 	dataInBytes = args[0]
-// 	contractID := args[0]
-
-// 	// 기존내용 조회
-// 	contractIDsInBytes, err := stub.GetState(contractID)
-// 	if err != nil {
-// 		return nil, errors.New("Failed to get state with " + string(contractIDsInBytes))
-// 	}
-
-// 	// UPDATDE 처리
-// 	stub.PutState(contractID, []byte(args[1]))
-
-// 	// 변경내용 조회
-// 	update_value, err := stub.GetState(contractID)
-// 	if err != nil {
-// 		return nil, errors.New("Failed to get state with " + dataInBytes)
-// 	}
-
-// 	fmt.Printf("slaGetContractsWithClient Response:%s\n", update_value)
-
-// 	return []byte(update_value), nil
-// }
 
 // 1.계약을 업데이트 합니다.
 func (t *SimpleChaincode) slaUpdateContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
-	var data SlaContract
+	var targetContract SlaContract
 
-	content := args[0]
-
-	fmt.Printf("slaCreateContract Input Args:%s\n", args[0])
+	fmt.Printf("slaUpdateContract Input Args:%s\n", args[0])
 
 	// JSON 데이터를 디코딩(Unmarshal)합니다.
-	err = json.Unmarshal([]byte(content), &data)
+	err = json.Unmarshal([]byte(args[0]), &targetContract)
 	if err != nil {
-		return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
+		return nil, errors.New("Failed to slaUpdateContract with " + args[0])
 	}
-	/*
-		// 임시저장 데이터를 처리합니다.
-
-		data.Name = "김아무개"
-		data.Kind = "특수"
-		data.StaDate = "2018-01-01"
-		data.EndDate = "2018-01-01"
-		data.Client = "신한은행(Shinhan.com)"
-		data.ClientPerson = "신한아무개"
-		data.ClientPersonTel = "010-9999-9999"
-		data.AssessDate = "2018-12-12"
-		data.Progression = "진행"
-		data.AssessYn = "Y"
-
-		// JSON 데이터를 정렬하여 디코딩(Unmarshal)합니다.
-		jsonData, err := json.MarshalIndent(data, "", "  ")
-		if err != nil {
-			return nil, errors.New("Failed to registerContractByIdToJSON with " + content)
-		}
-
-		// JSON 데이터를 디코딩(Unmarshal)합니다.
-		err = json.Unmarshal([]byte(content), &data)
-	*/
-	fmt.Printf("= contractListBytes contractListBytes ====================================================\n")
-	contractListStirng, _ := json.Marshal(data)
-
-	fmt.Println(string(contractListStirng))
-
-	fmt.Printf("= err ====================================================\n")
-	fmt.Println(data.RegId)
-
-	fmt.Printf("= jsonData ====================================================\n")
-	fmt.Println(data.RegId)
-	fmt.Println(data.Name)
-	fmt.Println(data.Client)
-	fmt.Println(SLA_ALL_DATA)
-	fmt.Println("")
-
-	fmt.Printf("===============================================================\n")
 
 	// 계약ID 통해 데이터를 업데이트 합니다.
-	err = stub.PutState(data.RegId, []byte(content))
-
+	err = stub.PutState(targetContract.RegId, []byte(args[0]))
 	if err != nil {
-		return nil, errors.New("Failed to put state with" + content)
+		return nil, errors.New("Failed to put state with" + args[0])
 	}
 
 	return nil, nil
@@ -589,68 +556,62 @@ func (t *SimpleChaincode) slaUpdateContract(stub shim.ChaincodeStubInterface, ar
 // 2.계약을 승인합니다.
 func (t *SimpleChaincode) slaApproveContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
-	// 계약번호 > 계약 시퀀스 >  결제 정보
+	//계약번호 > 계약 시퀀스 >  결제 정보
 	var err error
 	var targetContract SlaContract
 
 	// 1. 해당 계약 찾기 및 Struct 생성
-	SlaContractRegId := args[0]
-	targetContractInBytes, err := stub.GetState(SlaContractRegId)
+	slaContractRegId := args[0]
+	targetContractInBytes, err := stub.GetState(slaContractRegId)
 	if err != nil {
 		return nil, errors.New("Failed to get state with " + string(targetContractInBytes))
 	}
-	// 저장된 JSON형태의 데이터를 go의 struct 형태로 디코딩(Unmarshal)합니다.
+
+	// JSON 데이터를 디코딩(Unmarshal)합니다: string -> []byte -> golang struct
 	err = json.Unmarshal([]byte(targetContractInBytes), &targetContract)
 	if err != nil {
 		return nil, errors.New("Failed to slaApproveContract with " + string(targetContractInBytes))
 	}
 
-	// 2. 변경할 데이터 준비
-	// 승인상태로 변경될 데이터 준비
-	SlaContractApprovalUserId := args[1]                       // 결재사용자ID
-	SlaContractApprovalState := SLA_APPROVAL_STATE_APPROVED    // 승인상태
-	SlaContractApprovalDate := time.Now().Format("2006-01-02") // 현재일자
-	SlaContractApprovalComment := args[2]                      // 의견내용
+	// 2. 현재의 진행단계(Progression)를 확인하여 현재 진행단계를 찾고 변경할 Approval을 찾음
+	var newProgression string       // new progression for target contract
+	var targetApproval *SlaApproval // approval to update for target contract
 
-	// 3. 데이터 내용 변경
-	// 진행단계 ==> 결재 배열의 인덱스로 전환
-	SlaContractProgression := args[3]
-
-	var targetApproval SlaApproval
-	switch SlaContractProgression {
+	switch targetContract.Progression {
 	case SLA_CONTRACT_PROGRESSION_TEMP:
-		return nil, errors.New("Approval cannot have PROGRESSION of \"TEMP\" ")
+		return nil, errors.New("Reject cannot have the current progression of \"TEMP\" ")
 	case SLA_CONTRACT_PROGRESSION_IN_PROGRESS_INTERNAL_REVIEW_REQUESTED:
-		return nil, errors.New("Approval cannot have PROGRESSION of \"INTERNAL_REVIEW\" use \"slaSubmitContract\" function ")
-	case SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED: // SLA_CONTRACT_PROGRESSION_IN_PROGRESS_INTERNAL_REVIEW_REQUESTED  -[승인]-> SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED
-		targetContract.Progression = SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED
-		targetApproval = targetContract.Approvals[1]
+		newProgression = SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED
+		targetApproval = &(targetContract.Approvals[1]) // approval to change
+	case SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED:
+		newProgression = SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_MANAGER_REVIEW_REQUESTED
+		targetApproval = &(targetContract.Approvals[2]) // approval to change
 	case SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_MANAGER_REVIEW_REQUESTED:
-		targetContract.Progression = SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED
-		targetApproval = targetContract.Approvals[2]
+		newProgression = SLA_CONTRACT_PROGRESSION_CLOSED
+		targetApproval = &(targetContract.Approvals[3]) // approval to change
 	case SLA_CONTRACT_PROGRESSION_CLOSED:
-		targetContract.Progression = SLA_CONTRACT_PROGRESSION_CLOSED
-		targetApproval = targetContract.Approvals[3]
-		// case SLA_CONTRACT_PROGRESSION_ABANDONED
+		return nil, errors.New("Approval cannot have the current progression of \"CLOSED\" ")
+	case SLA_CONTRACT_PROGRESSION_ABANDONED:
+		return nil, errors.New("Approval cannot have the current progression of \"ABANDONED\" ")
+	default:
+		return nil, errors.New("Approval cannot have the current progression of " + targetContract.Progression)
 	}
-	targetApproval.ApprovalUserId = SlaContractApprovalUserId   // 결재사용자ID
-	targetApproval.ApprovalState = SlaContractApprovalState     // 결재상태
-	targetApproval.ApprovalDate = SlaContractApprovalDate       // 결재일자
-	targetApproval.ApprovalComment = SlaContractApprovalComment // 의견내용
 
-	targetContractInJson, _ := json.Marshal(targetContract)
+	//3. 해당 결재 내용으로 변경
+	targetContract.Progression = newProgression                   // 새 진행단계 (Progression)
+	targetApproval.ApprovalUserId = args[1]                       // 결재사용자ID
+	targetApproval.ApprovalState = SLA_APPROVAL_STATE_APPROVED    // 승인상태
+	targetApproval.ApprovalDate = time.Now().Format("2006-01-02") // 현재일자
+	targetApproval.ApprovalComment = args[2]                      // 의견내용
+
+	targetContractInJson, _ := json.MarshalIndent(targetContract, "", "  ")
 
 	// 4. 변경된 계약을 KVS에 저장합니다.
-	err = stub.PutState(SlaContractRegId, []byte(targetContractInJson))
-
+	err = stub.PutState(slaContractRegId, []byte(targetContractInJson))
 	if err != nil {
 		return nil, errors.New("Failed to put state with" + string(targetContractInJson))
 	}
 
-	return nil, nil
-}
-func (t *SimpleChaincode) slaSubmitContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	// 업데이트를 submit state  변경
 	return nil, nil
 }
 
@@ -674,23 +635,34 @@ func (t *SimpleChaincode) slaRejectContract(stub shim.ChaincodeStubInterface, ar
 		return nil, errors.New("Failed to slaApproveContract with " + string(targetContractInBytes))
 	}
 
-	// 2. 변경할 데이터 준비
-	// 진행단계 ==> 결재 배열의 인덱스로 전환
-	SlaContractProgressionInString := args[3] // 진행단계
-	SlaApprovalPregressionIndex, _ := strconv.Atoi(SlaContractProgressionInString)
+	// 2. 현재의 진행단계(Progression)를 확인하여 변경할 Approval을 찾음
+	// * 현재의 진행단계(Pregression)은 현재 상태 그대로 유지
+	var targetApproval *SlaApproval // approval to update for target contract
 
-	// 승인상태로 변경될 데이터 준비
-	SlaContractApprovalUserId := args[1]                       // 결재사용자ID
-	SlaContractApprovalState := SLA_APPROVAL_STATE_REJECTED    // 반려상태
-	SlaContractApprovalDate := time.Now().Format("2006-01-02") // 현재일자
-	SlaContractApprovalComment := args[2]                      // 의견내용
+	switch targetContract.Progression {
+	case SLA_CONTRACT_PROGRESSION_TEMP:
+		return nil, errors.New("Reject cannot have the current progression of \"TEMP\" ")
+	case SLA_CONTRACT_PROGRESSION_IN_PROGRESS_INTERNAL_REVIEW_REQUESTED:
+		targetApproval = &(targetContract.Approvals[1]) // approval to change
+	case SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_REVIEW_REQUESTED:
+		targetApproval = &(targetContract.Approvals[2]) // approval to change
+	case SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_MANAGER_REVIEW_REQUESTED:
+		targetApproval = &(targetContract.Approvals[3]) // approval to change
+	case SLA_CONTRACT_PROGRESSION_CLOSED:
+		return nil, errors.New("Approval cannot have the current progression of \"CLOSED\" ")
+	case SLA_CONTRACT_PROGRESSION_ABANDONED:
+		return nil, errors.New("Approval cannot have the current progression of \"ABANDONED\" ")
+	default:
+		return nil, errors.New("Approval cannot have the current progression of " + targetContract.Progression)
+	}
 
 	// 3. 데이터 내용 변경
-	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalUserId = SlaContractApprovalUserId   // 결재사용자ID
-	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalState = SlaContractApprovalState     // 결재상태
-	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalDate = SlaContractApprovalDate       // 결재일자
-	targetContract.Approvals[SlaApprovalPregressionIndex].ApprovalComment = SlaContractApprovalComment // 의견내용
-	targetContractInJson, _ := json.Marshal(targetContract)
+	targetApproval.ApprovalUserId = args[1]                       // 결재사용자ID
+	targetApproval.ApprovalState = SLA_APPROVAL_STATE_REJECTED    // 승인상태
+	targetApproval.ApprovalDate = time.Now().Format("2006-01-02") // 현재일자
+	targetApproval.ApprovalComment = args[2]                      // 의견내용
+
+	targetContractInJson, _ := json.MarshalIndent(targetContract, "", "  ")
 
 	// 4. 변경된 계약을 KVS에 저장합니다.
 	err = stub.PutState(SlaContractRegId, []byte(targetContractInJson))
@@ -703,20 +675,84 @@ func (t *SimpleChaincode) slaRejectContract(stub shim.ChaincodeStubInterface, ar
 }
 
 func (t *SimpleChaincode) slaAbandonContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	// 업데이트를 abandon state  변경
+	var err error
+	var targetContract SlaContract
+
+	// 1. 해당 계약 찾기 및 Struct 생성
+	slaContractRegId := args[0]
+	targetContractInBytes, err := stub.GetState(slaContractRegId)
+	if err != nil {
+		return nil, errors.New("Failed to get state with " + string(targetContractInBytes))
+	}
+
+	// 2. JSON 데이터를 디코딩(Unmarshal)합니다: string -> []byte -> golang struct
+	err = json.Unmarshal([]byte(targetContractInBytes), &targetContract)
+	if err != nil {
+		return nil, errors.New("Failed to slaCloseContract with " + string(targetContractInBytes))
+	}
+
+	// 3. 해당 결재 내용으로 변경
+	targetContract.Progression = SLA_CONTRACT_PROGRESSION_ABANDONED // 새 진행단계 (Progression)
+
+	// 4. Json 형태로 저장: golang struct -> string
+	targetContractInJson, _ := json.MarshalIndent(targetContract, "", "  ")
+
+	// 5. 변경된 계약을 KVS에 저장합니다.
+	err = stub.PutState(slaContractRegId, []byte(targetContractInJson))
+	if err != nil {
+		return nil, errors.New("Failed to put state with" + string(targetContractInJson))
+	}
 	return nil, nil
 }
 
 func (t *SimpleChaincode) slaCloseContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	// 업데이트를 submit state  변경
-	return nil, nil
-}
+	//계약번호 > 계약 시퀀스 >  결제 정보
+	var err error
+	var targetContract SlaContract
 
-func (t *SimpleChaincode) slaGetEvaluationId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	// 1. 해당 계약 찾기 및 Struct 생성
+	slaContractRegId := args[0]
+	targetContractInBytes, err := stub.GetState(slaContractRegId)
+	if err != nil {
+		return nil, errors.New("Failed to get state with " + string(targetContractInBytes))
+	}
+
+	// JSON 데이터를 디코딩(Unmarshal)합니다: string -> []byte -> golang struct
+	err = json.Unmarshal([]byte(targetContractInBytes), &targetContract)
+	if err != nil {
+		return nil, errors.New("Failed to slaCloseContract with " + string(targetContractInBytes))
+	}
+
+	// 2. 현재의 진행단계(Progression)가 고객관리자에게 승인요청하는 최종 직전 단계여야함
+	if targetContract.Progression != SLA_CONTRACT_PROGRESSION_IN_PROGRESS_CLIENT_MANAGER_REVIEW_REQUESTED {
+		return nil, errors.New("slaCloseContract cannot have the current progression of " + targetContract.Progression)
+	}
+
+	// 3. 최종 진행단계(Progression)를 확인하여 현재 진행단계를 찾고 변경할 Approval을 찾음
+	targetApproval := &(targetContract.Approvals[3]) // approval to update for target contract
+
+	// 4. 해당 결재 내용으로 변경
+	targetContract.Progression = SLA_CONTRACT_PROGRESSION_CLOSED  // 새 진행단계 (Progression)
+	targetApproval.ApprovalUserId = args[1]                       // 결재사용자ID
+	targetApproval.ApprovalState = SLA_APPROVAL_STATE_APPROVED    // 승인상태
+	targetApproval.ApprovalDate = time.Now().Format("2006-01-02") // 현재일자
+	targetApproval.ApprovalComment = args[2]                      // 의견내용
+
+	targetContractInJson, _ := json.MarshalIndent(targetContract, "", "  ")
+
+	// 5. 변경된 계약을 KVS에 저장합니다.
+	err = stub.PutState(slaContractRegId, []byte(targetContractInJson))
+	if err != nil {
+		return nil, errors.New("Failed to put state with" + string(targetContractInJson))
+	}
 	return nil, nil
 }
 
 // --------------------
+
+func (t *SimpleChaincode) slaGetEvaluationId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	return nil, nil
+}
 
 func (t *SimpleChaincode) slaCreateEvaluationRootFromContract(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	return nil, nil
