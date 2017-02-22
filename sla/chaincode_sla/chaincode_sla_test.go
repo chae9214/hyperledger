@@ -3,6 +3,7 @@ package main
 // go test chaincode_sla_test.go chaincode_sla.go
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"testing"
@@ -1526,18 +1527,22 @@ func TestChaincodeSla_Invoke_GetFns(t *testing.T) {
 	checkInvoke(t, stub, "slaSubmitContract", []string{inputContractContentInJson_2})
 
 	// 전체 검색
-	checkQuery(t, stub, "slaGetAllContracts", []string{}, expectedContractContentInJson_1+FIELDSEP+expectedContractContentInJson_2)
+	expected, _ := json.MarshalIndent([]string{expectedContractContentInJson_1, expectedContractContentInJson_2}, "", "  ")
+	checkQuery(t, stub, "slaGetAllContracts", []string{}, string(expected))
 
 	// 계약ID로 검색
 	checkQuery(t, stub, "slaGetContractWithId", []string{"SLA_CONT_2017_00005"}, expectedContractContentInJson_1)
 	checkQuery(t, stub, "slaGetContractWithId", []string{"SLA_CONT_2017_00006"}, expectedContractContentInJson_2)
 
-	// 계약명으로 검색
-	checkQuery(t, stub, "slaGetContractsWithName", []string{"신한은행도급계약_201701"}, expectedContractContentInJson_1)
-	checkQuery(t, stub, "slaGetContractsWithName", []string{"신한은행도급계약_201702"}, expectedContractContentInJson_2)
+	// // 계약명으로 검색
+	expected, _ = json.MarshalIndent([]string{expectedContractContentInJson_1}, "", "  ")
+	checkQuery(t, stub, "slaGetContractsWithName", []string{"신한은행도급계약_201701"}, string(expected))
+	expected, _ = json.MarshalIndent([]string{expectedContractContentInJson_2}, "", "  ")
+	checkQuery(t, stub, "slaGetContractsWithName", []string{"신한은행도급계약_201702"}, string(expected))
 
 	// 고객명으로 검색
-	checkQuery(t, stub, "slaGetContractsWithClient", []string{"신한은행"}, expectedContractContentInJson_1+FIELDSEP+expectedContractContentInJson_2)
+	expected, _ = json.MarshalIndent([]string{expectedContractContentInJson_1, expectedContractContentInJson_2}, "", "  ")
+	checkQuery(t, stub, "slaGetContractsWithClient", []string{"신한은행"}, string(expected))
 
 	// KVS 확인
 	checkState(t, stub, "신한은행도급계약_201701", "SLA_CONT_2017_00005")

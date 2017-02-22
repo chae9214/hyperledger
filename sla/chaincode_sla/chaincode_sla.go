@@ -823,14 +823,10 @@ func (t *SimpleChaincode) slaGetAllContracts(stub shim.ChaincodeStubInterface, a
 		}
 		contractList[i] = string(contractInBytes)
 	}
-
-	// 계약 전체기존_20170221 String
-	//contractListInString := strings.Join(contractList, FIELDSEP)
-
 	// 계약 전체신규_20170221 String
 	ContractsInJson, err := json.MarshalIndent(contractList, "", "  ")
 	if err != nil {
-		return nil, errors.New("Failed to registerContractByIdToJSON with " + string(ContractsInJson))
+		return nil, errors.New("Failed to json.MarshalIndent with " + strings.Join(contractList, ","))
 	}
 
 	return []byte(ContractsInJson), nil
@@ -882,10 +878,13 @@ func (t *SimpleChaincode) slaGetContractsWithName(stub shim.ChaincodeStubInterfa
 		}
 		contractList[i] = string(contractInBytes)
 	}
-	// 계약 전체 String
-	contractListInString := strings.Join(contractList, FIELDSEP)
+	// 계약 전체신규_20170221 String
+	ContractsInJson, err := json.MarshalIndent(contractList, "", "  ")
+	if err != nil {
+		return nil, errors.New("Failed to json.MarshalIndent with " + strings.Join(contractList, ","))
+	}
 
-	return []byte(contractListInString), nil
+	return []byte(ContractsInJson), nil
 }
 
 // 고객사명으로 조회합니다.
@@ -918,10 +917,13 @@ func (t *SimpleChaincode) slaGetContractsWithClient(stub shim.ChaincodeStubInter
 		}
 		contractList[i] = string(contractInBytes)
 	}
-	// 계약 전체 String
-	contractListInString := strings.Join(contractList, FIELDSEP)
+	// 계약 전체신규_20170221 String
+	ContractsInJson, err := json.MarshalIndent(contractList, "", "  ")
+	if err != nil {
+		return nil, errors.New("Failed to json.MarshalIndent with " + strings.Join(contractList, ","))
+	}
 
-	return []byte(contractListInString), nil
+	return []byte(ContractsInJson), nil
 }
 
 func (t *SimpleChaincode) slaGetAllEvaluations(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
