@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>계좌 이체</title>
+  </head>
+  <body>
+    <div class="main">
+      <!-- <h1>Simple Range Pricing Widget</h1> -->
+        <div class="form-horizontal form-pricing agile_form_horizontal" role="form" action="#" method="post">
+          <div class="form-style-10">
+            <h1>신한은행 자동이체<span></span></h1>
+              <div class="section">계좌 이체</div>
+              <div class="inner-wrap">
+                <label>출금계좌번호
+                  <select id="fromAccount">
+                    <option value="110-20204-2412" selected>주거래계좌(110-*****-2412)</option>
+                    <option value="110-21122-4242">주택청약(110-*****-4242)</option>
+                    <option value="110-09128-1298">CMA계좌(110-*****-1298)</option>
+                  </select>
+                </label>
+                <label>계좌 비밀번호
+                  <input id="accountPassword" type="password" required/>
+                </label>
+              </div>
+              <div class="inner-wrap">
+                <label>입금 은행
+                  <select id="toBankCode">
+                    <option value="신한은행">신한은행</option>
+                    <option value="국민은행">국민은행</option>
+                    <option value="하나은행">하나은행</option>
+                    <option value="우리은행">우리은행</option>
+                  </select>
+                </label>
+                <label>입금 계좌
+                  <input type="text" id="toAccount" />
+                </label>
+                <label>입금 고객명
+                  <input type="text" id="toCustomerName" />
+                </label>
+                <label>금액
+                  <input type="text" id="money" />
+                </label>
+              </div>
+              <div class="inner-wrap">
+                <label>받는통장메모
+                  <input type="text" />
+                </label>
+                <label>내통장메모
+                  <input type="text" />
+                </label>
+              </div>
+              <!-- <div hidden>
+                  <label>거래번호
+                      <input type="text" id="orderNum" />
+                  </label>
+                  <label>고객번호
+                      <input type="text" id="CID" />
+                  </label>
+                  <label>출금 고객명
+                      <input type="text" id="fromCustomerName" />
+                  </label>
+                  <label>출금 은행명
+                      <input type="text" id="fromBankCode" />
+                  </label>
+              </div>
+              <div hidden>
+                  <label>단말기ID
+                      <input type="text" id="deviceID" />
+                  </label>
+                  <label>MAC
+                      <input type="text" id="MAC" />
+                  </label>
+                  <label>결재IP
+                      <input type="text" id="IPAddr" />
+                  </label>
+                  <label>모바일여부
+                      <input type="text" id="deviceType" />
+                  </label>
+              </div> -->
+              <div class="form-group wthree_form_group">
+                <button class="btn btn-primary btn-lg btn-block btn-submit">이체 실행</button>
+              </div>
+          </div>
+      </div>
+
+      <script>
+      $(document).ready(function() {
+        $('.btn-submit').click(function(event){
+          var orderNum = "N16021810001";
+          var CID = "12345";
+          var fromCustomerName = "홍길동";
+          var fromBankCode = "신한은행";
+          var fromAccount = $("#fromAccount").val();
+
+          var toBankCode = $("#toBankCode").val();
+          var toCustomerName = $("#toCustomerName").val();
+          var toAccount = $("#toAccount").val();
+          var money = $("#money").val();
+
+          var deviceID = "ID123";
+          var MAC = "12:34:56:A1:B2:C3";
+          var IPAddr = "127.0.0.1";
+          var deviceType = "M";
+
+          var sendInfo = {
+            "ordernum":orderNum,
+            "customer": {
+              "CID":CID,
+              "name":fromCustomerName,
+              "bankcode":fromBankCode,
+              "account":fromAccount
+            },
+            "depositAccount":{
+              "bankCode":toBankCode,
+              "customerName":toCustomerName,
+              "account":toAccount,
+              "money":money
+            },
+            "device": {
+              "deviceID":deviceID,
+              "MAC":MAC,
+              "IPAddr":IPAddr,
+              "Type":deviceType
+            }
+          };
+
+          if(money == ""){alert("이체 금액을 입력해 주세요."); return false;}
+          $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "http://localhost:3000/transfer",
+            data: sendInfo,
+            success: function (msg) {
+              if (msg) {
+                console.log(msg)
+                if(msg.result == "Y"){
+                  alert("=======이체 결과=======\n이체금액 : "+msg.depositAccount.money +"원\n출금은행 : "+msg.customer.bankcode+"\n입금은행 : "+msg.depositAccount.bankCode+"\n이체결과 : 정상")                    
+                }else{
+                  alert("=======이체 결과=======\n이체금액 : "+msg.depositAccount.money +"원\n출금은행 : "+msg.customer.bankcode+"\n입금은행 : "+msg.depositAccount.bankCode+"\n이체결과 : 이체 거절")                    
+                }
+              } else {
+                alert("Internal Server Error: 관리자에게 연락해 주세요");
+              }
+            }
+          });
+        });
+      });
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :banktransfers
   # get 'transfer/transfer'
   # post 'transfer/transfer' => 'transfer#transfer'
   # match 'transfer/transfer', to: 'transfer#hh', via: [:get, :post]
