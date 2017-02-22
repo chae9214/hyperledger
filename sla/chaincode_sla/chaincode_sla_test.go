@@ -83,24 +83,142 @@ func TestChaincodeSla_Init(t *testing.T) {
 	checkState(t, stub, CURRENT_YEAR_KEY, "2017")
 }
 
-func TestChaincodeSla_Query_slaGetContractId(t *testing.T) {
-	scc := new(SimpleChaincode)
-	stub := shim.NewMockStub("sla_chaincode", scc)
-
-	checkInit(t, stub, []string{})
-
-	checkInvokeWithReturnValue(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00001")
-	checkInvokeWithReturnValue(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00002")
-}
-
 func TestChaincodeSla_Query_slaGetContractTempId(t *testing.T) {
 	scc := new(SimpleChaincode)
 	stub := shim.NewMockStub("sla_chaincode", scc)
 
 	checkInit(t, stub, []string{})
 
-	checkInvokeWithReturnValue(t, stub, "slaGetContractTempId", []string{}, "SLA_CONT_TEMP_2017_00001")
-	checkInvokeWithReturnValue(t, stub, "slaGetContractTempId", []string{}, "SLA_CONT_TEMP_2017_00002")
+	checkQuery(t, stub, "slaGetContractTempId", []string{}, "SLA_CONT_TEMP_2017_00001")
+}
+
+func TestChaincodeSla_Query_slaGetContractTempIdBeforeAndAfterCreatingTempContract(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("sla_chaincode", scc)
+
+	checkInit(t, stub, []string{})
+	checkState(t, stub, SLA_CONTRACT_TEMP_ID_COUNT_KEY, "1")
+	checkQuery(t, stub, "slaGetContractTempId", []string{}, "SLA_CONT_TEMP_2017_00001")
+	checkState(t, stub, SLA_CONTRACT_TEMP_ID_COUNT_KEY, "1")  // no change yet
+
+	inputContractContentInJson :=
+		`{
+  "RegId": "SLA_CONT_TEMP_2017_00001",
+  "Name": "홍길동",
+  "Kind": "보통계약",
+  "StaDate": "2017-02-01",
+  "EndDate": "2017-12-01",
+  "Client": "신한은행",
+  "ClientPerson": "개인",
+  "ClientPersonTel": "010-1111-2222",
+  "AssessDate": "2017-12-31",
+  "Progression": "",
+  "AssessYn": "포함",
+  "Approvals": [
+    {
+      "ApprovalUserId": "test",
+      "ApprovalCompany": "test",
+      "ApprovalDepartment": "test",
+      "ApprovalName": "test",
+      "ApprovalState": "test",
+      "ApprovalDate": "test",
+      "ApprovalComment": "test",
+      "ApprovalAlarm": "test"
+    },
+    {
+      "ApprovalUserId": "test2",
+      "ApprovalCompany": "test2",
+      "ApprovalDepartment": "test2",
+      "ApprovalName": "test2",
+      "ApprovalState": "test2",
+      "ApprovalDate": "test2",
+      "ApprovalComment": "test2",
+      "ApprovalAlarm": "test2"
+    }
+  ],
+  "ServiceItems": [
+    {
+      "ServiceItem": "test",
+      "ScoreItem": "test",
+      "MeasurementItem": "test",
+      "ExplainItem": "test",
+      "DivideScore": "test"
+    }
+  ]
+}`
+	checkInvoke(t, stub, "slaCreateTempContract", []string{inputContractContentInJson})
+	checkState(t, stub, SLA_CONTRACT_TEMP_ID_COUNT_KEY, "2")
+	checkQuery(t, stub, "slaGetContractTempId", []string{}, "SLA_CONT_TEMP_2017_00002")
+}
+
+func TestChaincodeSla_Query_slaGetContractId(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("sla_chaincode", scc)
+
+	checkInit(t, stub, []string{})
+
+	checkQuery(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00001")
+	checkQuery(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00001") // no change
+}
+
+func TestChaincodeSla_Query_slaGetContractIdBeforeAndAfterSubmitingContract(t *testing.T){
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("sla_chaincode", scc)
+
+	checkInit(t, stub, []string{})
+	checkState(t, stub, SLA_CONTRACT_ID_COUNT_KEY, "1")
+	checkQuery(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00001")
+	checkState(t, stub, SLA_CONTRACT_ID_COUNT_KEY, "1")  // no change yet
+
+	inputContractContentInJson :=
+		`{
+  "RegId": "SLA_CONT_2017_00001",
+  "Name": "신한은행도급계약_201701",
+  "Kind": "보통계약",
+  "StaDate": "2017-02-01",
+  "EndDate": "2017-12-01",
+  "Client": "신한은행",
+  "ClientPerson": "개인",
+  "ClientPersonTel": "010-1111-2222",
+  "AssessDate": "2017-12-31",
+  "Progression": "",
+  "AssessYn": "포함",
+  "Approvals": [
+    {
+      "ApprovalUserId": "test",
+      "ApprovalCompany": "test",
+      "ApprovalDepartment": "test",
+      "ApprovalName": "test",
+      "ApprovalState": "test",
+      "ApprovalDate": "test",
+      "ApprovalComment": "test",
+      "ApprovalAlarm": "test"
+    },
+    {
+      "ApprovalUserId": "test2",
+      "ApprovalCompany": "test2",
+      "ApprovalDepartment": "test2",
+      "ApprovalName": "test2",
+      "ApprovalState": "test2",
+      "ApprovalDate": "test2",
+      "ApprovalComment": "test2",
+      "ApprovalAlarm": "test2"
+    }
+  ],
+  "ServiceItems": [
+    {
+      "ServiceItem": "test",
+      "ScoreItem": "test",
+      "MeasurementItem": "test",
+      "ExplainItem": "test",
+      "DivideScore": "test"
+    }
+  ]
+}`
+
+	checkInvoke(t, stub, "slaSubmitContract", []string{inputContractContentInJson})
+	checkState(t, stub, SLA_CONTRACT_ID_COUNT_KEY, "2")
+	checkQuery(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00002")
 }
 
 // 최초 생성 + 임시 저장
