@@ -1,9 +1,3 @@
-<!--
-Author: W3layouts
-Author URL: http://w3layouts.com
-License: Creative Commons Attribution 3.0 Unported
-License URL: http://creativecommons.org/licenses/by/3.0/
--->
 <!DOCTYPE html>
 <html>
 	<head>
@@ -30,29 +24,27 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 		<link rel="stylesheet" href="css/bootstrap.min.css" />
 		<!-- //grid-links -->
 		<link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
-		<link href="//fonts.googleapis.com/css?family=Raleway:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&subset=latin-ext" rel="stylesheet">
 	</head>
 	<body>
 		<div class="main">
 			<!-- <h1>Simple Range Pricing Widget</h1> -->
 			<div class="price-box w3_agile_home_price_box">
-				<form class="form-horizontal form-pricing agile_form_horizontal" role="form" action="#" method="post">
+				<div class="form-horizontal form-pricing agile_form_horizontal" role="form" action="#" method="post">
 					
 					<div class="form-style-10">
 						<h1>transfer<span></span></h1>
-						<form>
 							<div class="section">Money Transfer</div>
 							<div class="inner-wrap">
 								<label>출금계좌번호
-									<input type="text" name="field1" />
+									<input type="text" id="fromAccount" />
 								</label>
 								<label>계좌 비밀번호
-									<input type="password" name="field2" />
+									<input type="password" />
 								</label>
 							</div>
 							<div class="inner-wrap">
 								<label>입금 은행
-									<select>
+									<select id="toBankCode">
 										<option value="volvo">신한은행</option>
 										<option value="saab">국민은행</option>
 										<option value="opel">하나은행</option>
@@ -60,133 +52,120 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 									</select>
 								</label>
 								<label>입금 계좌
-									<input type="text" name="field4" />
+									<input type="text" id="toAccount" />
+								</label>
+								<label>입금 고객명
+									<input type="text" id="toCustomerName" />
 								</label>
 								<label>금액
-									<input type="text" name="field5" />
+									<input type="text" id="money" />
 								</label>
 							</div>
 							<div class="inner-wrap">
 								<label>받는통장메모
-									<input type="text" name="field6" />
+									<input type="text" />
 								</label>
 								<label>내통장메모
-									<input type="text" name="field7" />
+									<input type="text" />
 								</label>
 							</div>
-							<div class="form-group wthree_form_group">
-								<button type="submit" class="btn btn-primary btn-lg btn-block">Proceed <span class="glyphicon glyphicon-chevron-right pull-right" style="padding-right: 10px;"></span></button>
+							<!-- <div hidden>
+									<label>거래번호
+											<input type="text" id="orderNum" />
+									</label>
+									<label>고객번호
+											<input type="text" id="CID" />
+									</label>
+									<label>출금 고객명
+											<input type="text" id="fromCustomerName" />
+									</label>
+									<label>출금 은행명
+											<input type="text" id="fromBankCode" />
+									</label>
 							</div>
-						</form>
+							<div hidden>
+									<label>단말기ID
+											<input type="text" id="deviceID" />
+									</label>
+									<label>MAC
+											<input type="text" id="MAC" />
+									</label>
+									<label>결재IP
+											<input type="text" id="IPAddr" />
+									</label>
+									<label>모바일여부
+											<input type="text" id="deviceType" />
+									</label>
+							</div> -->
+							<div class="form-group wthree_form_group">
+								<button class="btn btn-primary btn-lg btn-block btn-submit">Proceed <span class="glyphicon glyphicon-chevron-right pull-right" style="padding-right: 10px;"></span></button>
+							</div>
 					</div>
-					<!-- <div class="price-slider w3_agileits_price_slider">
-																				<h4 class="great">Amount</h4>
-																				<span>Minimum $10 is required</span>
-																				<div id="slider"></div>
-										</div>
-										<div class="price-slider w3_agileits_price_slider">
-																				<h4 class="great">Duration</h4>
-																				<span>Minimum 1 day is required</span>
-																				<div id="slider2"></div>
-					</div> -->
-					<!-- <div class="price-form w3-price-form">
-																				<div class="form-group w3l_form_group">
-																														<div class="w3layouts-col-sm-6">
-																																								<label for="amount" class="control-label">Amount ($): </label>
-																																								<span class="help-text">Please choose your amount</span>
-																														</div>
-																														<div class="agileits_w3layouts-col-sm-6">
-																																								<input type="hidden" id="amount" class="form-control">
-																																								<p class="price lead" id="amount-label"></p>
-																																								<span class="price">.00</span>
-																														</div>
-																														<div class="clear"> </div>
-																				</div>
-																				<div class="form-group w3l_form_group">
-																														<div class="w3layouts-col-sm-6">
-																																								<label for="duration" class="control-label">Duration: </label>
-																																								<span class="help-text">Choose your commitment</span>
-																														</div>
-																														<div class="agileits_w3layouts-col-sm-6">
-																																								<input type="hidden" id="duration" class="form-control">
-																																								<p class="price lead" id="duration-label"></p>
-																																								<span class="price">days</span>
-																														</div>
-																														<div class="clear"> </div>
-																				</div>
-																				<div class="form-group total w3l_form_group agileits_form_group">
-																														<div class="w3layouts-col-sm-6">
-																																								<label for="total" class="control-label"><strong>Total: </strong></label>
-																																								<span class="help-text">(Amount * Days)</span>
-																														</div>
-																														<div class="agileits_w3layouts-col-sm-6">
-																																								<input type="hidden" id="total" class="form-control">
-																																								<p class="price lead" id="total-label"></p>
-																																								<span class="price">.00</span>
-																														</div>
-																														<div class="clear"> </div>
-																				</div>
-					</div> -->
-					<!-- <div class="form-group wthree_form_group">
-											<button type="submit" class="btn btn-primary btn-lg btn-block">Proceed <span class="glyphicon glyphicon-chevron-right pull-right" style="padding-right: 10px;"></span></button>
-					</div> -->
-				</form>
+				</div>
 			</div>
-			<!-- <div class="agileits_copyright">
-																<p>© 2017 Simple Range Pricing Widget. All rights reserved | Design by <a href="http://w3layouts.com">W3layouts</a></p>
-			</div> -->
+
 			<script src="js/jquery-ui.min.js"></script>
 			<script src="js/bootstrap.min.js"></script>
+
 			<script>
 			$(document).ready(function() {
-			$("#slider").slider({
-			range: "min",
-			animate: true,
-			value: 1,
-			min: 10,
-			max: 1000,
-			step: 10,
-			slide: function(event, ui) {
-			update(1, ui.value); //changed
-			}
+				$('.btn-submit').click(function(event){
+					var orderNum = "N16021810001";
+
+					var CID = "12345";
+					var fromCustomerName = "홍길동";
+					var fromBankCode = "신한은행";
+					var fromAccount = $("#fromAccount").val();
+
+					var toBankCode = $("#toBankCode").val();
+					var toCustomerName = $("#toCustomerName").val();
+					var toAccount = $("#toAccount").val();
+					var money = $("#money").val();
+
+					var deviceID = "ID123";
+					var MAC = "12:34:56:A1:B2:C3";
+					var IPAddr = "127.0.0.1";
+					var deviceType = "M";
+
+					var sendInfo = {
+						"ordernum":orderNum,
+						"customer": {
+							"CID":CID,
+							"name":fromCustomerName,
+							"bankcode":fromBankCode,
+							"account":fromAccount
+						},
+						"depositAccount":{
+							"bankCode":toBankCode,
+							"customerName":toCustomerName,
+							"account":toAccount,
+							"money":money
+						},
+						"device": {
+							"deviceID":deviceID,
+							"MAC":MAC,
+							"IPAddr":IPAddr,
+							"Type":deviceType
+						}
+					};
+					
+
+					console.log(sendInfo);
+					$.ajax({
+						type: "POST",
+						url: "http://localhost:3000/transfer",
+						data: JSON.stringify(sendInfo),
+						contentType: "application/json; charset=utf-8",
+						success: function (msg) {
+							if (msg) {
+								alert(msg)
+							} else {
+								alert("Cannot load Hyperledger Data!");
+							}
+						}
+					});
+				});
 			});
-			$("#slider2").slider({
-			range: "min",
-			animate: true,
-			value: 1,
-			min: 1,
-			max: 365,
-			step: 1,
-			slide: function(event, ui) {
-			update(2, ui.value); //changed
-			}
-			});
-			//Added, set initial value.
-			$("#amount").val(0);
-			$("#duration").val(0);
-			$("#amount-label").text(0);
-			$("#duration-label").text(0);
-			update();
-			});
-			//changed. now with parameter
-			function update(slider, val) {
-			//changed. Now, directly take value from ui.value. if not set (initial, will use current value.)
-			var $amount = slider == 1 ? val : $("#amount").val();
-			var $duration = slider == 2 ? val : $("#duration").val();
-			/* commented
-			$amount = $( "#slider" ).slider( "value" );
-			$duration = $( "#slider2" ).slider( "value" );
-			*/
-			$total = "$" + ($amount * $duration);
-			$("#amount").val($amount);
-			$("#amount-label").text($amount);
-			$("#duration").val($duration);
-			$("#duration-label").text($duration);
-			$("#total").val($total);
-			$("#total-label").text($total);
-			$('#slider a').html('<label><span class="glyphicon glyphicon-chevron-left"></span> ' + $amount + ' <span class="glyphicon glyphicon-chevron-right"></span></label>');
-			$('#slider2 a').html('<label><span class="glyphicon glyphicon-chevron-left"></span> ' + $duration + ' <span class="glyphicon glyphicon-chevron-right"></span></label>');
-			}
 			</script>
 		</div>
 	</body>

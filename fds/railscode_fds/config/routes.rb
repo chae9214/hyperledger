@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   # match 'transfer/transfer', to: 'transfer#hh', via: [:get, :post]
   # match 'tra', to: 'tra#index', via: :all
 
-  post 'transfer', to: 'transfer#trans', via: :all
+  match 'transfer', to: 'transfer#trans', via: :all
   post 'order', to: 'order#purchase', via: :all
   resources :rests
   resources :transactions
