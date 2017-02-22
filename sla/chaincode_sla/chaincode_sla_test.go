@@ -5,9 +5,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"testing"
 	"time"
+
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
 func checkInit(t *testing.T, stub *shim.MockStub, args []string) {
@@ -99,7 +100,7 @@ func TestChaincodeSla_Query_slaGetContractTempIdBeforeAndAfterCreatingTempContra
 	checkInit(t, stub, []string{})
 	checkState(t, stub, SLA_CONTRACT_TEMP_ID_COUNT_KEY, "1")
 	checkQuery(t, stub, "slaGetContractTempId", []string{}, "SLA_CONT_TEMP_2017_00001")
-	checkState(t, stub, SLA_CONTRACT_TEMP_ID_COUNT_KEY, "1")  // no change yet
+	checkState(t, stub, SLA_CONTRACT_TEMP_ID_COUNT_KEY, "1") // no change yet
 
 	inputContractContentInJson :=
 		`{
@@ -161,14 +162,14 @@ func TestChaincodeSla_Query_slaGetContractId(t *testing.T) {
 	checkQuery(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00001") // no change
 }
 
-func TestChaincodeSla_Query_slaGetContractIdBeforeAndAfterSubmitingContract(t *testing.T){
+func TestChaincodeSla_Query_slaGetContractIdBeforeAndAfterSubmitingContract(t *testing.T) {
 	scc := new(SimpleChaincode)
 	stub := shim.NewMockStub("sla_chaincode", scc)
 
 	checkInit(t, stub, []string{})
 	checkState(t, stub, SLA_CONTRACT_ID_COUNT_KEY, "1")
 	checkQuery(t, stub, "slaGetContractId", []string{}, "SLA_CONT_2017_00001")
-	checkState(t, stub, SLA_CONTRACT_ID_COUNT_KEY, "1")  // no change yet
+	checkState(t, stub, SLA_CONTRACT_ID_COUNT_KEY, "1") // no change yet
 
 	inputContractContentInJson :=
 		`{

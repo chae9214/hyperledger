@@ -25,10 +25,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
 // ===========================================================
@@ -156,16 +157,15 @@ func padLeft(str string, padLength int) string {
 // 초기화를 처리합니다.
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
-	var err error
 	year, _, _ := time.Now().Date()
 
-	err = stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
-	err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
-	err = stub.PutState(SLA_EVALUATION_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
-	err = stub.PutState(SLA_EVALUATION_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
-	err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(year))) // 현재 year
+	stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
+	stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
+	stub.PutState(SLA_EVALUATION_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
+	stub.PutState(SLA_EVALUATION_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
+	stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(year))) // 현재 year
 	// err = stub.PutState(SLA_ALL_DATA, []byte(""))
-	return nil, err
+	return nil, nil
 }
 
 // 기능 이벤트를 호출합니다.
@@ -315,20 +315,9 @@ func (t *SimpleChaincode) slaGetContractTempId(stub shim.ChaincodeStubInterface,
 	}
 	currentCount, _ := strconv.Atoi(string(currentCountInBytes))
 
-	// // 2.카운트가 1000을 넘어가면 초기화 --> moved to slaCreateTempContract
-	// if currentCount > 100000 { // new year starts
-	// 	err = stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1))) // 카운트는 1부터
-	// }
-
-	// 3. 계약번호 채번을 생성합니다.
+	// 계약번호 채번을 생성합니다.
 	currentYear, _, _ := time.Now().Date()
 	contractTempId = CONTRACT_TEMP_ID_PREFIX + strconv.Itoa(currentYear) + "_" + padLeft(strconv.Itoa(currentCount), 5)
-
-	// // 4. 다음 계약번호 카운트를 저장 --> moved to slaCreateTempContract
-	// nextCount := currentCount + 1
-	// stub.PutState(SLA_CONTRACT_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(nextCount)))
-	//
-	// // TODO 5. 혹시 같은 계약번호가 있는지 확인할 것.
 
 	return []byte(contractTempId), nil
 }
@@ -348,27 +337,8 @@ func (t *SimpleChaincode) slaGetContractId(stub shim.ChaincodeStubInterface, arg
 	currentCount, _ := strconv.Atoi(string(currentCountInBytes))
 	currentYear, _, _ := time.Now().Date()
 
-	// // 2.새로운 연도일 경우, 계약 카운트를 초기화 --> "slaSubmitContract" 로 이동
-	// kvsCurrentYearInBytes, err := stub.GetState(CURRENT_YEAR_KEY)
-	// if err != nil {
-	// 	return nil, errors.New("Failed to kvsCurrentYearInBytes with " + CURRENT_YEAR_KEY)
-	// }
-	// if kvsCurrentYearInBytes == nil { // if not initialized
-	// 	err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(currentYear)))
-	// }
-	// if string(kvsCurrentYearInBytes) != strconv.Itoa(currentYear) { // new year starts
-	// 	err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(currentYear))) // 새로운 현재 연도
-	// 	err = stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(1)))  // 카운트는 1부터
-	// }
-
-	// 3. 계약번호 채번을 생성합니다.
+	// 계약번호 채번을 생성합니다.
 	contractId = CONTRACT_ID_PREFIX + strconv.Itoa(currentYear) + "_" + padLeft(strconv.Itoa(currentCount), 5)
-
-	// // 4. 다음 계약번호 카운트를 저장 --> "slaSubmitContract" 로 이동
-	// nextCount := currentCount + 1
-	// stub.PutState(SLA_CONTRACT_ID_COUNT_KEY, []byte(strconv.Itoa(nextCount)))
-
-	// TODO 5. 혹시 같은 계약번호가 있는지 확인할 것.
 
 	return []byte(contractId), nil
 }
