@@ -2,6 +2,35 @@ class TransferController < ApplicationController
 def empty
   render :nothing => true
 end
+
+	def makeQuery (stats)
+			@query = "INSERT INTO transactions (stats, 
+											cid, 
+											mac, 
+											accountnum, 
+											txtime, 
+											created_at, 
+											updated_at, 
+											uuid, 
+											cardnum, 
+											ordernum, 
+											correspondentid, 
+											posid
+								) VALUES ('"+stats +"',
+										  '"+params[:customer][:CID]+"',
+										  '"+params[:device][:MAC]+"',
+										  '"+params[:customer][:account]+"',
+										  '"+@dateTime+"',
+										  '"+@dateTime+"',
+										  '"+@dateTime+"',
+										  '"+@uuid+"',
+										  '"+@cardnum+"',
+										  '"+params[:ordernum]+"',
+										  '"+params[:device][:deviceID]+"',
+										  '"+params[:device][:deviceID]+"'
+										 ) "
+	end
+
 	def trans
 		puts "#{params}"
 		puts "#{params[:ordernum]}"
@@ -19,46 +48,25 @@ end
 		puts "#{params[:device][:Type]}" #모바일 여부
 
     	@dateTime = Time.now.strftime("%Y-%m-%d %H:%M:%S") 
+    	@uuid = "1121 44356 1123"
+    	@cardnum = "1234-1234-1234"
 
-=begin
-		@query = "INSERT INTO transactions (stats, 
-											cid, 
-											mac, 
-											accountnum, 
-											txtime, 
-											created_at, 
-											updated_at, 
-											uuid, 
-											cardnum, 
-											ordernum, 
-											correspondentid, 
-											posid
-								) VALUES (	'', 
-											'', 
-											'"+ @deviceMAC +"',
-											'',
-											'"+ @dateTime +"',
-											'"+ @dateTime +"',
-											'"+ @dateTime +"',
-											'"+ @customUUID +"',
-											'"+ @customCardnum +"',
-											'"+ @orderNum +"',
-											'"+ @accountID +"',
-											'"+ @deviceType +"'
-										 ) "
-		puts @query
-		ActiveRecord::Base.connection.execute(@query)
-=end
-
-		# 처리결과 응답 
+		#이상 거래 판단: 신한은행 -> 정상 
 		puts "#{params[:depositAccount][:bankCode]}"
 		if params[:depositAccount][:bankCode] == "신한은행"
 			params[:result] = "Y"
 			@returnMsg = params
+			@fdsStats = "정상"
+			makeQuery(@fdsStats)
+			ActiveRecord::Base.connection.execute(@query)
 		else
 			params[:result] = "N"
 			@returnMsg = params
+			@fdsStats = "이상"
+			makeQuery(@fdsStats)
+			ActiveRecord::Base.connection.execute(@query)
 		end	
+
 		render json: @returnMsg
 	end
 end
