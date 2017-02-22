@@ -1,423 +1,298 @@
 package main
 
+// go test chaincode_sla_test.go chaincode_sla.go
+
 import (
-	"bytes"
-	//"fmt"
-	"reflect"
-	"strconv"
+	"encoding/json"
+	"fmt"
 	"testing"
+
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
 // ===========================================================
-//  Helper Function
+//  Utility 함수
 // ===========================================================
 
-func initializeEntries(n int) [][]string {
-	var entries = make([][]string, n)
-
-	for i := range entries {
-		entries[i] = make([]string, NUM_FIELDS)
-		entries[i][IND_CID] = "cid" + strconv.Itoa(i+1)
-		entries[i][IND_MAC] = "mac" + strconv.Itoa(i+1)
-		entries[i][IND_UUID] = "uuid" + strconv.Itoa(i+1)
-		entries[i][IND_FINALDATE] = "최종거래일자" + strconv.Itoa(i+1)
-		entries[i][IND_FINALTIME] = "최종거래시간" + strconv.Itoa(i+1)
-		entries[i][IND_FDSPRODUCEDBY] = "FDS제공처" + strconv.Itoa(i+1)
-		entries[i][IND_FDSREGISTEREDBY] = "FDS등록처" + strconv.Itoa(i+1)
-		entries[i][IND_FDSREASON] = "FDS등록사유" + strconv.Itoa(i+1)
-	}
-	return entries
-}
-
-// ===========================================================
-//  ChaincodeStubInterface 함수 테스트
-// ===========================================================
-
-func TestPutState(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
-
-	key := "key"
-	value := []byte("value")
-	stub.PutState(key, value)
-
-	expected := 1
-	actual := stub.GetKVSLength()
-
-	if !(expected == actual) {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
+func checkInit(t *testing.T, stub *shim.MockStub, args []string) {
+	_, err := stub.MockInit("1", "init", args)
+	if err != nil {
+		fmt.Println("Init failed", err)
+		t.FailNow()
 	}
 }
 
-func TestGetState(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
-
-	key := "key"
-	value := []byte("value")
-	stub.PutState(key, value)
-
-	expected := []byte("value")
-	actual, _ := stub.GetState(key)
-
-	if !(bytes.Equal(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
+func checkState(t *testing.T, stub *shim.MockStub, key string, value string) {
+	bytes := stub.State[key]
+	if bytes == nil {
+		fmt.Println("State", key, "failed to get value")
+		t.FailNow()
+	}
+	if string(bytes) != value {
+		fmt.Printf("State value [%v] : %v did not match the expected value %v.\n", key, string(bytes), value)
+		t.FailNow()
 	}
 }
 
-func TestPutStateAndGetState(t *testing.T) {
-	var c = CreateStub()
-
-	c.PutState("Alice", []byte("Married"))
-
-	expected := []byte("Married")
-	actual, _ := c.GetState("Alice")
-
-	if !(bytes.Equal(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead.", expected, actual)
+func checkQuery(t *testing.T, stub *shim.MockStub, fnName string, args []string, value string) {
+	bytes, err := stub.MockQuery(fnName, args)
+	if err != nil {
+		fmt.Println("Query", fnName, "failed", err)
+		t.FailNow()
 	}
-
-	c.PutState("Bob", []byte("Born"))
-
-	expected = []byte("Born")
-	actual, _ = c.GetState("Bob")
-
-	if !(bytes.Equal(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead.", expected, actual)
+	if bytes == nil {
+		fmt.Println("Query", fnName, "failed to get value")
+		t.FailNow()
+	}
+	if string(bytes) != value {
+		fmt.Printf("Query value %v(%v) = %v did not match the expected value %v.\n", fnName, args, string(bytes), value)
+		t.FailNow()
 	}
 }
 
-func TestDelState(t *testing.T) {
-	var c = CreateStub()
-
-	c.PutState("Alice", []byte("Married"))
-	c.PutState("Bob", []byte("Born"))
-
-	c.DelState("Alice")
-
-	expected := []byte{}
-	actual, _ := c.GetState("Alice")
-
-	if !(bytes.Equal(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead.", expected, actual)
-	}
-
-	expected = []byte("Born")
-	actual, _ = c.GetState("Bob")
-
-	if !(bytes.Equal(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead.", expected, actual)
+func checkInvoke(t *testing.T, stub *shim.MockStub, fnName string, args []string) {
+	_, err := stub.MockInvoke("1", fnName, args)
+	if err != nil {
+		fmt.Println("Invoke", fnName, "failed", err)
+		t.FailNow()
 	}
 }
 
 // ===========================================================
-//  FDSChaincodeStub 등록/수정 테스트
+//   Test Init
 // ===========================================================
 
-func TestRegiserFraudEntry(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
+func TestChaincodeFds_Init(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("fds_chaincode", scc)
 
-	num_entries := 10
-	var entries = initializeEntries(num_entries)
-	for _, entry := range entries {
-		stub.RegisterFraudEntry(entry)
-	}
-
-	expected := num_entries * 4
-	actual := stub.GetKVSLength()
-
-	if !(expected == actual) {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
-	}
-
-}
-
-func TestInvalidRegister(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
-
-	longEntry := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
-	shortEntry := []string{"0", "1", "2", "3", "4", "5", "6"}
-
-	expected := false
-	actual := stub.RegisterFraudEntry(longEntry)
-	if expected != actual {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
-	}
-
-	expected = false
-	actual = stub.RegisterFraudEntry(shortEntry)
-	if expected != actual {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
-	}
-}
-
-func TestRegisterMultipleFraudEntryWithSameCID(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
-
-	num_entries := 10
-	var entries = initializeEntries(num_entries)
-	for _, entry := range entries {
-		stub.RegisterFraudEntry(entry)
-	}
+	checkInit(t, stub, []string{})
+	checkState(t, stub, FDS_NEXTEID_KEY, "1")
 }
 
 // ===========================================================
-//  FDSChaincodeStub 조회 테스트
+//   Test Query: FdsFraudEntry 조회 함수
 // ===========================================================
 
-func TestLookupWithCID(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
+/*
+ * Get Fraud Entry with CID/MAC/UUID (cid: "cid", mac: "mac", uuid: "uuid")
+ *
+ *    Key            |   Value
+ *  -----------------+---------------------------------------------------------------------------------------------------------------------------------
+ *   [FDS_CID_cid]   |   "FDS_EID_1|FDS_EID_2"
+ *   [FDS_MAC_mac]   |   "FDS_EID_1|FDS_EID_2"
+ *   [FDS_UUID_uuid] |   "FDS_EID_1|FDS_EID_2"
+ *   [FDS_EID_1]     |   {1 "cid" "mac" "uuid" "finaldate1" "finaltime1" "fdsproducedby1" "fdsregisteredby1" "fdsreason1" 9 "" ""} (in json string)
+ *   [FDS_EID_2]     |   {2 "cid" "mac" "uuid" "finaldate2" "finaltime2" "fdsproducedby2" "fdsregisteredby2" "fdsreason2" 9 "" ""} (in json string)
+ */
+func TestChaincodeFds_Query_fdsGetFraudEntriesWith(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("fds_chaincode", scc)
 
-	num_entries := 10
-	var entries = initializeEntries(num_entries)
-	for _, entry := range entries {
-		stub.RegisterFraudEntry(entry)
-	}
+	entry1 := FdsFraudEntry{1, "cid", "mac", "uuid", "finaldate1", "finaltime1", "fdsproducedby1", "fdsregisteredby1", "fdsreason1", LS_BLACKLIST, "", ""}
+	entry2 := FdsFraudEntry{2, "cid", "mac", "uuid", "finaldate2", "finaltime2", "fdsproducedby2", "fdsregisteredby2", "fdsreason2", LS_BLACKLIST, "", ""}
+	entries := []FdsFraudEntry{entry1, entry2}
 
-	expected := entries[5:6]
-	actual, _ := stub.LookupWithCID(entries[5][IND_CID])
+	entry1InBytes, _ := json.Marshal(entry1)
+	entry2InBytes, _ := json.Marshal(entry2)
+	entriesInBytes, _ := json.Marshal(entries)
 
-	if !(reflect.DeepEqual(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
-	}
+	checkInit(t, stub, []string{})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid", "mac", "uuid", "finaldate1", "finaltime1", "fdsproducedby1", "fdsregisteredby1", "fdsreason1"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid", "mac", "uuid", "finaldate2", "finaltime2", "fdsproducedby2", "fdsregisteredby2", "fdsreason2"})
+
+	checkQuery(t, stub, "fdsGetFraudEntriesWithCid", []string{"cid"}, string(entriesInBytes))
+	checkQuery(t, stub, "fdsGetFraudEntriesWithMac", []string{"mac"}, string(entriesInBytes))
+	checkQuery(t, stub, "fdsGetFraudEntriesWithUuid", []string{"uuid"}, string(entriesInBytes))
+
+	checkState(t, stub, "FDS_CID_cid", "FDS_EID_1|FDS_EID_2")
+	checkState(t, stub, "FDS_MAC_mac", "FDS_EID_1|FDS_EID_2")
+	checkState(t, stub, "FDS_UUID_uuid", "FDS_EID_1|FDS_EID_2")
+	checkState(t, stub, "FDS_EID_1", string(entry1InBytes))
+	checkState(t, stub, "FDS_EID_2", string(entry2InBytes))
 }
 
-func TestLookupWithMAC(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
+/*
+ * Get All Fraud Entries
+ *
+ *    Key             |   Value
+ *  ------------------+-----------------------------------------------------------------------------------------------------------------------------------
+ *   [FDS_CID_cid1]   |   "FDS_EID_1"
+ *   [FDS_CID_cid2]   |   "FDS_EID_2"
+ *   [FDS_CID_cid3]   |   "FDS_EID_3"
+ *   [FDS_MAC_mac1]   |   "FDS_EID_1"
+ *   [FDS_MAC_mac2]   |   "FDS_EID_2"
+ *   [FDS_MAC_mac3]   |   "FDS_EID_3"
+ *   [FDS_UUID_uuid1] |   "FDS_EID_1"
+ *   [FDS_UUID_uuid2] |   "FDS_EID_2"
+ *   [FDS_UUID_uuid3] |   "FDS_EID_3"
+ *   [FDS_EID_1]      |   {1 "cid1" "mac1" "uuid1" "finaldate1" "finaltime1" "fdsproducedby1" "fdsregisteredby1" "fdsreason1" 9 "" ""} (in json string)
+ *   [FDS_EID_2]      |   {2 "cid2" "mac2" "uuid2" "finaldate2" "finaltime2" "fdsproducedby2" "fdsregisteredby2" "fdsreason2" 9 "" ""} (in json string)
+ *   [FDS_EID_3]      |   {3 "cid3" "mac3" "uuid3" "finaldate3" "finaltime3" "fdsproducedby3" "fdsregisteredby3" "fdsreason3" 9 "" ""} (in json string)
+ */
+func TestChaincodeFds_Query_fdsGetAllFraudEntries(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("fds_chaincode", scc)
 
-	num_entries := 10
-	var entries = initializeEntries(num_entries)
-	for _, entry := range entries {
-		stub.RegisterFraudEntry(entry)
-	}
+	entry1 := FdsFraudEntry{1, "cid1", "mac1", "uuid1", "finaldate1", "finaltime1", "fdsproducedby1", "fdsregisteredby1", "fdsreason1", LS_BLACKLIST, "", ""}
+	entry2 := FdsFraudEntry{2, "cid2", "mac2", "uuid2", "finaldate2", "finaltime2", "fdsproducedby2", "fdsregisteredby2", "fdsreason2", LS_BLACKLIST, "", ""}
+	entry3 := FdsFraudEntry{3, "cid3", "mac3", "uuid3", "finaldate3", "finaltime3", "fdsproducedby3", "fdsregisteredby3", "fdsreason3", LS_BLACKLIST, "", ""}
+	entries := []FdsFraudEntry{entry1, entry2, entry3}
 
-	expected := entries[5:6]
-	actual, _ := stub.LookupWithMAC(entries[5][IND_MAC])
+	entry1InBytes, _ := json.Marshal(entry1)
+	entry2InBytes, _ := json.Marshal(entry2)
+	entry3InBytes, _ := json.Marshal(entry3)
+	entriesInBytes, _ := json.Marshal(entries)
 
-	if !(reflect.DeepEqual(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
-	}
-}
+	checkInit(t, stub, []string{})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid1", "mac1", "uuid1", "finaldate1", "finaltime1", "fdsproducedby1", "fdsregisteredby1", "fdsreason1"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid2", "mac2", "uuid2", "finaldate2", "finaltime2", "fdsproducedby2", "fdsregisteredby2", "fdsreason2"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid3", "mac3", "uuid3", "finaldate3", "finaltime3", "fdsproducedby3", "fdsregisteredby3", "fdsreason3"})
 
-func TestLookupWithUUID(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
+	checkQuery(t, stub, "fdsGetAllFraudEntries", []string{}, string(entriesInBytes))
 
-	num_entries := 10
-	var entries = initializeEntries(num_entries)
-	for _, entry := range entries {
-		stub.RegisterFraudEntry(entry)
-	}
-
-	expected := entries[5:6]
-	actual, _ := stub.LookupWithUUID(entries[5][IND_UUID])
-
-	if !(reflect.DeepEqual(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
-	}
-}
-
-// ===========================================================
-//  FDSChaincodeStub 삭제 테스트
-// ===========================================================
-
-func TestRemoveWithCID(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
-
-	num_entries := 10
-	var entries = initializeEntries(num_entries)
-	for _, entry := range entries {
-		stub.RegisterFraudEntry(entry)
-	}
-	stub.RemoveWithCID(entries[5][IND_CID])
-
-	expected := [][]string{}
-	actual, _ := stub.LookupWithCID(entries[5][IND_CID])
-	if !(len(expected) == len(actual)) {
-		t.Errorf("Expected %d entries, but returned %d entries", len(expected), len(actual))
-	}
-
-	expected = entries[2:3]
-	actual, _ = stub.LookupWithCID(entries[2][IND_CID])
-	if !(reflect.DeepEqual(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
-	}
-}
-
-func TestRemoveWithMAC(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
-
-	num_entries := 10
-	var entries = initializeEntries(num_entries)
-	for _, entry := range entries {
-		stub.RegisterFraudEntry(entry)
-	}
-	stub.RemoveWithMAC(entries[5][IND_MAC])
-
-	expected := [][]string{}
-	actual, _ := stub.LookupWithMAC(entries[5][IND_MAC])
-	if !(len(expected) == len(actual)) {
-		t.Errorf("Expected %d entries, but returned %d entries", len(expected), len(actual))
-	}
-
-	expected = entries[2:3]
-	actual, _ = stub.LookupWithMAC(entries[2][IND_MAC])
-	if !(reflect.DeepEqual(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
-	}
-}
-
-func TestRemoveWithUUID(t *testing.T) {
-	var stub = CreateFDSChaincodeStub()
-
-	num_entries := 10
-	var entries = initializeEntries(num_entries)
-	for _, entry := range entries {
-		stub.RegisterFraudEntry(entry)
-	}
-	stub.RemoveWithUUID(entries[5][IND_UUID])
-
-	expected := [][]string{}
-	actual, _ := stub.LookupWithUUID(entries[5][IND_UUID])
-	if !(len(expected) == len(actual)) {
-		t.Errorf("Expected %d entries, but returned %d entries", len(expected), len(actual))
-	}
-
-	expected = entries[2:3]
-	actual, _ = stub.LookupWithUUID(entries[2][IND_UUID])
-	if !(reflect.DeepEqual(expected, actual)) {
-		t.Errorf("Expected %v, but returned %v instead", expected, actual)
-	}
+	checkState(t, stub, "FDS_EID_1", string(entry1InBytes))
+	checkState(t, stub, "FDS_EID_2", string(entry2InBytes))
+	checkState(t, stub, "FDS_EID_3", string(entry3InBytes))
 }
 
 // ===========================================================
-//  SLAChaincodeStub 등록 테스트
+//   Test Query: FdsFraudEntry 수정 함수
 // ===========================================================
 
-func TestRegisterContractAndSearchContractDetails(t *testing.T) {
-	var c = CreateStub()
-	var s SimpleChaincode
+/*
+ * Update Ledger Status of Fraud Entry ("BL" => "WL")
+ *
+ *   Fraud Entry              |   <Before>          |   <After>
+ *  --------------------------+-------------------------------------------------------
+ *   EID                      |   1                 |   1
+ *   CID                      |   "cid"             |   "cid"
+ *   MAC                      |   "mac"             |   "mac"
+ *   FinalDate                |   "finaldate"       |   "finaldate"
+ *   FinalTime                |   "finaltime"       |   "finaltime"
+ *   ProducedBy               |   "fdsproducedby"   |   "fdsproducedby"
+ *   RegisteredBy             |   "fdsregisteredby" |   "fdsregisteredby"
+ *   Reason                   |   "fdsreason"       |   "fdsreason"
+ *   LedgerStatus             |   9                 |   1
+ *   LedgerStatusUpdateTime   |   ""                |   "ledgerstatusupdatetime"
+ *   LedgerStatusUpdateReason |   ""                |   "ledgerstatusupdatereason"
+ */
+func TestChaincodeFds_Invoke_fdsUpdateLedgerStatusWithEid(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("fds_chaincode", scc)
 
-	reg_args := []string{"SLA_REG_2007-01-00001", "SLA_REG_2007-01-00001,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
+	entry := FdsFraudEntry{1, "cid", "mac", "uuid", "finaldate", "finaltime", "fdsproducedby", "fdsregisteredby", "fdsreason", LS_WHITELIST, "ledgerstatusupdatetime", "ledgerstatusupdatereason"}
+	entryInBytes, _ := json.Marshal(entry)
 
-	reg_args = []string{"SLA_REG_2007-01-00002", "SLA_REG_2007-01-00002,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
+	checkInit(t, stub, []string{})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid", "mac", "uuid", "finaldate", "finaltime", "fdsproducedby", "fdsregisteredby", "fdsreason"})
+	checkInvoke(t, stub, "fdsUpdateLedgerStatusWithEid", []string{"1", "WL", "ledgerstatusupdatetime", "ledgerstatusupdatereason"})
 
-	reg_args = []string{"SLA_REG_2007-01-00003", "SLA_REG_2007-01-00003,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
-
-	search_args := []string{"SLA_REG_2007-01-00001"}
-	expected := "SLA_REG_2007-01-00001,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"
-	actual := s.searchContractByID(c, search_args)
-
-	if expected != actual {
-		t.Errorf("Expected:%v, but returned:%v", expected, actual)
-	}
-
-	search_args = []string{"SLA_REG_2007-01-00002"}
-	expected = "SLA_REG_2007-01-00002,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"
-	actual = s.searchContractByID(c, search_args)
-
-	if expected != actual {
-		t.Errorf("Expected:%v, but returned:%v", expected, actual)
-	}
-
-	// 없는 데이터 조회
-	search_args = []string{"SLA_REG_2007-01-00004"}
-	expected = ""
-	actual = s.searchContractByID(c, search_args)
-
-	if expected != actual {
-		t.Errorf("Expected:%v, but returned:%v", expected, actual)
-	}
+	checkState(t, stub, "FDS_EID_1", string(entryInBytes))
 }
 
 // ===========================================================
-//  SLAChaincodeStub 검색 테스트
+//  Test Invoke: FdsFraudEntry 삭제 함수
 // ===========================================================
 
-// SLA 이름검색
-func TestSearchContractListByName(t *testing.T) {
+/*
+ * Delete Fraud Entries with EID (eid: 1)
+ *
+ *     |   <Before>               |   <After>
+ *  ---+--------------------------+--------------------------
+ *     |   Fraud Entry 1 (eid: 1) |   [deleted]
+ *     |   Fraud Entry 2 (eid: 2) |   Fraud Entry 2
+ */
+func TestChaincodeFds_Invoke_fdsDeleteFraudEntryWithEid(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("fds_chaincode", scc)
 
-	var c = CreateStub()
-	var s SimpleChaincode
+	entry2 := FdsFraudEntry{2, "cid2", "mac2", "uuid2", "finaldate2", "finaltime2", "fdsproducedby2", "fdsregisteredby2", "fdsreason2", LS_BLACKLIST, "", ""}
+	entries := []FdsFraudEntry{FdsFraudEntry{}, entry2}
+	entriesInBytes, _ := json.Marshal(entries)
 
-	reg_args := []string{"SLA_REG_2007-01-00001", "SLA_REG_2007-01-00001,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
+	checkInit(t, stub, []string{})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid1", "mac1", "uuid1", "finaldate1", "finaltime1", "fdsproducedby1", "fdsregisteredby1", "fdsreason1"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid2", "mac2", "uuid2", "finaldate2", "finaltime2", "fdsproducedby2", "fdsregisteredby2", "fdsreason2"})
+	checkInvoke(t, stub, "fdsDeleteFraudEntryWithEid", []string{"1"})
 
-	reg_args = []string{"SL_REG_2007-01-00002", "SLA_REG_2007-01-00002,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
-
-	reg_args = []string{"SLA_REG_2007-01-00003", "SLA_REG_2007-01-00003,ITSM 도급계약3,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
-
-	args := []string{"ITSM 도급계약"}
-	expected := []string{"SLA_REG_2007-01-00001,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상",
-		"SLA_REG_2007-01-00002,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	actual := s.searchContractListByName(c, args)
-
-	if len(expected) != len(actual) {
-		t.Errorf("Expected:%v, but returned:%v", len(expected), len(actual))
-	}
-
-	for !(reflect.DeepEqual(expected, actual)) {
-		t.Errorf("Expected:%v, but returned:%v", expected, actual)
-
-	}
+	checkQuery(t, stub, "fdsGetAllFraudEntries", []string{}, string(entriesInBytes))
 }
 
-// SLA 고객사검색
-func TestSearchContractListByClient(t *testing.T) {
+/*
+ * Delete Fraud Entries with CID (cid: "cid")
+ *
+ *     |   <Before>                    |   <After>
+ *  ---+-------------------------------+---------------------
+ *     |   Fraud Entry 1 (cid: "cid")  |   [deleted]
+ *     |   Fraud Entry 2 (cid: "cid")  |   [deleted]
+ *     |   Fraud Entry 3 (cid: "cid3") |   Fraud Entry 3
+ */
+func TestChaincodeFds_Invoke_DeleteFruadEntryWithCid(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("fds_chaincode", scc)
 
-	var c = CreateStub()
-	var s SimpleChaincode
+	entry3 := FdsFraudEntry{3, "cid3", "mac3", "uuid3", "finaldate3", "finaltime3", "fdsproducedby3", "fdsregisteredby3", "fdsreason3", LS_BLACKLIST, "", ""}
+	entries := []FdsFraudEntry{FdsFraudEntry{}, FdsFraudEntry{}, entry3}
+	entriesInBytes, _ := json.Marshal(entries)
 
-	reg_args := []string{"SLA_REG_2007-01-00001", "SLA_REG_2007-01-00001,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
+	checkInit(t, stub, []string{})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid", "mac1", "uuid1", "finaldate1", "finaltime1", "fdsproducedby1", "fdsregisteredby1", "fdsreason1"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid", "mac2", "uuid2", "finaldate2", "finaltime2", "fdsproducedby2", "fdsregisteredby2", "fdsreason2"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid3", "mac3", "uuid3", "finaldate3", "finaltime3", "fdsproducedby3", "fdsregisteredby3", "fdsreason3"})
+	checkInvoke(t, stub, "fdsDeleteFraudEntryWithCid", []string{"cid"})
 
-	reg_args = []string{"SL_REG_2007-01-00002", "SLA_REG_2007-01-00002,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
-
-	reg_args = []string{"SLA_REG_2007-01-00003", "SLA_REG_2007-01-00003,ITSM 도급계약,도급계약,2017.01-2017.12,신한생명,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
-
-	args := []string{"신한은행"}
-	expected := []string{"SLA_REG_2007-01-00001,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상",
-		"SLA_REG_2007-01-00002,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	actual := s.searchContractListByClient(c, args)
-
-	if len(expected) != len(actual) {
-		t.Errorf("Expected:%v, but returned:%v", len(expected), len(actual))
-	}
-
-	for !(reflect.DeepEqual(expected, actual)) {
-		t.Errorf("Expected:%v, but returned:%v", expected, actual)
-
-	}
+	checkQuery(t, stub, "fdsGetAllFraudEntries", []string{}, string(entriesInBytes))
 }
 
-// ===========================================================
-//  SLAChaincodeStub 업데이트 테스트
-// ===========================================================
+/*
+ * Delete Fraud Entries with MAC (mac: "mac")
+ *
+ *     |   <Before>                    |   <After>
+ *  ---+-------------------------------+---------------------
+ *     |   Fraud Entry 1 (mac: "mac")  |   [deleted]
+ *     |   Fraud Entry 2 (mac: "mac")  |   [deleted]
+ *     |   Fraud Entry 3 (mac: "mac3") |   Fraud Entry 3
+ */
+func TestChaincodeFds_Invoke_DeleteFruadEntryWithMac(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("fds_chaincode", scc)
 
-func TestUpdateContractId(t *testing.T) {
+	entry3 := FdsFraudEntry{3, "cid3", "mac3", "uuid3", "finaldate3", "finaltime3", "fdsproducedby3", "fdsregisteredby3", "fdsreason3", LS_BLACKLIST, "", ""}
+	entries := []FdsFraudEntry{FdsFraudEntry{}, FdsFraudEntry{}, entry3}
+	entriesInBytes, _ := json.Marshal(entries)
 
-	var c = CreateStub()
-	var s SimpleChaincode
+	checkInit(t, stub, []string{})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid1", "mac", "uuid1", "finaldate1", "finaltime1", "fdsproducedby1", "fdsregisteredby1", "fdsreason1"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid2", "mac", "uuid2", "finaldate2", "finaltime2", "fdsproducedby2", "fdsregisteredby2", "fdsreason2"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid3", "mac3", "uuid3", "finaldate3", "finaltime3", "fdsproducedby3", "fdsregisteredby3", "fdsreason3"})
+	checkInvoke(t, stub, "fdsDeleteFraudEntryWithMac", []string{"mac"})
 
-	reg_args := []string{"SLA_REG_2007-01-00001", "SLA_REG_2007-01-00001,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
+	checkQuery(t, stub, "fdsGetAllFraudEntries", []string{}, string(entriesInBytes))
+}
 
-	reg_args = []string{"SL_REG_2007-01-00002", "SLA_REG_2007-01-00002,ITSM 도급계약,도급계약,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
+/*
+ * Delete Fraud Entries with UUID (uuid: "uuid")
+ *
+ *     |   <Before>                      |   <After>
+ *  ---+---------------------------------+---------------------
+ *     |   Fraud Entry 1 (uuid: "uuid")  |   [deleted]
+ *     |   Fraud Entry 2 (uuid: "uuid")  |   [deleted]
+ *     |   Fraud Entry 3 (uuid: "uuid3") |   Fraud Entry 3
+ */
+func TestChaincodeFds_Invoke_DeleteFruadEntryWithUuid(t *testing.T) {
+	scc := new(SimpleChaincode)
+	stub := shim.NewMockStub("fds_chaincode", scc)
 
-	reg_args = []string{"SLA_REG_2007-01-00003", "SLA_REG_2007-01-00003,ITSM 도급계약,도급계약,2017.01-2017.12,신한생명,지은탁,010-1234-5678,2017.01.31,대상"}
-	s.registerContract(c, reg_args)
+	entry3 := FdsFraudEntry{3, "cid3", "mac3", "uuid3", "finaldate3", "finaltime3", "fdsproducedby3", "fdsregisteredby3", "fdsreason3", LS_BLACKLIST, "", ""}
+	entries := []FdsFraudEntry{FdsFraudEntry{}, FdsFraudEntry{}, entry3}
+	entriesInBytes, _ := json.Marshal(entries)
 
-	args := []string{"SLA_REG_2007-01-00001", "SLA_REG_2007-01-00001,ITSM 도급계약,도급계약_UPDATED,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"}
-	expected := "SLA_REG_2007-01-00001,ITSM 도급계약,도급계약_UPDATED,2017.01-2017.12,신한은행,지은탁,010-1234-5678,2017.01.31,대상"
+	checkInit(t, stub, []string{})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid1", "mac1", "uuid", "finaldate1", "finaltime1", "fdsproducedby1", "fdsregisteredby1", "fdsreason1"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid2", "mac2", "uuid", "finaldate2", "finaltime2", "fdsproducedby2", "fdsregisteredby2", "fdsreason2"})
+	checkInvoke(t, stub, "fdsCreateFraudEntry", []string{"cid3", "mac3", "uuid3", "finaldate3", "finaltime3", "fdsproducedby3", "fdsregisteredby3", "fdsreason3"})
+	checkInvoke(t, stub, "fdsDeleteFraudEntryWithUuid", []string{"uuid"})
 
-	actual := s.updateContractId(c, args)
-
-	if expected != actual {
-		t.Errorf("Expected:%v, but returned:%v", expected, actual)
-	}
+	checkQuery(t, stub, "fdsGetAllFraudEntries", []string{}, string(entriesInBytes))
 }
