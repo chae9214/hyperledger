@@ -164,7 +164,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	err = stub.PutState(SLA_EVALUATION_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	err = stub.PutState(SLA_EVALUATION_TEMP_ID_COUNT_KEY, []byte(strconv.Itoa(1)))
 	err = stub.PutState(CURRENT_YEAR_KEY, []byte(strconv.Itoa(year))) // 현재 year
-	err = stub.PutState(SLA_ALL_DATA, []byte(""))
+	// err = stub.PutState(SLA_ALL_DATA, []byte(""))
 	return nil, err
 }
 
@@ -824,10 +824,16 @@ func (t *SimpleChaincode) slaGetAllContracts(stub shim.ChaincodeStubInterface, a
 		contractList[i] = string(contractInBytes)
 	}
 
-	// 계약 전체 String
-	contractListInString := strings.Join(contractList, FIELDSEP)
+	// 계약 전체기존_20170221 String
+	//contractListInString := strings.Join(contractList, FIELDSEP)
 
-	return []byte(contractListInString), nil
+	// 계약 전체신규_20170221 String
+	ContractsInJson, err := json.MarshalIndent(contractList, "", "  ")
+	if err != nil {
+		return nil, errors.New("Failed to registerContractByIdToJSON with " + string(ContractsInJson))
+	}
+
+	return []byte(ContractsInJson), nil
 
 }
 
