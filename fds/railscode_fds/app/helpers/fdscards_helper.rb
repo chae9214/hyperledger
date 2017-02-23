@@ -1,0 +1,2 @@
+module FdscardsHelper
+end

@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :fdscards
   resources :malltransfers
   resources :banktransfers
   # get 'transfer/transfer'

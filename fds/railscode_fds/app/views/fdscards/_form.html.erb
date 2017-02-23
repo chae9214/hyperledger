@@ -1,0 +1,99 @@
+<%= form_for(fdscard) do |f| %>
+  <% if fdscard.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(fdscard.errors.count, "error") %> prohibited this fdscard from being saved:</h2>
+
+      <ul>
+      <% fdscard.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= select(:fdscard, :stats, [['정상거래', '정상'], ['이상거래', '이상']]) %>
+
+  <div class="field">
+    <%= f.label :tid %>
+    <%= f.text_field :tid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :cid %>
+    <%= f.text_field :cid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :mac %>
+    <%= f.text_field :mac %>
+  </div>
+
+  <div class="field">
+    <%= f.label :uuid %>
+    <%= f.text_field :uuid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :customername %>
+    <%= f.text_field :customername %>
+  </div>
+
+  <div class="field">
+    <%= f.label :transactiondate %>
+    <%= f.text_field :transactiondate %>
+  </div>
+
+  <div class="field">
+    <%= f.label :transactiontime %>
+    <%= f.text_field :transactiontime %>
+  </div>
+
+  <div class="field">
+    <%= f.label :fdsproducedby %>
+    <%= f.text_field :fdsproducedby %>
+  </div>
+
+  <div class="field">
+    <%= f.label :fdsregistreason %>
+    <%= f.text_field :fdsregistreason %>
+  </div>
+
+  <div class="field">
+    <%= f.label :ordernum %>
+    <%= f.text_field :ordernum %>
+  </div>
+
+  <div class="field">
+    <%= f.label :fraudproductcode %>
+    <%= f.text_field :fraudproductcode %>
+  </div>
+
+  <div class="field">
+    <%= f.label :fdsstatus %>
+    <%= f.text_field :fdsstatus %>
+  </div>
+
+  <div class="field">
+    <%= f.label :correspondid %>
+    <%= f.text_field :correspondid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :ipaddr %>
+    <%= f.text_field :ipaddr %>
+  </div>
+
+  <div class="field">
+    <%= f.label :mobileyn %>
+    <%= f.text_field :mobileyn %>
+  </div>
+
+  <div class="field">
+    <%= f.label :cardnum %>
+    <%= f.text_field :cardnum %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

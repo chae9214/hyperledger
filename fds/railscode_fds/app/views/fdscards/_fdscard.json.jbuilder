@@ -1,0 +1,2 @@
+json.extract! fdscard, :id, :tid, :cid, :mac, :uuid, :customername, :transactiondate, :transactiontime, :fdsproducedby, :fdsregistreason, :ordernum, :fraudproductcode, :fdsstatus, :correspondid, :ipaddr, :mobileyn, :cardnum, :created_at, :updated_at
+json.url fdscard_url(fdscard, format: :json)

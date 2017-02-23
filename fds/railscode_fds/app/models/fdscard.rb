@@ -1,0 +1,2 @@
+class Fdscard < ApplicationRecord
+end
