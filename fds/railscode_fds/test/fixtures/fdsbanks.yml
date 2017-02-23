@@ -1,0 +1,33 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  tid: MyString
+  cid: MyString
+  mac: MyString
+  uuid: MyString
+  identitynum: MyString
+  transactiondate: MyString
+  transactiontime: MyString
+  fdsauthresult: MyString
+  fdsproducedby: MyString
+  fdsregistreason: MyString
+  ipaddress: MyString
+  posid: MyString
+  mobileyn: MyString
+  accountnum: MyString
+
+two:
+  tid: MyString
+  cid: MyString
+  mac: MyString
+  uuid: MyString
+  identitynum: MyString
+  transactiondate: MyString
+  transactiontime: MyString
+  fdsauthresult: MyString
+  fdsproducedby: MyString
+  fdsregistreason: MyString
+  ipaddress: MyString
+  posid: MyString
+  mobileyn: MyString
+  accountnum: MyString

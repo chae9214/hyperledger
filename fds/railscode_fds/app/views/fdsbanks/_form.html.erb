@@ -1,0 +1,81 @@
+<%= form_for(fdsbank) do |f| %>
+  <% if fdsbank.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(fdsbank.errors.count, "error") %> prohibited this fdsbank from being saved:</h2>
+
+      <ul>
+      <% fdsbank.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= select(:fdsbank, :fdsstatus, [['정상거래', '정상'], ['이상거래', '이상']]) %>
+
+  <div class="field">
+    <%= f.label :계좌번호 %>
+    <%= f.text_field :accountnum %>
+  </div>
+
+  <div class="field">
+    <%= f.label :cid %>
+    <%= f.text_field :cid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :mac %>
+    <%= f.text_field :mac %>
+  </div>
+
+  <div class="field">
+    <%= f.label :uuid %>
+    <%= f.text_field :uuid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :거래일자 %>
+    <%= f.text_field :transactiondate %>
+  </div>
+
+  <div class="field">
+    <%= f.label :거래시간 %>
+    <%= f.text_field :transactiontime %>
+  </div>
+
+  <div class="field">
+    <%= f.label :인증결과 %>
+    <%= f.text_field :fdsauthresult %>
+  </div>
+
+  <div class="field">
+    <%= f.label :제공처 %>
+    <%= f.text_field :fdsproducedby %>
+  </div>
+
+  <div class="field">
+    <%= f.label :등록사유 %>
+    <%= f.text_field :fdsregistreason %>
+  </div>
+
+  <div class="field">
+    <%= f.label :IP_Address %>
+    <%= f.text_field :ipaddress %>
+  </div>
+
+  <div class="field">
+    <%= f.label :단말기ID %>
+    <%= f.text_field :posid %>
+  </div>
+
+  <div class="field">
+    <%= f.label :모바일여부 %>
+    <%= f.text_field :mobileyn %>
+  </div>
+
+  
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

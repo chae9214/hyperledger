@@ -1,0 +1,1 @@
+json.array! @fdsbanks, partial: 'fdsbanks/fdsbank', as: :fdsbank

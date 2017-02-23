@@ -1,0 +1,107 @@
+<p id="notice"><%= notice %></p>
+<div>
+<div id="header">
+  <%= image_tag "shinhan_logo.png" %><span>이상거래 관리 시스템</span>
+</div>
+<div class="black_list_title">
+<span>거래내역</span>
+</div>
+<table id="black_list_th">
+<tbody>
+    <tr>
+      <td><b>STATUS</b></td>
+      <td><%= @fdsbank.fdsstatus %></td>
+    </tr>
+    <tr>
+      <td><b>계좌번호</b></td>
+      <td><%= @fdsbank.accountnum %></td>
+    </tr>
+    <tr>
+      <td><b>CID</b></td>
+      <td id="view_cidValue"><%= @fdsbank.cid %></td>
+    </tr>
+    <tr>
+      <td><b>MAC</b></td>
+      <td id="view_macValue"><%= @fdsbank.mac %></td>
+    </tr>
+    <tr>
+      <td><b>UUID</b></td>
+      <td id="view_uuidValue"><%= @fdsbank.uuid %></td>
+    </tr>
+    <tr>
+      <td><b>거래일자</b></td>
+      <td><%= @fdsbank.transactiondate %></td>
+    </tr>
+    <tr>
+      <td><b>거래시간</b></td>
+      <td><%= @fdsbank.transactiontime %></td>
+    </tr>
+    <tr>
+      <td><b>인증결과</b></td>
+      <td id="view_registeredbyValue"><%= @fdsbank.fdsauthresult %></td>
+    </tr>
+    <tr>
+      <td><b>제공처</b></td>
+      <td id="view_producedbyValue"><%= @fdsbank.fdsproducedby %></td>
+    </tr>
+    <tr>
+      <td><b>등록사유</b></td>
+      <td id="view_reasonValue"><%= @fdsbank.fdsregistreason %></td>
+    </tr>
+    <tr>
+      <td><b>IP ADDRESS</b></td>
+      <td><%= @fdsbank.ipaddress %></td>
+    </tr>
+    <tr>
+      <td><b>단말기ID</b></td>
+      <td><%= @fdsbank.posid %></td>
+    </tr>
+    <tr>
+      <td><b>모바일여부</b></td>
+      <td><%= @fdsbank.mobileyn %></td>
+    </tr>
+    <tr hidden="true">
+      <td id="view_finaltimeValue" hidden="true"><%= Time.now.localtime %></td>
+      <td id="view_finaldateValue" hidden="true"><%= Date.today %></td>
+    </tr>
+  </tbody>
+</table>
+
+<br>
+<button class="button1"><%= link_to '수정', edit_fdsbank_path(@fdsbank) %></button>
+<button class="button1" id="registerBlacklist">이상거래 등록</button>
+<button class="button1"><%= link_to '목록', fdsbanks_path %></button>
+
+<script>
+$(document).ready(function() {
+  $('#registerBlacklist').click(function(event){
+ 
+     var view_cidValue = $("#view_cidValue").text();
+     var view_macValue = $("#view_macValue").text();
+     var view_uuidValue = $("#view_uuidValue").text();
+     var view_finaldateValue = $("#view_finaldateValue").text();
+     var view_finaltimeValue = $("#view_finaltimeValue").text();
+     var view_producedbyValue = $("#view_producedbyValue").text();
+     var view_registeredbyValue = $("#view_registeredbyValue").text();
+     var view_reasonValue = $("#view_reasonValue").text();
+
+     var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":["fdsCreateFraudEntry",view_cidValue,view_macValue,view_uuidValue,view_finaldateValue,view_finaltimeValue,view_producedbyValue,view_registeredbyValue,view_reasonValue]},"secureContext":"admin"},"id":1};
+
+     $.ajax({
+         type: "POST",
+         url: "http://192.168.99.100:7050/chaincode",
+         data: JSON.stringify(sendInfo),
+         contentType: "application/json; charset=utf-8",
+         success: function (msg) {
+             if (msg) {
+                alert("정상 등록 되었습니다.")
+             } else {
+                alert("등록이 실패 했습니다!!");
+             }
+         }
+     });
+
+    event.preventDefault(); // Prevent link from following its href
+  });
+});
+</script>

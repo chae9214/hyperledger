@@ -7,6 +7,8 @@ Rails.application.routes.draw do
 
   match 'transfer', to: 'transfer#trans', via: :all
   post 'order', to: 'order#purchase', via: :all
+  resources :malls
+  resources :fdsbanks
   resources :rests
   resources :transactions
   resources :black_lists

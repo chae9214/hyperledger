@@ -1,0 +1,1 @@
+json.partial! "fdsbanks/fdsbank", fdsbank: @fdsbank
