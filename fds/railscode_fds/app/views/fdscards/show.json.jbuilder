@@ -1,0 +1,1 @@
+json.partial! "fdscards/fdscard", fdscard: @fdscard

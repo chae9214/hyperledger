@@ -1,0 +1,209 @@
+<p id="notice"><%= notice %></p>
+<div>
+<div id="header">
+  <%= image_tag "shinhan_logo.png" %><span>이상거래 관리 시스템</span>
+</div>
+<div class="black_list_title">
+<span>거래내역</span>
+</div>
+
+<table id="black_list_th">
+  <thead>
+    <tr>
+      <th>No.</th>
+      <th>상태</th>
+      <th>CID</th>
+      <th>MAC</th>
+      <th>UUID</th>
+      <th>고객명</th>
+      <th>거래일자</th>
+      <th>거래시간</th>
+      <th>위험상품코드</th>
+      <th>카드번호</th>
+      <th class="textCenter">Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @fdscards.each_with_index do |fdscard,index| %>
+      <tr>
+        <td><%= index + 1 %></td>
+        <td><%= fdscard.fdsstatus %></td>
+        <td><%= fdscard.cid %></td>
+        <td><%= fdscard.mac %></td>
+        <td><%= fdscard.uuid %></td>
+        <td><%= fdscard.customername %></td>
+        <td><%= fdscard.transactiondate %></td>
+        <td><%= fdscard.transactiontime %></td>
+        <td><%= fdscard.fraudproductcode %></td>
+        <td><%= fdscard.cardnum %></td>
+        <td>
+          <%= link_to "상세", fdscard, class: "button button1" %>
+          <%= link_to "수정", edit_fdscard_path(fdscard), class: "button button1" %>
+          <%= link_to "삭제", fdscard, method: :delete, data: { confirm: '이상 거래를 삭제하시겠습니까?' } , class: "button button1" %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to '거래내역 등록', new_fdscard_path , class: "button button2" %>
+</div>
+
+<br>
+<div class="black_list_title">
+<span>BlackList</span>
+<select id="searchBox">
+  <option value="fdsGetFraudEntriesWithCid" selected="selected">CID</option>
+  <option value="fdsGetFraudEntriesWithMac">MAC</option>
+  <option value="fdsGetFraudEntriesWithUuid">UUID</option>
+</select>
+<input type="text" id="searchValue">
+<button class="btnSearch button1">검색</button>
+</div>
+<table id="black_list_th">
+  <thead >
+    <tr>
+      <th>No.</th>
+      <th>CID</th>
+      <th>MAC</th>
+      <th>UUID</th>
+      <th>거래시간</th>
+      <th>등록기관</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody class="blacklist_tbody">
+      <% @parsed_hyperledger_result_list.each_with_index do |row, index| %>
+        <tr>
+          <% if !row["cid"].empty? %>
+            <td><%= index + 1%></td>
+            <td class="view_cid"><%= row["cid"] %></td>
+            <td class="view_mac"><%= row["mac"] %></td>
+            <td class="view_uuid"><%= row["uuid"] %></td>
+            <td class="view_finalDate"><%= row["finalDate"] %></td>
+            <td class="view_registeredBy"><%= row["registeredBy"] %></td>
+            <td>
+              <select id="selectForDelete">
+                <option value="fdsDeleteFraudEntryWithCid" selected="selected">CID</option>
+                <option value="fdsDeleteFraudEntryWithMac">MAC</option>
+                <option value="fdsDeleteFraudEntryWithUuid">UUID</option>
+              </select>
+              <button class="button button1 delete_btn">삭제</button>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+   </tbody>
+</table>
+
+<br>
+<%= link_to "새로고침", @reload_currentPage, class: "button button2" %>
+
+
+<script>
+$(document).ready(function() {
+  $('.btnSearch').click(function(event){
+ 
+     var searchCondition = $("#searchBox").val();
+     var searchValue = $("#searchValue").val();
+     var sendInfo = {"jsonrpc": "2.0","method": "query","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[searchCondition,searchValue]},"secureContext":"admin"},"id":1};
+
+     if (searchValue == ""){
+        searchCondition = "fdsGetAllFraudEntries";
+        sendInfo = {"jsonrpc": "2.0","method": "query","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[searchCondition]},"secureContext":"admin"},"id":1};
+      }
+     
+     $.ajax({
+         type: "POST",
+         url: "http://192.168.150.129:7050/chaincode",
+         data: JSON.stringify(sendInfo),
+         contentType: "application/json; charset=utf-8",
+         success: function (msg) {
+             if (msg) {
+                console.log(msg)
+              if(msg.error){
+                alert("에러 발생 : "+ JSON.stringify(sendInfo))
+              }else{
+                console.log(jQuery.parseJSON(msg.result.message))
+                var parsed_searchlist = jQuery.parseJSON(msg.result.message);
+                $('.blacklist_tbody > tr').remove()
+                for(i = 0; i < parsed_searchlist.length; i++){
+                  if(parsed_searchlist[i].cid !== ""){
+                    $('.blacklist_tbody').append('<tr><td>'+(i+1)+'</td><td>'+parsed_searchlist[i].cid+'</td><td>'+parsed_searchlist[i].mac+'</td><td>'+parsed_searchlist[i].uuid+'</td><td>'+parsed_searchlist[i].finalDate+'</td><td>'+parsed_searchlist[i].registeredBy+'</td><td><select id="selectForDelete"><option value="fdsDeleteFraudEntryWithCid" selected="selected">CID</option><option value="fdsDeleteFraudEntryWithMac">MAC</option><option value="fdsDeleteFraudEntryWithUuid">UUID</option></select> <button class="button button1 delete_btn">삭제</button></td></tr>')
+                  }
+                }
+
+                $("tr").hover(function () { $(this).addClass("hilite"); }, function () { $(this).removeClass("hilite"); });
+
+                $(".delete_btn").click(function() {
+                    var row = $(this).closest("tr");    // Find the row
+                    var conditionForDelete = $("#selectForDelete").val();
+                    var valueForDelete = row.find(".view_cid").text(); // Find the text
+
+                    if (conditionForDelete == "fdsDeleteFraudEntryWithMac"){
+                      valueForDelete = row.find(".view_mac").text(); 
+                    } else if (conditionForDelete == "fdsDeleteFraudEntryWithUuid"){
+                      valueForDelete = row.find(".view_uuid").text();
+                    }
+
+                    var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[conditionForDelete,valueForDelete]},"secureContext":"admin"},"id":1};
+
+                     $.ajax({
+                         type: "POST",
+                         url: "http://192.168.150.129:7050/chaincode",
+                         data: JSON.stringify(sendInfo),
+                         contentType: "application/json; charset=utf-8",
+                         success: function (msg) {
+                             if (msg) {
+                                alert("BlackList에서 삭제 되었습니다!!")
+                                location.reload();
+                             } else {
+                                alert("BlackList에서 삭제 하는 중 에러가 발생하였습니다!!");
+                             }
+                         }
+                     });
+                });
+              }
+             } else {
+                 alert("Cannot load Hyperledger Data!");
+             }
+         }
+     });
+  });
+});
+
+$("tr").hover(function () { $(this).addClass("hilite"); }, function () { $(this).removeClass("hilite"); });
+
+$(".delete_btn").click(function() {
+    var row = $(this).closest("tr");    // Find the row
+    var conditionForDelete = $("#selectForDelete").val();
+    var valueForDelete = row.find(".view_cid").text(); // Find the text
+
+    if (conditionForDelete == "fdsDeleteFraudEntryWithMac"){
+      valueForDelete = row.find(".view_mac").text(); 
+    } else if (conditionForDelete == "fdsDeleteFraudEntryWithUuid"){
+      valueForDelete = row.find(".view_uuid").text();
+    }
+
+    var sendInfo = {"jsonrpc": "2.0","method": "invoke","params":{"type":1,"chaincodeID":{"name":"mycc"},"ctorMsg":{ "args":[conditionForDelete,valueForDelete]},"secureContext":"admin"},"id":1};
+
+     $.ajax({
+         type: "POST",
+         url: "http://192.168.150.129:7050/chaincode",
+         data: JSON.stringify(sendInfo),
+         contentType: "application/json; charset=utf-8",
+         success: function (msg) {
+             if (msg) {
+                alert("BlackList에서 삭제 되었습니다!!")
+                location.reload();
+             } else {
+                alert("BlackList에서 삭제 하는 중 에러가 발생하였습니다!!");
+             }
+         }
+     });
+});
+</script>
