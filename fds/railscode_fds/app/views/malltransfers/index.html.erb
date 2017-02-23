@@ -1,25 +1,406 @@
-<p id="notice"><%= notice %></p>
+<%= stylesheet_link_tag "mall/style" %>
+<%= stylesheet_link_tag "mall/normalize" %>
+<%= stylesheet_link_tag "mall/bootstrap.min" %>
 
-<h1>Malltransfers</h1>
+<!doctype html>
+<html lang="ko-kr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> 쇼핑몰 </title>
 
-<table>
-  <thead>
-    <tr>
-      <th colspan="3"></th>
-    </tr>
-  </thead>
+    <!-- Bootstrap -->
+    <style>
+     @import url(http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css);
+      body {  font-family: "Malgun gothic",  sans-serif;}
+     .control { position: inherit; top: 50%; z-index: 5; display: inline-block; right: 50%;}  
+     .logo { background: url(./imgs/comlogo.png) no-repeat;width:250px; height: 85px;  }
+     .navbar-toggle { border: 1px solid #ccc;}
+     .navbar-toggle .icon-bar {  border: 1px solid #ccc;}
+     .navbar-collapse { background-color: #fff}
 
-  <tbody>
-    <% @malltransfers.each do |malltransfer| %>
-      <tr>
-        <td><%= link_to 'Show', malltransfer %></td>
-        <td><%= link_to 'Edit', edit_malltransfer_path(malltransfer) %></td>
-        <td><%= link_to 'Destroy', malltransfer, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+     .footback { background-color:#333333;padding-top: 15px; }
+     .footback a { color: #fff}
 
-<br>
+/* 5단 컬럼 */
+      .five-cols .col-md-1 { border-left: 1px solid rgba(255,255,255,0.3); height: 220px}
+      .five-cols .col-md-1 h4, .five-cols .col-md-1 ul { padding-left: 20px;}
+      .five-cols .col-md-1:last-child { border-right: 1px solid rgba(255,255,255,0.3)}
 
-<%= link_to 'New Malltransfer', new_malltransfer_path %>
+
+/*네비게이션 배경 */
+     .nav-back {
+      border: 1px solid #C0C0C0;
+      border-radius: 5px; border-bottom-right-radius: 0; border-bottom-left-radius: 0;
+      background: #ffffff; /* Old browsers */
+      background: -moz-linear-gradient(top,  #ffffff 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%); /* FF3.6+ */
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(50%,#f1f1f1), color-stop(51%,#e1e1e1), color-stop(100%,#f6f6f6)); /* Chrome,Safari4+ */
+      background: -webkit-linear-gradient(top,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); /* Chrome10+,Safari5.1+ */
+      background: -o-linear-gradient(top,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); /* Opera 11.10+ */
+      background: -ms-linear-gradient(top,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); /* IE10+ */
+      background: linear-gradient(to bottom,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); /* W3C */
+      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f6f6f6',GradientType=0 ); /* IE6-9 */
+     }
+     .nav-back li { border-left: 1px solid #C0C0C0; border-right: 1px solid #fff; font-weight: bold; }
+     .nav-back li:last-child { border-right: 0 }
+     .nav-back li:first-child { border-left: 0 }
+
+      .nav-back > .active > a,
+      .nav-back > .active > a:hover,
+      .nav-backv > .active > a:focus {
+        color: #fff;
+      background: #b8e1fc; /* Old browsers */
+      background: -moz-linear-gradient(top,  #b8e1fc 0%, #a9d2f3 10%, #90bae4 25%, #90bcea 37%, #90bff0 50%, #6ba8e5 51%, #a2daf5 83%, #bdf3fd 100%); /* FF3.6+ */
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b8e1fc), color-stop(10%,#a9d2f3), color-stop(25%,#90bae4), color-stop(37%,#90bcea), color-stop(50%,#90bff0), color-stop(51%,#6ba8e5), color-stop(83%,#a2daf5), color-stop(100%,#bdf3fd)); /* Chrome,Safari4+ */
+      background: -webkit-linear-gradient(top,  #b8e1fc 0%,#a9d2f3 10%,#90bae4 25%,#90bcea 37%,#90bff0 50%,#6ba8e5 51%,#a2daf5 83%,#bdf3fd 100%); /* Chrome10+,Safari5.1+ */
+      background: -o-linear-gradient(top,  #b8e1fc 0%,#a9d2f3 10%,#90bae4 25%,#90bcea 37%,#90bff0 50%,#6ba8e5 51%,#a2daf5 83%,#bdf3fd 100%); /* Opera 11.10+ */
+      background: -ms-linear-gradient(top,  #b8e1fc 0%,#a9d2f3 10%,#90bae4 25%,#90bcea 37%,#90bff0 50%,#6ba8e5 51%,#a2daf5 83%,#bdf3fd 100%); /* IE10+ */
+      background: linear-gradient(to bottom,  #b8e1fc 0%,#a9d2f3 10%,#90bae4 25%,#90bcea 37%,#90bff0 50%,#6ba8e5 51%,#a2daf5 83%,#bdf3fd 100%); /* W3C */
+      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b8e1fc', endColorstr='#bdf3fd',GradientType=0 ); /* IE6-9 */
+      }
+
+      .nav-back > li.active:first-child > a { width: 110%; position: relative; left: -15px; border-top-left-radius: 5px}
+      .nav-back > li.active:last-child > a { width: 110%; position: relative; right: 2px; border-top-right-radius: 5px}
+
+/*메뉴 중앙 정렬 */
+      .vcenter {
+             display: table-cell;
+             float: none;height: 120px /*any value*/;
+             vertical-align: middle; 
+    }
+
+/*5단 그리드 시스템 */
+      @media (min-width: 768px){
+        .five-cols .col-md-1,
+        .five-cols .col-sm-1,
+        .five-cols .col-lg-1  {
+          width: 20%;
+          *width: 20%;
+         }
+      }
+
+/*모바일 화면에서 별도 속성 적용 부분 */
+    @media (max-width:768px){
+           .search-form { display: none;}
+           h1.logo { background-size: 85%}
+           #custom_carousel a { display: none;}
+    }
+
+
+   .thumbnail { border-radius: 0; position: relative; z-index: 1; border: 2px solid #fff; outline: 1px solid #ccc; }
+   .red { color: #FF0000}
+   .black { color: #000}
+   ul.block { height: 60px;}
+   /*상품 줌 아이콘 */
+   .zoom {
+      position:absolute;
+      left:50%;
+      top:30%;
+      width:60px;
+      height:60px;
+      margin:-30px 0 0 -30px;
+      background:url(./imgs/zoom.png) no-repeat center center;
+      z-index:5;
+      display:block;
+      text-indent:-9999px;
+      opacity: 0; 
+      filter:progid:DXImageTransform.Microsoft.Alpha(opacity=0);    
+    }   
+  .thumbnail:hover { border: 2px solid red; outline: 0}
+  .thumbnail a:hover { text-decoration: none}
+  .thumbnail:hover img{
+    opacity: 0.3; 
+    filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50);
+  }
+  .thumbnail:hover .zoom {
+    opacity: 1; 
+    filter:progid:DXImageTransform.Microsoft.Alpha(opacity=100);
+  }
+
+/* carousel fade effect */
+  .carousel .item {
+      -webkit-transition: opacity 3s; 
+      -moz-transition: opacity 3s; 
+      -ms-transition: opacity 3s; 
+      -o-transition: opacity 3s; 
+      transition: opacity 3s;
+  }
+  .carousel .active.left {
+      left:0;opacity:0;z-index:2;
+  }
+  .carousel .next {
+      left:0;opacity:1;z-index:1;
+  }
+
+   /* end of carousel fade effect */
+
+      #custom_carousel .controls{
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding:0;
+          margin:0;
+          white-space: nowrap;
+          text-align: center;
+          position: relative;
+          background:#808080;
+      
+      }
+      #custom_carousel .controls li {
+          display: table-cell;
+          width: 1%;
+          max-width:90px;    
+      }
+      #custom_carousel .controls li.active {
+          background-color:#2A2A2A;
+          border-top:3px solid #FF0000;
+
+      }
+      #custom_carousel a { color: #fff;}
+      #custom_carousel a:hover { color: #000}
+      .controls li { border-left: 1px solid #ccc}
+
+
+
+    </style>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  
+<body>
+  <div class="container">
+    <header>
+    <div class="row">
+      <div class="col-xs-7 col-sm-6"> <h1 class="text-hide logo"><a href="#">company</a></h1></div>
+    </div>
+    <nav>
+         <ul class="nav  nav-justified nav-back collapse navbar-collapse navbar-ex1-collapse">
+           <li class="active"><a href="#">쇼핑몰 홈 </a></li>
+           <li ><a href="#">패션 뷰티</a></li>
+           <li><a href="#">쇼핑</a></li>
+           <li><a href="#">지역</a></li>
+           <li><a href="#">여행 레저</a></li>   
+           <li><a href="#">문화</a></li>          
+       </ul>
+    </nav>
+  </header>
+
+  </div>
+  <div class="container">
+      <!-- 캐러셀 부분 시작 -->
+   <div id="custom_carousel" class="carousel slide" data-ride="carousel" data-interval="2500">
+     <!-- Carousel items -->
+       <div class="carousel-inner">
+          <div class="item active">
+             <img src="./imgs/pic1.jpg" alt="First slide">
+          </div>
+          <div class="item">
+             <img src="./imgs/pic2.jpg" alt="Second slide">  
+          </div>
+          <div class="item">
+             <img src="./imgs/pic3.jpg" alt="Third slide">               
+          </div>
+          <div class="item">
+             <img src="./imgs/pic4.jpg" alt="Third slide">               
+          </div>
+          <div class="item">
+            <img src="./imgs/pic5.jpg" alt="Third slide">  
+          </div>                            
+                            
+       </div>
+     
+      <!-- Controls -->
+        <div class="controls">
+            <ul class="nav">
+                <li data-target="#custom_carousel" data-slide-to="0"><a href="#"></a></li>
+                <li data-target="#custom_carousel" data-slide-to="1"><a href="#"></a></li>
+                <li data-target="#custom_carousel" data-slide-to="2"><a href="#"></a></li>
+                <li data-target="#custom_carousel" data-slide-to="3"><a href="#"></a></li>
+                <li data-target="#custom_carousel" data-slide-to="4"><a href="#"></a></li>                
+            </ul>
+        </div>
+      </div>
+    <!--// 캐러셀 부분 끝  -->
+
+    <header>
+      <h3><i class="fa fa-thumbs-o-up"></i> 추천상품</h3>
+    </header>
+  
+    <div class="row">
+      <div class="col-sm-3 col-xs-6"> 
+        <div class="thumbnail">
+           <a href="#">
+                <img src="./imgs/sec_SM-T800NZWKKOO_007_front_white.jpg" alt="">
+                <div class="caption">
+                  <ul class="list-unstyled block">
+                    <li><b>갤럭시 탭S</b></li>
+                    <li><b>SM-T800NZWKKOO</b></li>
+                    <li> </li>
+                  </ul>
+                  <dl>
+                    <dt>판매가</dt>
+                    <dd>848,000 원</dd>
+                  </dl>
+               </div> 
+             <div class="zoom"> 자세히 보기 </div>
+            </a>    
+         </div>  
+        </div>
+        <div class="col-sm-3 col-xs-6">        
+          <div class="thumbnail">
+             <a href="#">
+                  <img src="./imgs/sec_NT910S5J-K20W_018_Front-Open_white.jpg" alt="">
+                  <div class="caption">
+                    <ul class="list-unstyled">
+                      <li><b>아티브 북9 Style</b></li>
+                      <li><b>NT910S5J-K20W</b></li>
+                       <li><b>(LED 디스플레이)</b></li>
+                    </ul>
+                    <dl>
+                      <dt>판매가</dt>
+                      <dd> 1,280,000 원</dd>
+
+                    </dl>
+                 </div> 
+               <div class="zoom"> 자세히 보기 </div>
+              </a>    
+           </div>   
+        </div>            
+        <div class="col-sm-3 col-xs-6">
+          <div class="thumbnail">
+             <a href="#">
+                  <img src="./imgs/sec_EX-S30ANW-KR_000000001_Front_white.jpg" alt="">
+                  <div class="caption">
+                    <ul class="list-unstyled block">
+                      <li><b>표준 단렌즈 </b></li>
+                      <li><b>30mm F2.0</b></li>
+                      <li><b>EX-S30ANW/KR</b></li>
+                    </ul>
+                    <dl>
+                      <dt>판매가</dt>
+                      <dd>350,000 원</dd>
+
+                    </dl>
+                 </div> 
+               <div class="zoom"> 자세히 보기 </div>
+              </a>    
+           </div>             
+        </div>
+        <div class="col-sm-3 col-xs-6">
+         <div class="thumbnail">
+             <a href="#">
+                  <img src="./imgs/sec_EO-SB330EWEG_001_Dynamic_white.jpg" alt="">
+                  <div class="caption">
+                    <ul class="list-unstyled block">
+                      <li><b>블루투스 스피커</b></li>
+                      <li><b>EO-SB330EWEG</b></li>
+                    </ul>
+                    <dl>
+                      <dt>판매가</dt>
+                      <dd>199,000 원</dd>
+
+                    </dl>
+                 </div> 
+                <div class="zoom"> 자세히 보기 </div> 
+              </a>    
+           </div>             
+        </div>
+      </div>
+    <div class="row">
+      <div class="col-sm-3 col-xs-6"> 
+        <div class="thumbnail">
+           <a href="#">
+                <img src="./imgs/sec_SM-T800NZWKKOO_007_front_white.jpg" alt="">
+                <div class="caption">                  
+                  <ul class="list-unstyled block">
+                    <li><b>갤럭시 탭S</b></li>
+                    <li><b>SM-T800NZWKKOO</b></li>
+                    <li> </li>
+                  </ul>
+                  <dl>
+                    <dt>판매가</dt>
+                    <dd>848,000 원</dd>
+
+                  </dl>
+               </div> 
+             <div class="zoom"> 자세히 보기 </div>
+            </a>    
+         </div>  
+        </div>
+        <div class="col-sm-3 col-xs-6">        
+          <div class="thumbnail">
+             <a href="#">
+                  <img src="./imgs/sec_NT910S5J-K20W_018_Front-Open_white.jpg" alt="">
+                  <div class="caption">
+                    <ul class="list-unstyled">
+                      <li><b>아티브 북9 Style</b></li>
+                      <li><b>NT910S5J-K20W</b></li>
+                       <li><b>(LED 디스플레이)</b></li>
+                    </ul>
+                    <dl>
+                      <dt>판매가</dt>
+                      <dd> 1,280,000 원</dd>
+
+                    </dl>
+                 </div> 
+               <div class="zoom"> 자세히 보기 </div>
+              </a>    
+           </div>   
+        </div>            
+        <div class="col-sm-3 col-xs-6">
+          <div class="thumbnail">
+             <a href="#">
+                  <img src="./imgs/sec_EX-S30ANW-KR_000000001_Front_white.jpg" alt="">
+                  <div class="caption">
+                    <ul class="list-unstyled block">
+                      <li><b>표준 단렌즈 </b></li>
+                      <li><b>30mm F2.0</b></li>
+                      <li><b>EX-S30ANW/KR</b></li>
+                    </ul>
+                    <dl>
+                      <dt>판매가</dt>
+                      <dd>350,000 원</dd>
+
+                    </dl>
+                 </div> 
+               <div class="zoom"> 자세히 보기 </div>
+              </a>    
+           </div>             
+        </div>
+        <div class="col-sm-3 col-xs-6">
+         <div class="thumbnail">
+             <a href="#">
+                  <img src="./imgs/sec_EO-SB330EWEG_001_Dynamic_white.jpg" alt="">
+                  <div class="caption">
+                    <ul class="list-unstyled block">
+                      <li><b>블루투스 스피커</b></li>
+                      <li><b>EO-SB330EWEG</b></li>
+                    </ul>
+                    <dl>
+                      <dt>판매가</dt>
+                      <dd>199,000 원</dd>
+
+                    </dl>
+                 </div> 
+                <div class="zoom"> 자세히 보기 </div> 
+              </a>    
+           </div>             
+        </div>
+      </div>
+  </div>
+
+  <div class="container">
+  <div class="footback" align="center">
+    <a href="#" target="_blank"><span class="blind">회사소개</span></a> |
+    <a href="#"><span class="blind">개인정보처리방침</span></a> |
+    <a href="#"><span class="blind">이용약관</span></a> |
+  </div>
+  </div>
+  <div> <ul class=""></ul></div>
+  
+</body>
+</html>
