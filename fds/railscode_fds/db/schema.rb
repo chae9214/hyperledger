@@ -10,8 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+ActiveRecord::Schema.define(version: 20170223075510) do
 
-ActiveRecord::Schema.define(version: 20170221090125) do
+  create_table "banktransfers", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "black_lists", force: :cascade do |t|
     t.string   "cid"
     t.string   "mac"
@@ -42,14 +47,7 @@ ActiveRecord::Schema.define(version: 20170221090125) do
     t.string   "fdsstatus"
   end
 
-  create_table "malls", force: :cascade do |t|
-    t.string   "cardnum"
-    t.string   "ordernum"
-    t.string   "password"
-    t.string   "cid"
-    t.string   "mac"
-    t.string   "uuid"
-    t.string   "result"
+  create_table "malltransfers", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

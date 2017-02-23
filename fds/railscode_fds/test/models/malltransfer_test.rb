@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class BlackListTest < ActiveSupport::TestCase
+class MalltransferTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :malltransfers
   resources :banktransfers
   # get 'transfer/transfer'
   # post 'transfer/transfer' => 'transfer#transfer'
@@ -6,11 +7,8 @@ Rails.application.routes.draw do
   # match 'tra', to: 'tra#index', via: :all
 
   match 'transfer', to: 'transfer#trans', via: :all
-  post 'order', to: 'order#purchase', via: :all
   resources :malls
   resources :fdsbanks
-  resources :rests
   resources :transactions
-  resources :black_lists
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end

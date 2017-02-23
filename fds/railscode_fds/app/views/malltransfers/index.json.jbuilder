@@ -1,0 +1,1 @@
+json.array! @malltransfers, partial: 'malltransfers/malltransfer', as: :malltransfer

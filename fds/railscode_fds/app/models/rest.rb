@@ -1,2 +1,0 @@
-class Rest < ApplicationRecord
-end

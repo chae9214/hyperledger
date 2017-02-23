@@ -1,0 +1,17 @@
+<%= form_for(malltransfer) do |f| %>
+  <% if malltransfer.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(malltransfer.errors.count, "error") %> prohibited this malltransfer from being saved:</h2>
+
+      <ul>
+      <% malltransfer.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

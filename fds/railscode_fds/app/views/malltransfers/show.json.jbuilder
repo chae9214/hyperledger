@@ -1,0 +1,1 @@
+json.partial! "malltransfers/malltransfer", malltransfer: @malltransfer

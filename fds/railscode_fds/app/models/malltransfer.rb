@@ -1,0 +1,2 @@
+class Malltransfer < ApplicationRecord
+end
